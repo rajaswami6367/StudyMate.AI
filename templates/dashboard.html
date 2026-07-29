@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+  <div class="dashboard-header">
+    <div class="dashboard-welcome">
+      <h1>Welcome back, <span class="gradient-text">{{ username }}</span>! 👋</h1>
+      <p>What would you like to study today?</p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Card 1: AI Notes -->
+    <a href="{{ url_for('ai_notes') }}" class="dash-card">
+      <div class="dash-icon purple"><i data-feather="file-text"></i></div>
+      <div class="dash-info">
+        <h3>AI Notes Generator</h3>
+        <p>Convert your topics or PDFs into structured study notes.</p>
+      </div>
+      <i data-feather="arrow-right" class="dash-arrow"></i>
+    </a>
+
+    <!-- Card 2: Doubt Solver -->
+    <a href="{{ url_for('doubt_solver') }}" class="dash-card">
+      <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
+      <div class="dash-info">
+        <h3>AI Doubt Solver</h3>
+        <p>Stuck? Ask any question and get an instant, clear explanation.</p>
+      </div>
+      <i data-feather="arrow-right" class="dash-arrow"></i>
+    </a>
+
+    <!-- Card 3: Quiz Generator -->
+    <a href="{{ url_for('quiz') }}" class="dash-card">
+      <div class="dash-icon green"><i data-feather="check-circle"></i></div>
+      <div class="dash-info">
+        <h3>Quiz Generator</h3>
+        <p>Test your knowledge with AI-generated MCQs.</p>
+      </div>
+      <i data-feather="arrow-right" class="dash-arrow"></i>
+    </a>
+
+    <!-- Card 4: Flashcards -->
+    <a href="{{ url_for('flashcards') }}" class="dash-card">
+      <div class="dash-icon orange"><i data-feather="layers"></i></div>
+      <div class="dash-info">
+        <h3>Flashcards</h3>
+        <p>Create flip-cards for quick revision of important terms.</p>
+      </div>
+      <i data-feather="arrow-right" class="dash-arrow"></i>
+    </a>
+  </div>
+</section>
+{% endblock %}

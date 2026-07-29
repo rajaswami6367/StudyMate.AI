@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}AI Notes Generator — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="tool-section">
+  <div class="tool-header">
+    <div class="tool-icon purple"><i data-feather="file-text"></i></div>
+    <h2>AI Notes Generator</h2>
+    <p>Enter any topic and get structured, easy-to-read notes instantly.</p>
+  </div>
+
+  <div class="tool-container">
+    {% if error %}
+    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('ai_notes') }}" class="tool-form" onsubmit="showLoading()">
+      <div class="form-group">
+        <label>Topic for Notes</label>
+        <textarea name="topic" rows="3" placeholder="e.g. History of the Internet" required>{{ topic if topic else '' }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i data-feather="cpu"></i> Generate Notes
+      </button>
+      
+      <div id="loadingIndicator" class="loading-state" style="display: none;">
+        <div class="spinner"></div>
+        <p>Reading and summarizing...</p>
+      </div>
+    </form>
+
+    {% if notes %}
+    <div class="result-card mt-4">
+      <div class="result-header">
+        <h3><i data-feather="book-open"></i> Generated Notes</h3>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">
+          <i data-feather="printer"></i> Print
+        </button>
+      </div>
+      <div class="result-body formatted-content">
+        <div style="white-space: pre-wrap;">{{ notes }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+  function showLoading() {
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'flex';
+  }
+</script>
+{% endblock %}
+{% endblock %}

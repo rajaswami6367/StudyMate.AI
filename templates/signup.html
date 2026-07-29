@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="auth-container">
+    <!-- Animated background blobs -->
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2" style="right: 10%; bottom: 10%; left: auto; top: auto;"></div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="logo-icon">⚡</span>
+        <h2>Create an Account</h2>
+        <p>Start your journey to studying smarter today.</p>
+      </div>
+
+      <!-- Display error messages if any -->
+      {% if error %}
+      <div class="auth-alert error">
+        <i data-feather="alert-circle"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+        <div class="form-group">
+          <label for="username">Full Name</label>
+          <div class="input-wrapper">
+            <i data-feather="user"></i>
+            <input type="text" id="username" name="username" placeholder="Raja Swami" required autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i data-feather="mail"></i>
+            <input type="email" id="email" name="email" placeholder="raja@example.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i data-feather="lock"></i>
+            <input type="password" id="password" name="password" placeholder="Min. 6 characters" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          Sign Up <i data-feather="arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="{{ url_for('login') }}">Log in here</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

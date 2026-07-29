@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Generator — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="tool-section">
+  <div class="tool-header">
+    <div class="tool-icon green"><i data-feather="check-circle"></i></div>
+    <h2>AI Quiz Generator</h2>
+    <p>Generate a 5-question MCQ quiz on any topic to test your knowledge.</p>
+  </div>
+
+  <div class="tool-container">
+    {% if error %}
+    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('quiz') }}" class="tool-form" onsubmit="showLoading()">
+      <div class="form-group">
+        <label>Enter Topic</label>
+        <input type="text" name="topic" placeholder="e.g. World War II or Newton's Laws" required value="{{ topic if topic else '' }}">
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i data-feather="zap"></i> Generate Quiz
+      </button>
+      
+      <div id="loadingIndicator" class="loading-state" style="display: none;">
+        <div class="spinner"></div>
+        <p>Crafting your quiz...</p>
+      </div>
+    </form>
+
+    {% if quiz_result %}
+    <div class="result-card mt-4">
+      <div class="result-header">
+        <h3><i data-feather="award"></i> Your Quiz</h3>
+      </div>
+      <div class="result-body formatted-content">
+        <div style="white-space: pre-wrap;">{{ quiz_result }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+  function showLoading() {
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'flex';
+  }
+</script>
+{% endblock %}
+{% endblock %}

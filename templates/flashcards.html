@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Flashcards — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="tool-section">
+  <div class="tool-header">
+    <div class="tool-icon orange"><i data-feather="layers"></i></div>
+    <h2>Flashcards Maker</h2>
+    <p>Generate study flashcards with key terms and definitions.</p>
+  </div>
+
+  <div class="tool-container">
+    {% if error %}
+    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('flashcards') }}" class="tool-form" onsubmit="showLoading()">
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" name="topic" placeholder="e.g. Biology Cell Organelles" required value="{{ topic if topic else '' }}">
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i data-feather="copy"></i> Create Flashcards
+      </button>
+      
+      <div id="loadingIndicator" class="loading-state" style="display: none;">
+        <div class="spinner"></div>
+        <p>Creating flashcards...</p>
+      </div>
+    </form>
+
+    {% if flashcards_data %}
+    <div class="result-card mt-4">
+      <div class="result-header">
+        <h3><i data-feather="layers"></i> Flashcards</h3>
+      </div>
+      <div class="result-body formatted-content">
+        <div style="white-space: pre-wrap;">{{ flashcards_data }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+  function showLoading() {
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'flex';
+  }
+</script>
+{% endblock %}
+{% endblock %}

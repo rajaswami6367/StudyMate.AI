@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Doubt Solver — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="tool-section">
+  <div class="tool-header">
+    <div class="tool-icon blue"><i data-feather="message-circle"></i></div>
+    <h2>AI Doubt Solver</h2>
+    <p>Type your question below, and our AI will explain it simply.</p>
+  </div>
+
+  <div class="tool-container">
+    {% if error %}
+    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('doubt_solver') }}" class="tool-form" onsubmit="showLoading()">
+      <div class="form-group">
+        <textarea name="question" rows="4" placeholder="e.g. Can you explain how Photosynthesis works in simple terms?" required>{{ question if question else '' }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i data-feather="send"></i> Ask AI
+      </button>
+      
+      <!-- Loading indicator (hidden by default) -->
+      <div id="loadingIndicator" class="loading-state" style="display: none;">
+        <div class="spinner"></div>
+        <p>AI is thinking...</p>
+      </div>
+    </form>
+
+    {% if answer %}
+    <div class="result-card mt-4">
+      <div class="result-header">
+        <h3><i data-feather="zap"></i> Answer</h3>
+      </div>
+      <div class="result-body formatted-content">
+        <!-- We use pre-wrap to preserve newlines from the AI -->
+        <div style="white-space: pre-wrap;">{{ answer }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+  function showLoading() {
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'flex';
+  }
+</script>
+{% endblock %}
+{% endblock %}

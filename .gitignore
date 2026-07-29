@@ -1,0 +1,26 @@
+# ============================================================
+#  .gitignore — Files to NEVER upload to GitHub
+#  Git automatically ignores everything listed here.
+# ============================================================
+
+# Secret files — NEVER upload these!
+.env
+
+# Database file
+database/studymate.db
+
+# Uploaded PDFs
+uploads/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db

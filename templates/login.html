@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Login — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="auth-container">
+    <!-- Animated background blobs -->
+    <div class="hero-bg">
+      <div class="blob blob-1" style="left: 10%; top: 10%;"></div>
+      <div class="blob blob-3" style="right: 20%; bottom: 10%;"></div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="logo-icon">⚡</span>
+        <h2>Welcome Back</h2>
+        <p>Log in to access your notes and dashboard.</p>
+      </div>
+
+      <!-- Display flash messages (e.g., success message after signup) -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="auth-alert {{ category }}">
+              <i data-feather="{% if category == 'success' %}check-circle{% else %}alert-circle{% endif %}"></i>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Display direct error message if any -->
+      {% if error %}
+      <div class="auth-alert error">
+        <i data-feather="alert-circle"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i data-feather="mail"></i>
+            <input type="email" id="email" name="email" placeholder="raja@example.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i data-feather="lock"></i>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          Log In <i data-feather="log-in"></i>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up here</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
