@@ -31,12 +31,30 @@
     </form>
 
     {% if flashcards_data %}
-    <div class="result-card mt-4">
-      <div class="result-header">
-        <h3><i data-feather="layers"></i> Flashcards</h3>
-      </div>
-      <div class="result-body formatted-content">
-        <div style="white-space: pre-wrap;">{{ flashcards_data }}</div>
+    <div class="flashcards-container mt-4">
+      <div class="flashcards-grid">
+        {% for card in flashcards_data %}
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="flashcard-inner">
+            <!-- Front of the card (Question) -->
+            <div class="flashcard-front">
+              <span class="card-badge front-badge">Q {{ loop.index }}</span>
+              <p class="card-text">{{ card.question }}</p>
+              <div class="card-hint">
+                <i data-feather="repeat" style="width: 14px; height: 14px;"></i> Tap to reveal answer
+              </div>
+            </div>
+            <!-- Back of the card (Answer) -->
+            <div class="flashcard-back">
+              <span class="card-badge back-badge">Answer</span>
+              <p class="card-text">{{ card.answer }}</p>
+              <div class="card-hint">
+                <i data-feather="repeat" style="width: 14px; height: 14px;"></i> Tap to flip back
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
       </div>
     </div>
     {% endif %}

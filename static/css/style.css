@@ -1267,3 +1267,244 @@ body.light-mode .blob { opacity: 0.1; }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── PREMIUM MARKDOWN STYLING ────────────────────────────── */
+.markdown-content {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: var(--font-size-md);
+  transition: opacity 0.4s ease; /* Used for smooth fade-in */
+}
+
+/* Markdown Headers */
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+  color: var(--text-primary);
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-md);
+  font-weight: 700;
+}
+
+.markdown-content h1 {
+  font-size: var(--font-size-2xl);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-xs);
+}
+
+.markdown-content h2 {
+  font-size: var(--font-size-xl);
+}
+
+.markdown-content h3 {
+  font-size: var(--font-size-lg);
+}
+
+/* Strong / Bold Text Highlighting */
+.markdown-content strong {
+  color: var(--primary-light);
+  font-weight: 600;
+  background: rgba(124, 58, 237, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+/* Paragraphs & Spacing */
+.markdown-content p {
+  margin-bottom: var(--space-md);
+}
+
+/* Lists formatting */
+.markdown-content ul, 
+.markdown-content ol {
+  margin-bottom: var(--space-xl);
+  padding-left: var(--space-xl);
+}
+
+.markdown-content li {
+  margin-bottom: var(--space-xs);
+}
+
+/* Code Highlights and Blocks */
+.markdown-content code {
+  font-family: 'Courier New', Courier, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  color: #f43f5e; /* Premium pink/coral highlight for inline code */
+  font-size: 0.9em;
+}
+
+.markdown-content pre {
+  background: #0f0b1b;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  overflow-x: auto;
+  margin: var(--space-lg) 0;
+}
+
+.markdown-content pre code {
+  color: #a78bfa;
+  background: none;
+  padding: 0;
+  font-size: var(--font-size-sm);
+}
+
+/* Blockquotes */
+.markdown-content blockquote {
+  border-left: 4px solid var(--primary);
+  background: rgba(124, 58, 237, 0.05);
+  margin: var(--space-lg) 0;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+}
+
+/* Horizontal Dividers */
+.markdown-content hr {
+  border: 0;
+  height: 1px;
+  background: var(--border);
+  margin: var(--space-2xl) 0;
+}
+
+
+/* ── 3D FLASHCARDS INTERACTIVE UI ───────────────────────── */
+.flashcards-container {
+  width: 100%;
+}
+
+.flashcards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+/* The card container to establish 3D space */
+.flashcard {
+  background-color: transparent;
+  width: 100%;
+  height: 220px;
+  perspective: 1000px; /* Essential for 3D depth */
+  cursor: pointer;
+}
+
+/* Card inner container handles the flip transition */
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d; /* Keep child items in 3D plane */
+}
+
+/* Trigger flip animation when the user clicks/taps (handled via JS toggle) */
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+/* Front & Back properties */
+.flashcard-front, 
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Hide element when rotated */
+  backface-visibility: hidden;
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Front side specific style */
+.flashcard-front {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.flashcard:hover .flashcard-front {
+  border-color: var(--primary-light);
+  box-shadow: 0 15px 30px rgba(124, 58, 237, 0.15);
+}
+
+/* Back side specific style */
+.flashcard-back {
+  background: linear-gradient(135deg, rgba(30, 20, 50, 0.95), rgba(15, 10, 30, 0.95));
+  color: var(--text-primary);
+  transform: rotateY(180deg); /* Render back side rotated */
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.flashcard:hover .flashcard-back {
+  border-color: var(--primary-light);
+  box-shadow: 0 15px 30px rgba(124, 58, 237, 0.2);
+}
+
+/* Card details styling */
+.card-badge {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.front-badge {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.back-badge {
+  background: rgba(124, 58, 237, 0.2);
+  color: var(--primary-light);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+.card-text {
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.card-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* ── GLOW DASHBOARD CARDS ACCENTS ────────────────────────── */
+.dash-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-xl);
+  padding: 1px; /* border thickness */
+  background: linear-gradient(135deg, transparent, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: background 0.3s;
+}
+
+.dash-card:hover::before {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light), transparent);
+}

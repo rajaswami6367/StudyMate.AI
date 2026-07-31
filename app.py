@@ -271,9 +271,12 @@ def doubt_solver():
         if not question:
             return render_template('doubt_solver.html', error='Please enter a question!')
 
-        prompt = f"""You are a helpful study assistant for students.
-Answer the following question clearly and simply.
-Use examples where helpful. Format your answer nicely.
+        prompt = f"""You are an engaging, expert study assistant for students.
+Answer the following question clearly, simply, and engagingly.
+- Use relevant emojis to make the content lively and interesting.
+- Use bold text (**keyword**) to highlight important concepts, terms, formulas, and definitions.
+- Use bullet points, subheadings, or tables to structure the explanation cleanly.
+- Use code blocks or code highlights if the question is related to programming or technical concepts.
 
 Question: {question}"""
 
@@ -302,14 +305,14 @@ def quiz():
         prompt = f"""Create a multiple-choice quiz with 5 questions on the topic: {topic}
 
 Format each question exactly like this:
-Q1. [Question here]
-A) [Option A]
-B) [Option B]
-C) [Option C]
-D) [Option D]
-✅ Correct Answer: [Letter] - [Brief explanation]
+### Q1. [Question here]
+- **A)** [Option A]
+- **B)** [Option B]
+- **C)** [Option C]
+- **D)** [Option D]
+- 💡 **Correct Answer:** [Letter] - [Brief explanation with emojis]
 
-Make questions clear, educational, and appropriate for college students."""
+Make questions clear, educational, and appropriate for college students. Use bold highlights for key terms."""
 
         result, error = ask_gemini(prompt)
         quiz_result = result if result else error
@@ -333,25 +336,26 @@ def ai_notes():
         if not topic:
             return render_template('ai_notes.html', error='Please enter a topic!')
 
-        prompt = f"""Generate comprehensive, well-structured study notes on: {topic}
+        prompt = f"""Generate comprehensive, well-structured, and highly readable study notes on: {topic}
 
-Please format them clearly with:
-# Introduction
-[Brief intro]
+Please format them clearly using Markdown with:
+# 📚 Introduction
+[Brief intro explaining the topic with emojis]
 
-# Key Concepts
-[Main concepts with explanations]
+# 💡 Key Concepts
+[Main concepts with explanations. Use bold **keyword** to highlight terms]
 
-# Important Points
-[Bullet points of must-remember facts]
+# 📝 Important Points
+- Use bullet points of must-remember facts.
+- Include visual dividers where helpful.
 
-# Formulas / Definitions (if applicable)
-[Any relevant formulas or definitions]
+# ⚙️ Formulas / Definitions (if applicable)
+[Any relevant formulas, equations, or definitions styled clearly]
 
-# Summary
-[3-4 line summary]
+# 🎯 Summary
+[3-4 line summary highlighting the main takeaways]
 
-Make it clear, educational, and easy to understand for a B.Tech student."""
+Make it clear, educational, and easy to understand for a B.Tech CSE student. Use emojis, subheadings, and bold highlights throughout."""
 
         result, error = ask_gemini(prompt)
         notes_result = result if result else error
