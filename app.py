@@ -360,7 +360,7 @@ Make it clear, educational, and easy to understand for a B.Tech CSE student. Use
         result, error = ask_gemini(prompt)
         notes_result = result if result else error
 
-    return render_template('ai_notes.html', notes_result=notes_result, topic=topic)
+    return render_template('ai_notes.html', notes=notes_result, topic=topic)
 
 
 # ── FLASHCARDS ───────────────────────────────────────────────

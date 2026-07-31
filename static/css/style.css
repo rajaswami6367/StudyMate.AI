@@ -1107,9 +1107,31 @@ body.light-mode .blob { opacity: 0.1; }
 
 .dash-card:hover {
   transform: translateY(-5px);
-  border-color: var(--primary-light);
-  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
 }
+
+/* Custom glows based on color classes */
+.dash-card.purple-glow:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 15px 30px rgba(139, 92, 246, 0.12);
+}
+.dash-card.blue-glow:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.12);
+}
+.dash-card.green-glow:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.12);
+}
+.dash-card.orange-glow:hover {
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 15px 30px rgba(249, 115, 22, 0.12);
+}
+
+/* Custom border glows for Linear aesthetic */
+.dash-card.purple-glow:hover::before { background: linear-gradient(135deg, #8b5cf6, #a78bfa, transparent); }
+.dash-card.blue-glow:hover::before { background: linear-gradient(135deg, #3b82f6, #60a5fa, transparent); }
+.dash-card.green-glow:hover::before { background: linear-gradient(135deg, #10b981, #34d399, transparent); }
+.dash-card.orange-glow:hover::before { background: linear-gradient(135deg, #f97316, #fb923c, transparent); }
 
 .dash-icon {
   width: 50px;
@@ -1119,6 +1141,51 @@ body.light-mode .blob { opacity: 0.1; }
   align-items: center;
   justify-content: center;
   margin-bottom: var(--space-md);
+  transition: all 0.3s ease;
+}
+
+.dash-icon.purple {
+  background: rgba(139, 92, 246, 0.08);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+.dash-card:hover .dash-icon.purple {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+.dash-icon.blue {
+  background: rgba(59, 130, 246, 0.08);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+.dash-card:hover .dash-icon.blue {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.dash-icon.green {
+  background: rgba(16, 185, 129, 0.08);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+.dash-card:hover .dash-icon.green {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.dash-icon.orange {
+  background: rgba(249, 115, 22, 0.08);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.15);
+}
+.dash-card:hover .dash-icon.orange {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
 }
 
 .dash-info h3 {
