@@ -8,6 +8,9 @@
     <div class="dashboard-welcome">
       <h1>Welcome back, <span class="gradient-text">{{ username }}</span>! 👋</h1>
       <p>What would you like to study today?</p>
+      <a href="{{ url_for('library') }}" class="btn btn-ghost btn-sm" style="margin-top: var(--space-md); display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--border);">
+        <i data-feather="folder" style="width: 16px; height: 16px;"></i> Open My Library
+      </a>
     </div>
   </div>
 

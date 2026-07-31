@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} — My Library{% endblock %}
+
+{% block content %}
+<section class="tool-section">
+  <div class="tool-header">
+    <a href="{{ url_for('library') }}" class="btn btn-ghost btn-sm" style="align-self: flex-start; margin-bottom: var(--space-lg);">
+      <i data-feather="arrow-left"></i> Back to Library
+    </a>
+    
+    <div class="tool-icon {% if item.item_type == 'notes' %}purple{% elif item.item_type == 'doubt' %}blue{% elif item.item_type == 'quiz' %}green{% else %}orange{% endif %}">
+      {% if item.item_type == 'notes' %}
+        <i data-feather="file-text"></i>
+      {% elif item.item_type == 'doubt' %}
+        <i data-feather="message-circle"></i>
+      {% elif item.item_type == 'quiz' %}
+        <i data-feather="check-circle"></i>
+      {% else %}
+        <i data-feather="layers"></i>
+      {% endif %}
+    </div>
+    
+    <h2>{{ item.title }}</h2>
+    <p>Saved on {{ item.created_at[:10] }}</p>
+  </div>
+
+  <div class="tool-container">
+    {% if item.item_type == 'flashcard' %}
+      <!-- Special UI for saved flashcards -->
+      <!-- Since flashcards are parsed on generation, for saved ones we parse them similarly or render them in a grid -->
+      <!-- The content was saved as raw response text, we parse it using python equivalent or a simpler list display -->
+      <!-- Let's render the text but if we can format it nicely -->
+      <div class="result-card">
+        <div class="result-header">
+          <h3><i data-feather="layers"></i> Saved Flashcards</h3>
+        </div>
+        <div class="result-body formatted-content">
+          <div style="white-space: pre-wrap;">{{ item.content }}</div>
+        </div>
+      </div>
+    {% else %}
+      <!-- Render using markdown container -->
+      <div class="result-card">
+        <div class="result-header">
+          <h3>
+            {% if item.item_type == 'notes' %}
+              <i data-feather="book-open"></i> Study Notes
+            {% elif item.item_type == 'doubt' %}
+              <i data-feather="zap"></i> Solved Doubt
+            {% else %}
+              <i data-feather="award"></i> Generated Quiz
+            {% endif %}
+          </h3>
+          {% if item.item_type == 'notes' %}
+          <button class="btn btn-ghost btn-sm" onclick="window.print()">
+            <i data-feather="printer"></i> Print
+          </button>
+          {% endif %}
+        </div>
+        <div class="result-body">
+          <div class="markdown-content" style="opacity: 0;">{{ item.content }}</div>
+        </div>
+      </div>
+    {% endif %}
+    
+    <div style="margin-top: var(--space-2xl); display: flex; gap: var(--space-md); justify-content: flex-end;">
+      <form method="POST" action="{{ url_for('delete_saved_item', item_id=item.id) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+        <button type="submit" class="btn btn-danger">
+          <i data-feather="trash-2"></i> Delete from Library
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

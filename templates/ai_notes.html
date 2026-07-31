@@ -34,9 +34,14 @@
     <div class="result-card mt-4">
       <div class="result-header">
         <h3><i data-feather="book-open"></i> Generated Notes</h3>
-        <button class="btn btn-ghost btn-sm" onclick="window.print()">
-          <i data-feather="printer"></i> Print
-        </button>
+        <div style="display: flex; gap: var(--space-sm);">
+          <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('notes', '{{ topic | escape }}', document.querySelector('.markdown-content').textContent)">
+            <i data-feather="folder-plus"></i> Save to Library
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="window.print()">
+            <i data-feather="printer"></i> Print
+          </button>
+        </div>
       </div>
       <div class="result-body">
         <div class="markdown-content" style="opacity: 0;">{{ notes }}</div>

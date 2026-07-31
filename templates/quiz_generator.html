@@ -34,6 +34,9 @@
     <div class="result-card mt-4">
       <div class="result-header">
         <h3><i data-feather="award"></i> Your Quiz</h3>
+        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('quiz', '{{ topic | escape }}', document.querySelector('.markdown-content').textContent)">
+          <i data-feather="folder-plus"></i> Save to Library
+        </button>
       </div>
       <div class="result-body">
         <div class="markdown-content" style="opacity: 0;">{{ quiz_result }}</div>

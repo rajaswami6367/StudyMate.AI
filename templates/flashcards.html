@@ -31,7 +31,19 @@
     </form>
 
     {% if flashcards_data %}
-    <div class="flashcards-container mt-4">
+    <div class="result-card mt-4" style="border: none; background: transparent; box-shadow: none; backdrop-filter: none;">
+      <div class="result-header" style="border: 1px solid var(--border); border-radius: var(--radius-xl); margin-bottom: var(--space-md); background: var(--surface); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <h3><i data-feather="layers"></i> Flashcards</h3>
+        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('flashcard', '{{ topic | escape }}', document.getElementById('rawFlashcardData').value)">
+          <i data-feather="folder-plus"></i> Save to Library
+        </button>
+      </div>
+
+      <!-- Hidden textarea to store raw flashcard text for database saving -->
+      <textarea id="rawFlashcardData" style="display: none;">{% for card in flashcards_data %}Q: {{ card.question }}
+A: {{ card.answer }}
+{% endfor %}</textarea>
+
       <div class="flashcards-grid">
         {% for card in flashcards_data %}
         <div class="flashcard" onclick="this.classList.toggle('flipped')">

@@ -73,6 +73,8 @@ def init_db():
     Even if someone steals the database, they can't read passwords.
     """
     conn = get_db_connection()
+    
+    # 1. Users Table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id       INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,6 +84,20 @@ def init_db():
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # 2. Saved Items Table (For Library/History Feature)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS saved_items (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id    INTEGER NOT NULL,
+            item_type  TEXT NOT NULL,
+            title      TEXT NOT NULL,
+            content    TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
     print("[OK] Database initialized successfully!")
@@ -427,6 +443,97 @@ def parse_flashcards(text):
         cards.append({'question': current_q, 'answer': current_a})
 
     return cards
+
+
+# ── SAVE ITEM (AJAX) ─────────────────────────────────────────
+@app.route('/save-item', methods=['POST'])
+def save_item():
+    """Saves an AI response to the user's library."""
+    if not is_logged_in():
+        return {"success": False, "error": "Please log in first!"}, 401
+    
+    data = request.get_json()
+    if not data:
+        return {"success": False, "error": "Invalid request data!"}, 400
+        
+    item_type = data.get('item_type', '').strip()
+    title     = data.get('title', '').strip()
+    content   = data.get('content', '').strip()
+    
+    if not item_type or not title or not content:
+        return {"success": False, "error": "All fields are required!"}, 400
+        
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            'INSERT INTO saved_items (user_id, item_type, title, content) VALUES (?, ?, ?, ?)',
+            (session['user_id'], item_type, title, content)
+        )
+        conn.commit()
+        conn.close()
+        return {"success": True, "message": "Saved to your library successfully!"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+
+# ── MY LIBRARY ───────────────────────────────────────────────
+@app.route('/library')
+def library():
+    """Displays all items saved by the logged-in user."""
+    if not is_logged_in():
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    items = conn.execute(
+        'SELECT * FROM saved_items WHERE user_id = ? ORDER BY created_at DESC',
+        (session['user_id'],)
+    ).fetchall()
+    conn.close()
+    
+    return render_template('library.html', items=items)
+
+
+# ── VIEW SAVED ITEM ──────────────────────────────────────────
+@app.route('/library/view/<int:item_id>')
+def view_saved_item(item_id):
+    """Shows a single saved item in full detail."""
+    if not is_logged_in():
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    item = conn.execute(
+        'SELECT * FROM saved_items WHERE id = ? AND user_id = ?',
+        (item_id, session['user_id'])
+    ).fetchone()
+    conn.close()
+    
+    if not item:
+        flash('Item not found or you do not have permission to view it.', 'error')
+        return redirect(url_for('library'))
+        
+    return render_template('library_view.html', item=item)
+
+
+# ── DELETE SAVED ITEM ────────────────────────────────────────
+@app.route('/library/delete/<int:item_id>', methods=['POST'])
+def delete_saved_item(item_id):
+    """Deletes a saved item from the user's library."""
+    if not is_logged_in():
+        return redirect(url_for('login'))
+        
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            'DELETE FROM saved_items WHERE id = ? AND user_id = ?',
+            (item_id, session['user_id'])
+        )
+        conn.commit()
+        conn.close()
+        flash('Item deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Error deleting item: {str(e)}', 'error')
+        
+    return redirect(url_for('library'))
 
 
 # ── RUN THE APP ──────────────────────────────────────────────

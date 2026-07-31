@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}My Library — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="library-section">
+  <div class="library-header">
+    <h1>📚 My Study Library</h1>
+    <p>Access your saved notes, solved doubts, quizzes, and flashcards.</p>
+    
+    <!-- Filter tabs -->
+    <div class="library-filters">
+      <button class="filter-btn active" onclick="filterItems('all')">All</button>
+      <button class="filter-btn" onclick="filterItems('notes')">Notes</button>
+      <button class="filter-btn" onclick="filterItems('doubt')">Doubts</button>
+      <button class="filter-btn" onclick="filterItems('quiz')">Quizzes</button>
+      <button class="filter-btn" onclick="filterItems('flashcard')">Flashcards</button>
+    </div>
+  </div>
+
+  <div class="library-container">
+    {% if not items %}
+    <div class="empty-library">
+      <div class="empty-icon"><i data-feather="folder"></i></div>
+      <h3>Your library is empty</h3>
+      <p>Go to any AI tool, generate content, and click "Save to Library" to build your workspace.</p>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+    {% else %}
+    <div class="library-grid" id="libraryGrid">
+      {% for item in items %}
+      <div class="library-card" data-type="{{ item.item_type }}">
+        <div class="card-type-badge {{ item.item_type }}">
+          {% if item.item_type == 'notes' %}
+            <i data-feather="file-text"></i> Notes
+          {% elif item.item_type == 'doubt' %}
+            <i data-feather="message-circle"></i> Doubt
+          {% elif item.item_type == 'quiz' %}
+            <i data-feather="check-circle"></i> Quiz
+          {% else %}
+            <i data-feather="layers"></i> Flashcards
+          {% endif %}
+        </div>
+        
+        <h3 class="card-title">{{ item.title }}</h3>
+        <p class="card-date"><i data-feather="calendar" style="width: 12px; height: 12px;"></i> Saved: {{ item.created_at[:10] }}</p>
+        
+        <div class="card-actions">
+          <a href="{{ url_for('view_saved_item', item_id=item.id) }}" class="btn btn-ghost btn-sm">
+            <i data-feather="eye"></i> View
+          </a>
+          <form method="POST" action="{{ url_for('delete_saved_item', item_id=item.id) }}" onsubmit="return confirm('Are you sure you want to delete this item?');" style="display: inline;">
+            <button type="submit" class="btn btn-danger btn-sm">
+              <i data-feather="trash-2"></i> Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+  function filterItems(type) {
+    // Update active tab styling
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Filter grid cards
+    const cards = document.querySelectorAll('.library-card');
+    cards.forEach(card => {
+      if (type === 'all' || card.getAttribute('data-type') === type) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}
+{% endblock %}
