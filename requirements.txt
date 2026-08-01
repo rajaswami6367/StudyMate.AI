@@ -2,3 +2,4 @@ Flask
 Werkzeug
 python-dotenv
 google-genai
+edge-tts

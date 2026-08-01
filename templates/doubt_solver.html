@@ -65,6 +65,7 @@
       </div>
     </div>
     {% endif %}
+    <audio id="ttsAudio" style="display: none;"></audio>
   </div>
 </section>
 
@@ -91,7 +92,6 @@
 
     if (!isListening) {
       recognition = new SpeechRecognition();
-      // Supports both English & Hindi input automatically by setting lang to hi-IN/en-US
       recognition.lang = 'en-IN'; // Indian accent (accepts English and Hindi words easily)
       recognition.continuous = false;
       recognition.interimResults = false;
@@ -140,15 +140,10 @@
     }
   }
 
-  // ── TEXT-TO-SPEECH (NARRATOR OUTPUT) ──────────────────────
+  // ── TEXT-TO-SPEECH (NEURAL MP3 STREAMING) ─────────────────
   let selectedGender = 'female'; // Default narrator
-  let speechUtterance;
   let isSpeaking = false;
-
-  // Make sure system voices list is updated
-  window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-  };
+  const audioPlayer = document.getElementById('ttsAudio');
 
   function selectVoiceGender(gender) {
     selectedGender = gender;
@@ -163,80 +158,11 @@
       femaleBtn.style.color = 'var(--text-muted)';
     }
     
-    // If speaking, restart with new voice
+    // If speaking, restart narration with new voice
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopSpeaking();
       toggleSpeakAnswer();
     }
-  }
-
-  function getBestVoice(gender, hasHindi, voices) {
-    // Force US/UK voices for English to avoid regional Indian accents
-    let langVoices = voices.filter(v => {
-      const lang = v.lang.toLowerCase();
-      if (hasHindi) {
-        return lang.includes('hi');
-      } else {
-        return lang.includes('en-us') || lang.includes('en-gb') || lang === 'en';
-      }
-    });
-    
-    // Fallback if no US/UK voices found
-    if (langVoices.length === 0) {
-      langVoices = voices.filter(v => v.lang.toLowerCase().includes(hasHindi ? 'hi' : 'en'));
-    }
-    
-    if (langVoices.length === 0) return null;
-
-    // Strict Gender Keyword Lists to identify voices
-    // 'sfg' represents Google US English female voice on Android Chrome
-    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
-    // 'iom' and 'iob' represent Google US English male voices on Android Chrome
-    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan', 'en-us-x-iom'];
-
-    let candidates = [];
-
-    // Filter strictly by target keywords and exclude opposing keywords
-    if (gender === 'female') {
-      candidates = langVoices.filter(v => {
-        const name = v.name.toLowerCase();
-        const matchesFemale = femaleKeywords.some(k => name.includes(k));
-        const matchesMale = maleKeywords.some(k => name.includes(k));
-        return matchesFemale && !matchesMale;
-      });
-    } else {
-      candidates = langVoices.filter(v => {
-        const name = v.name.toLowerCase();
-        const matchesFemale = femaleKeywords.some(k => name.includes(k));
-        const matchesMale = maleKeywords.some(k => name.includes(k));
-        return matchesMale && !matchesFemale;
-      });
-    }
-
-    // Fallback 1: If no strict match, filter out the opposing gender keywords
-    if (candidates.length === 0) {
-      if (gender === 'female') {
-        candidates = langVoices.filter(v => !maleKeywords.some(k => v.name.toLowerCase().includes(k)));
-      } else {
-        candidates = langVoices.filter(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
-      }
-    }
-
-    // Fallback 2: Still empty? Use any voice of target language
-    if (candidates.length === 0) {
-      return langVoices[0];
-    }
-
-    // Sort candidates: Prioritize 'Natural' or 'Online' (neural Microsoft/Google) voices first
-    candidates.sort((a, b) => {
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
-      const aScore = (aName.includes('natural') || aName.includes('online')) ? 3 : (aName.includes('google') ? 2 : 1);
-      const bScore = (bName.includes('natural') || bName.includes('online')) ? 3 : (bName.includes('google') ? 2 : 1);
-      return bScore - aScore; // Descending (highest score first)
-    });
-
-    return candidates[0];
   }
 
   function toggleSpeakAnswer() {
@@ -253,61 +179,60 @@
         .replace(/[✅💡📚📝🎯⚡🧠🛠️🤖🚀🏆🎉🌟]/gu, '') 
         .replace(/\s+/g, ' ') 
         .trim();
+
+      // Show inline spinner while fetching neural voice MP3
+      speakBtn.innerHTML = `<span class="spinner-sm" style="display:inline-block; width:12px; height:12px; border:2px solid var(--text-muted); border-top-color:var(--primary-light); border-radius:50%; animation:spin 1s linear infinite; margin-right:6px; vertical-align:middle;"></span> Fetching...`;
+      speakBtn.style.pointerEvents = 'none';
+
+      // Load dynamic /speak endpoint
+      const speakUrl = `/speak?gender=${selectedGender}&text=${encodeURIComponent(cleanText)}`;
+      audioPlayer.src = speakUrl;
       
-      // Warm, polite welcome greeting
-      const introText = "StudyMate A.I. mein aapka swagat hai. ";
-      const fullText = introText + cleanText;
-      
-      speechUtterance = new SpeechSynthesisUtterance(fullText);
-      
-      // Get all available system voices
-      const voices = window.speechSynthesis.getVoices();
-      
-      // Detect language
-      const hasHindi = /[\u0900-\u097F]/.test(cleanText);
-      
-      // Get best voice match
-      const chosenVoice = getBestVoice(selectedGender, hasHindi, voices);
-      
-      if (chosenVoice) {
-        speechUtterance.voice = chosenVoice;
-        speechUtterance.lang = chosenVoice.lang;
-        console.log("Speaking with:", chosenVoice.name);
-      } else {
-        speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
-      }
-      
-      // Tune speed and pitch for a polite, professional, and clear tone
-      speechUtterance.rate = 0.90; // Slower rate for highly clear pronunciation
-      speechUtterance.pitch = (selectedGender === 'female') ? 1.02 : 0.95; // Calm gender accents
-      
-      speechUtterance.onstart = () => {
-        isSpeaking = true;
-        speakBtn.innerHTML = `<i data-feather="square" style="width: 14px; height: 14px; margin-right: 5px;"></i> Stop`;
-        speakBtn.style.background = 'rgba(124, 58, 237, 0.15)';
-        speakBtn.style.color = 'var(--primary-light)';
-        feather.replace();
+      audioPlayer.oncanplaythrough = () => {
+        audioPlayer.play()
+          .then(() => {
+            isSpeaking = true;
+            speakBtn.style.pointerEvents = 'auto';
+            speakBtn.innerHTML = `<i data-feather="square" style="width: 14px; height: 14px; margin-right: 5px;"></i> Stop`;
+            speakBtn.style.background = 'rgba(124, 58, 237, 0.15)';
+            speakBtn.style.color = 'var(--primary-light)';
+            feather.replace();
+          })
+          .catch((err) => {
+            console.error("Audio play failed:", err);
+            showToast("Failed to play voice. Try again!", "error");
+            resetSpeaker();
+          });
       };
-      
-      speechUtterance.onend = () => {
+
+      audioPlayer.onerror = (e) => {
+        console.error("Audio load error:", e);
+        showToast("Error loading neural voice. Try again!", "error");
         resetSpeaker();
       };
 
-      speechUtterance.onerror = () => {
+      audioPlayer.onended = () => {
         resetSpeaker();
       };
 
-      window.speechSynthesis.speak(speechUtterance);
     } else {
-      window.speechSynthesis.cancel();
-      resetSpeaker();
+      stopSpeaking();
     }
+  }
+
+  function stopSpeaking() {
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+    }
+    resetSpeaker();
   }
 
   function resetSpeaker() {
     isSpeaking = false;
     const speakBtn = document.getElementById('speakBtn');
     if (speakBtn) {
+      speakBtn.style.pointerEvents = 'auto';
       speakBtn.innerHTML = `<i data-feather="volume-2" style="width: 14px; height: 14px; margin-right: 5px;"></i> Listen`;
       speakBtn.style.background = '';
       speakBtn.style.color = '';
@@ -317,8 +242,17 @@
 
   // Cancel speaking immediately if user exits or navigates away
   window.addEventListener('beforeunload', () => {
-    window.speechSynthesis.cancel();
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
   });
 </script>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
 {% endblock %}
 {% endblock %}
