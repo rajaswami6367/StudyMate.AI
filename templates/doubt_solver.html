@@ -170,14 +170,28 @@
     }
   }
 
-  function getBestVoice(gender, langTarget, voices) {
-    const langVoices = voices.filter(v => v.lang.toLowerCase().includes(langTarget));
+  function getBestVoice(gender, hasHindi, voices) {
+    // Force US/UK voices for English to avoid regional Indian accents
+    let langVoices = voices.filter(v => {
+      const lang = v.lang.toLowerCase();
+      if (hasHindi) {
+        return lang.includes('hi');
+      } else {
+        return lang.includes('en-us') || lang.includes('en-gb') || lang === 'en';
+      }
+    });
+    
+    // Fallback if no US/UK voices found
+    if (langVoices.length === 0) {
+      langVoices = voices.filter(v => v.lang.toLowerCase().includes(hasHindi ? 'hi' : 'en'));
+    }
+    
     if (langVoices.length === 0) return null;
 
     // Strict Gender Keyword Lists to identify voices
-    // 'sfg' and 'hie' represent Google TTS female voices on Android Chrome
-    const femaleKeywords = ['zira', 'samantha', 'heera', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
-    // 'iom', 'iob', and 'hid' represent Google TTS male voices on Android Chrome
+    // 'sfg' represents Google US English female voice on Android Chrome
+    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
+    // 'iom' and 'iob' represent Google US English male voices on Android Chrome
     const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan', 'en-us-x-iom'];
 
     let candidates = [];
@@ -251,10 +265,9 @@
       
       // Detect language
       const hasHindi = /[\u0900-\u097F]/.test(cleanText);
-      const langTarget = hasHindi ? 'hi' : 'en';
       
       // Get best voice match
-      const chosenVoice = getBestVoice(selectedGender, langTarget, voices);
+      const chosenVoice = getBestVoice(selectedGender, hasHindi, voices);
       
       if (chosenVoice) {
         speechUtterance.voice = chosenVoice;
