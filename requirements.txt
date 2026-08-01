@@ -3,3 +3,4 @@ Werkzeug
 python-dotenv
 google-genai
 edge-tts
+gunicorn
