@@ -39,6 +39,57 @@
           <div style="white-space: pre-wrap;">{{ item.content }}</div>
         </div>
       </div>
+    {% elif item.item_type == 'quiz' %}
+      <!-- Score Summary Box (hidden initially) -->
+      <div class="score-summary-card mt-4" id="scoreCard" style="display: none;">
+        <div class="score-radial">
+          <span class="score-number" id="scoreNum">0</span>
+          <span class="score-total">/ 5</span>
+        </div>
+        <div class="score-feedback">
+          <h3 id="feedbackText">Well Done!</h3>
+          <p>This is a saved quiz from your library.</p>
+        </div>
+      </div>
+
+      <!-- Quiz Wrapper -->
+      <div class="quiz-portal mt-4">
+        <div class="result-header" style="margin-bottom: var(--space-lg);">
+          <h3><i data-feather="award"></i> Retake Quiz: {{ item.title }}</h3>
+        </div>
+
+        <form id="mcqForm" class="quiz-questions-form">
+          {% for q in quiz_data %}
+          <div class="question-block" id="qBlock_{{ loop.index }}" data-correct="{{ q.correct }}">
+            <h4 class="question-title">
+              <span class="q-number">{{ loop.index }}.</span> {{ q.question }}
+            </h4>
+            
+            <div class="options-list">
+              {% for key, val in q.options.items() %}
+              <label class="option-item" id="label_{{ loop.index0 }}_{{ key }}">
+                <input type="radio" name="question_{{ loop.index0 }}" value="{{ key }}" required>
+                <span class="option-letter">{{ key }}</span>
+                <span class="option-text">{{ val }}</span>
+                <i data-feather="check" class="opt-feedback-icon correct-icon" style="display: none;"></i>
+                <i data-feather="x" class="opt-feedback-icon incorrect-icon" style="display: none;"></i>
+              </label>
+              {% endfor %}
+            </div>
+
+            <!-- Explanation box (hidden initially) -->
+            <div class="explanation-box" id="explain_{{ loop.index }}" style="display: none;">
+              <h5><i data-feather="info" style="width: 14px; height: 14px;"></i> Explanation</h5>
+              <p>{{ q.explanation }}</p>
+            </div>
+          </div>
+          {% endfor %}
+
+          <button type="button" class="btn btn-primary btn-block mt-4" id="gradeBtn" onclick="gradeQuiz()">
+            <i data-feather="check-square"></i> Submit Quiz
+          </button>
+        </form>
+      </div>
     {% else %}
       <!-- Render using markdown container -->
       <div class="result-card">
@@ -46,10 +97,8 @@
           <h3>
             {% if item.item_type == 'notes' %}
               <i data-feather="book-open"></i> Study Notes
-            {% elif item.item_type == 'doubt' %}
-              <i data-feather="zap"></i> Solved Doubt
             {% else %}
-              <i data-feather="award"></i> Generated Quiz
+              <i data-feather="zap"></i> Solved Doubt
             {% endif %}
           </h3>
           {% if item.item_type == 'notes' %}
@@ -73,4 +122,74 @@
     </div>
   </div>
 </section>
+
+{% block extra_js %}
+{% if item.item_type == 'quiz' %}
+<script>
+  function gradeQuiz() {
+    const form = document.getElementById('mcqForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    let score = 0;
+    const totalQuestions = 5;
+
+    for (let i = 1; i <= totalQuestions; i++) {
+      const block = document.getElementById(`qBlock_${i}`);
+      const correctOption = block.getAttribute('data-correct');
+      const qIndex = i - 1;
+      
+      const selectedInput = document.querySelector(`input[name="question_${qIndex}"]:checked`);
+      const selectedValue = selectedInput ? selectedInput.value : null;
+
+      const explainBox = document.getElementById(`explain_${i}`);
+      if (explainBox) explainBox.style.display = 'block';
+
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        const optionLabel = document.getElementById(`label_${qIndex}_${opt}`);
+        const radioInput = optionLabel.querySelector('input');
+        
+        radioInput.disabled = true;
+
+        const correctIcon = optionLabel.querySelector('.correct-icon');
+        const incorrectIcon = optionLabel.querySelector('.incorrect-icon');
+
+        if (opt === correctOption) {
+          optionLabel.classList.add('correct');
+          if (correctIcon) correctIcon.style.display = 'block';
+        }
+        
+        if (opt === selectedValue && opt !== correctOption) {
+          optionLabel.classList.add('incorrect');
+          if (incorrectIcon) incorrectIcon.style.display = 'block';
+        }
+      });
+
+      if (selectedValue === correctOption) {
+        score++;
+      }
+    }
+
+    feather.replace();
+
+    document.getElementById('scoreNum').innerText = score;
+    document.getElementById('scoreCard').style.display = 'flex';
+    document.getElementById('gradeBtn').style.display = 'none';
+
+    const feedText = document.getElementById('feedbackText');
+    if (score === 5) {
+      feedText.innerText = "🎉 Perfect Score!";
+    } else if (score >= 3) {
+      feedText.innerText = "👍 Great Job!";
+    } else {
+      feedText.innerText = "📚 Keep Learning!";
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+{% endif %}
 {% endblock %}
+

@@ -17,6 +17,7 @@
 
 import os
 import sqlite3
+import json
 import time
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -309,8 +310,10 @@ def quiz():
     if not is_logged_in():
         return redirect(url_for('login'))
 
-    quiz_result = ""
+    quiz_data = []
+    raw_quiz_json = ""
     topic = ""
+    error = ""
 
     if request.method == 'POST':
         topic = request.form.get('topic', '').strip()
@@ -318,22 +321,50 @@ def quiz():
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
 
-        prompt = f"""Create a multiple-choice quiz with 5 questions on the topic: {topic}
+        prompt = f"""Generate a multiple-choice quiz with exactly 5 questions on the topic: '{topic}'.
+Return the output as a valid JSON array of objects, with NO markdown code block wrapper (i.e. no ```json).
+Each object in the array must have exactly these keys:
+- "question": string, the text of the question
+- "options": object with keys "A", "B", "C", "D" representing options
+- "correct": string, one of "A", "B", "C", "D"
+- "explanation": string, a brief explanation of why that option is correct
 
-Format each question exactly like this:
-### Q1. [Question here]
-- **A)** [Option A]
-- **B)** [Option B]
-- **C)** [Option C]
-- **D)** [Option D]
-- 💡 **Correct Answer:** [Letter] - [Brief explanation with emojis]
+Example structure:
+[
+  {{
+    "question": "What is the primary function of RAM?",
+    "options": {{
+      "A": "Permanent data storage",
+      "B": "Temporary working memory for the CPU",
+      "C": "Running basic input/output operations",
+      "D": "Controlling cooling systems"
+    }},
+    "correct": "B",
+    "explanation": "RAM (Random Access Memory) is volatile memory used by the CPU to store data currently in use for fast access."
+  }}
+]"""
 
-Make questions clear, educational, and appropriate for college students. Use bold highlights for key terms."""
+        result, error_msg = ask_gemini(prompt)
+        
+        if result:
+            raw_quiz_json = result.strip()
+            # Clean up potential markdown wrappers
+            if raw_quiz_json.startswith("```"):
+                lines = raw_quiz_json.split('\n')
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines[-1].startswith("```"):
+                    lines = lines[:-1]
+                raw_quiz_json = "\n".join(lines).strip()
+            
+            try:
+                quiz_data = json.loads(raw_quiz_json)
+            except Exception as e:
+                error = f"Failed to parse quiz response: {str(e)}"
+        else:
+            error = error_msg
 
-        result, error = ask_gemini(prompt)
-        quiz_result = result if result else error
-
-    return render_template('quiz_generator.html', quiz_result=quiz_result, topic=topic)
+    return render_template('quiz_generator.html', quiz_data=quiz_data, raw_quiz_json=raw_quiz_json, topic=topic, error=error)
 
 
 # ── AI NOTES GENERATOR ───────────────────────────────────────
@@ -511,7 +542,15 @@ def view_saved_item(item_id):
         flash('Item not found or you do not have permission to view it.', 'error')
         return redirect(url_for('library'))
         
-    return render_template('library_view.html', item=item)
+    # If the saved item is a quiz, we parse the JSON content so it can be retaken
+    quiz_data = None
+    if item['item_type'] == 'quiz':
+        try:
+            quiz_data = json.loads(item['content'])
+        except Exception:
+            quiz_data = None
+            
+    return render_template('library_view.html', item=item, quiz_data=quiz_data)
 
 
 # ── DELETE SAVED ITEM ────────────────────────────────────────

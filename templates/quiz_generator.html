@@ -30,17 +30,62 @@
       </div>
     </form>
 
-    {% if quiz_result %}
-    <div class="result-card mt-4">
-      <div class="result-header">
-        <h3><i data-feather="award"></i> Your Quiz</h3>
-        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('quiz', '{{ topic | escape }}', document.querySelector('.markdown-content').textContent)">
+    {% if quiz_data %}
+    <!-- Score Summary Box (hidden initially) -->
+    <div class="score-summary-card mt-4" id="scoreCard" style="display: none;">
+      <div class="score-radial">
+        <span class="score-number" id="scoreNum">0</span>
+        <span class="score-total">/ 5</span>
+      </div>
+      <div class="score-feedback">
+        <h3 id="feedbackText">Well Done!</h3>
+        <p>Keep studying and generating quizzes to master the topic.</p>
+      </div>
+    </div>
+
+    <!-- Hidden textarea to store raw JSON for database saving -->
+    <textarea id="rawQuizJson" style="display: none;">{{ raw_quiz_json }}</textarea>
+
+    <!-- Quiz Wrapper -->
+    <div class="quiz-portal mt-4">
+      <div class="result-header" style="margin-bottom: var(--space-lg);">
+        <h3><i data-feather="award"></i> Quiz: {{ topic }}</h3>
+        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('quiz', '{{ topic | escape }}', document.getElementById('rawQuizJson').value)">
           <i data-feather="folder-plus"></i> Save to Library
         </button>
       </div>
-      <div class="result-body">
-        <div class="markdown-content" style="opacity: 0;">{{ quiz_result }}</div>
-      </div>
+
+      <form id="mcqForm" class="quiz-questions-form">
+        {% for q in quiz_data %}
+        <div class="question-block" id="qBlock_{{ loop.index }}" data-correct="{{ q.correct }}">
+          <h4 class="question-title">
+            <span class="q-number">{{ loop.index }}.</span> {{ q.question }}
+          </h4>
+          
+          <div class="options-list">
+            {% for key, val in q.options.items() %}
+            <label class="option-item" id="label_{{ loop.index0 }}_{{ key }}">
+              <input type="radio" name="question_{{ loop.index0 }}" value="{{ key }}" required>
+              <span class="option-letter">{{ key }}</span>
+              <span class="option-text">{{ val }}</span>
+              <i data-feather="check" class="opt-feedback-icon correct-icon" style="display: none;"></i>
+              <i data-feather="x" class="opt-feedback-icon incorrect-icon" style="display: none;"></i>
+            </label>
+            {% endfor %}
+          </div>
+
+          <!-- Explanation box (hidden initially) -->
+          <div class="explanation-box" id="explain_{{ loop.index }}" style="display: none;">
+            <h5><i data-feather="info" style="width: 14px; height: 14px;"></i> Explanation</h5>
+            <p>{{ q.explanation }}</p>
+          </div>
+        </div>
+        {% endfor %}
+
+        <button type="button" class="btn btn-primary btn-block mt-4" id="gradeBtn" onclick="gradeQuiz()">
+          <i data-feather="check-square"></i> Submit Quiz
+        </button>
+      </form>
     </div>
     {% endif %}
   </div>
@@ -50,7 +95,83 @@
 <script>
   function showLoading() {
     document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('loadingIndicator').style.display = 'flex';
+    const loadInd = document.getElementById('loadingIndicator');
+    if (loadInd) loadInd.style.display = 'flex';
+  }
+
+  function gradeQuiz() {
+    const form = document.getElementById('mcqForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    let score = 0;
+    const totalQuestions = 5;
+
+    // Loop through questions
+    for (let i = 1; i <= totalQuestions; i++) {
+      const block = document.getElementById(`qBlock_${i}`);
+      const correctOption = block.getAttribute('data-correct');
+      const qIndex = i - 1;
+      
+      // Get selected radio input
+      const selectedInput = document.querySelector(`input[name="question_${qIndex}"]:checked`);
+      const selectedValue = selectedInput ? selectedInput.value : null;
+
+      // Select explanation box
+      const explainBox = document.getElementById(`explain_${i}`);
+      if (explainBox) explainBox.style.display = 'block';
+
+      // Loop through all options for this question to highlight them
+      ['A', 'B', 'C', 'D'].forEach(opt => {
+        const optionLabel = document.getElementById(`label_${qIndex}_${opt}`);
+        const radioInput = optionLabel.querySelector('input');
+        
+        // Disable inputs so user cannot change answer after submit
+        radioInput.disabled = true;
+
+        const correctIcon = optionLabel.querySelector('.correct-icon');
+        const incorrectIcon = optionLabel.querySelector('.incorrect-icon');
+
+        if (opt === correctOption) {
+          // Highlight correct answer in green
+          optionLabel.classList.add('correct');
+          if (correctIcon) correctIcon.style.display = 'block';
+        }
+        
+        if (opt === selectedValue && opt !== correctOption) {
+          // Highlight user's incorrect answer in red
+          optionLabel.classList.add('incorrect');
+          if (incorrectIcon) incorrectIcon.style.display = 'block';
+        }
+      });
+
+      if (selectedValue === correctOption) {
+        score++;
+      }
+    }
+
+    // Refresh feather icons for feedback icons
+    feather.replace();
+
+    // Display final score
+    document.getElementById('scoreNum').innerText = score;
+    document.getElementById('scoreCard').style.display = 'flex';
+    document.getElementById('gradeBtn').style.display = 'none';
+
+    // Set feedback text based on score
+    const feedText = document.getElementById('feedbackText');
+    if (score === 5) {
+      feedText.innerText = "🎉 Perfect Score!";
+    } else if (score >= 3) {
+      feedText.innerText = "👍 Great Job!";
+    } else {
+      feedText.innerText = "📚 Keep Learning!";
+    }
+
+    // Scroll to top of the page smoothly to see the score
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
 {% endblock %}
