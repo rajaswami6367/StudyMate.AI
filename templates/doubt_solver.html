@@ -143,7 +143,16 @@
   // ── TEXT-TO-SPEECH (NEURAL MP3 STREAMING) ─────────────────
   let selectedGender = 'female'; // Default narrator
   let isSpeaking = false;
+  let isUsingFallback = false;
+  let speechUtterance; // For fallback local TTS
   const audioPlayer = document.getElementById('ttsAudio');
+
+  // Make sure system voices list is loaded for fallback
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+  }
 
   function selectVoiceGender(gender) {
     selectedGender = gender;
@@ -187,8 +196,10 @@
       // Load dynamic /speak endpoint
       const speakUrl = `/speak?gender=${selectedGender}&text=${encodeURIComponent(cleanText)}`;
       audioPlayer.src = speakUrl;
+      isUsingFallback = false;
       
       audioPlayer.oncanplaythrough = () => {
+        if (isUsingFallback) return; // Prevent double play if fallback already triggered
         audioPlayer.play()
           .then(() => {
             isSpeaking = true;
@@ -199,16 +210,16 @@
             feather.replace();
           })
           .catch((err) => {
-            console.error("Audio play failed:", err);
-            showToast("Failed to play voice. Try again!", "error");
-            resetSpeaker();
+            console.error("Audio play failed, falling back:", err);
+            isUsingFallback = true;
+            fallbackToLocalSpeech(cleanText);
           });
       };
 
       audioPlayer.onerror = (e) => {
-        console.error("Audio load error:", e);
-        showToast("Error loading neural voice. Try again!", "error");
-        resetSpeaker();
+        console.warn("Audio load error (often due to PythonAnywhere free proxy blocking outbound WebSockets). Falling back to optimized client voice...");
+        isUsingFallback = true;
+        fallbackToLocalSpeech(cleanText);
       };
 
       audioPlayer.onended = () => {
@@ -220,10 +231,109 @@
     }
   }
 
+  function fallbackToLocalSpeech(text) {
+    if (!window.speechSynthesis) {
+      showToast("Speech synthesis is not supported on this browser.", "error");
+      resetSpeaker();
+      return;
+    }
+
+    // Stop HTML5 audio player if active
+    if (audioPlayer) {
+      audioPlayer.pause();
+    }
+
+    const introText = "StudyMate A.I. mein aapka swagat hai. ";
+    const fullText = introText + text;
+
+    speechUtterance = new SpeechSynthesisUtterance(fullText);
+
+    // Get available voices
+    const voices = window.speechSynthesis.getVoices();
+    const hasHindi = /[\u0900-\u097F]/.test(text);
+
+    // Force US/UK voices for English to avoid regional Indian accents
+    let langVoices = voices.filter(v => {
+      const lang = v.lang.toLowerCase();
+      if (hasHindi) {
+        return lang.includes('hi');
+      } else {
+        return lang.includes('en-us') || lang.includes('en-gb') || lang === 'en';
+      }
+    });
+
+    if (langVoices.length === 0) {
+      langVoices = voices.filter(v => v.lang.toLowerCase().includes(hasHindi ? 'hi' : 'en'));
+    }
+
+    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
+    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan', 'en-us-x-iom'];
+
+    let candidates = [];
+    if (selectedGender === 'female') {
+      candidates = langVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        const matchesFemale = femaleKeywords.some(k => name.includes(k));
+        const matchesMale = maleKeywords.some(k => name.includes(k));
+        return matchesFemale && !matchesMale;
+      });
+    } else {
+      candidates = langVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        const matchesFemale = femaleKeywords.some(k => name.includes(k));
+        const matchesMale = maleKeywords.some(k => name.includes(k));
+        return matchesMale && !matchesFemale;
+      });
+    }
+
+    if (candidates.length === 0) {
+      if (selectedGender === 'female') {
+        candidates = langVoices.filter(v => !maleKeywords.some(k => v.name.toLowerCase().includes(k)));
+      } else {
+        candidates = langVoices.filter(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
+      }
+    }
+
+    const chosenVoice = candidates[0] || langVoices[0];
+    if (chosenVoice) {
+      speechUtterance.voice = chosenVoice;
+      speechUtterance.lang = chosenVoice.lang;
+    } else {
+      speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
+    }
+
+    speechUtterance.rate = 0.90;
+    speechUtterance.pitch = (selectedGender === 'female') ? 1.02 : 0.95;
+
+    const speakBtn = document.getElementById('speakBtn');
+    
+    speechUtterance.onstart = () => {
+      isSpeaking = true;
+      speakBtn.style.pointerEvents = 'auto';
+      speakBtn.innerHTML = `<i data-feather="square" style="width: 14px; height: 14px; margin-right: 5px;"></i> Stop`;
+      speakBtn.style.background = 'rgba(124, 58, 237, 0.15)';
+      speakBtn.style.color = 'var(--primary-light)';
+      feather.replace();
+    };
+
+    speechUtterance.onend = () => {
+      resetSpeaker();
+    };
+
+    speechUtterance.onerror = () => {
+      resetSpeaker();
+    };
+
+    window.speechSynthesis.speak(speechUtterance);
+  }
+
   function stopSpeaking() {
     if (audioPlayer) {
       audioPlayer.pause();
       audioPlayer.currentTime = 0;
+    }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
     }
     resetSpeaker();
   }
