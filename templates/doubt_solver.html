@@ -140,14 +140,15 @@
     }
   }
 
-  // ── TEXT-TO-SPEECH (NEURAL MP3 STREAMING) ─────────────────
+  // ── TEXT-TO-SPEECH (CLIENT-SIDE NEURAL GOOGLE STREAMING & SYNTHESIS) ──
   let selectedGender = 'female'; // Default narrator
   let isSpeaking = false;
-  let isUsingFallback = false;
-  let speechUtterance; // For fallback local TTS
+  let speechUtterance; // For fallback/male local TTS
+  let audioQueue = [];
+  let currentQueueIndex = 0;
   const audioPlayer = document.getElementById('ttsAudio');
 
-  // Make sure system voices list is loaded for fallback
+  // Make sure system voices list is loaded
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = () => {
       window.speechSynthesis.getVoices();
@@ -174,6 +175,24 @@
     }
   }
 
+  // Splits long text into chunks of 150 characters to comply with Google Translate TTS limits
+  function splitTextIntoChunks(text, maxLength = 150) {
+    const words = text.split(' ');
+    const chunks = [];
+    let currentChunk = '';
+
+    for (const word of words) {
+      if ((currentChunk + ' ' + word).trim().length <= maxLength) {
+        currentChunk = (currentChunk + ' ' + word).trim();
+      } else {
+        if (currentChunk) chunks.push(currentChunk);
+        currentChunk = word;
+      }
+    }
+    if (currentChunk) chunks.push(currentChunk);
+    return chunks;
+  }
+
   function toggleSpeakAnswer() {
     const speakBtn = document.getElementById('speakBtn');
     
@@ -189,17 +208,43 @@
         .replace(/\s+/g, ' ') 
         .trim();
 
-      // Show inline spinner while fetching neural voice MP3
-      speakBtn.innerHTML = `<span class="spinner-sm" style="display:inline-block; width:12px; height:12px; border:2px solid var(--text-muted); border-top-color:var(--primary-light); border-radius:50%; animation:spin 1s linear infinite; margin-right:6px; vertical-align:middle;"></span> Fetching...`;
-      speakBtn.style.pointerEvents = 'none';
+      const hasHindi = /[\u0900-\u097F]/.test(cleanText);
+      const introText = "StudyMate A.I. mein aapka swagat hai. ";
+      const fullText = introText + cleanText;
 
-      // Load dynamic /speak endpoint
-      const speakUrl = `/speak?gender=${selectedGender}&text=${encodeURIComponent(cleanText)}`;
-      audioPlayer.src = speakUrl;
-      isUsingFallback = false;
+      // ── OPTION A: FEMALE VOICE -> USE PREMIUM GOOGLE TRANSLATE TTS CDN (CLIENT-SIDE) ──
+      // This bypasses the PythonAnywhere proxy completely and sounds clear and polite
+      if (selectedGender === 'female') {
+        const langCode = hasHindi ? 'hi' : 'en-us';
+        const chunks = splitTextIntoChunks(fullText, 140); // 140 char safety margin
+        
+        speakBtn.innerHTML = `<span class="spinner-sm" style="display:inline-block; width:12px; height:12px; border:2px solid var(--text-muted); border-top-color:var(--primary-light); border-radius:50%; animation:spin 1s linear infinite; margin-right:6px; vertical-align:middle;"></span> Loading...`;
+        speakBtn.style.pointerEvents = 'none';
+
+        // Prepare audio queue URLs
+        audioQueue = chunks.map(chunk => {
+          return `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodeURIComponent(chunk)}`;
+        });
+
+        currentQueueIndex = 0;
+        playGoogleTTSQueue();
+      } 
+      // ── OPTION B: MALE VOICE -> FALLBACK TO OPTIMIZED LOCAL BROWSER SYNTHESIS ──
+      else {
+        playLocalSpeech(fullText, hasHindi);
+      }
+
+    } else {
+      stopSpeaking();
+    }
+  }
+
+  function playGoogleTTSQueue() {
+    const speakBtn = document.getElementById('speakBtn');
+    if (currentQueueIndex < audioQueue.length) {
+      audioPlayer.src = audioQueue[currentQueueIndex];
       
       audioPlayer.oncanplaythrough = () => {
-        if (isUsingFallback) return; // Prevent double play if fallback already triggered
         audioPlayer.play()
           .then(() => {
             isSpeaking = true;
@@ -210,49 +255,38 @@
             feather.replace();
           })
           .catch((err) => {
-            console.error("Audio play failed, falling back:", err);
-            isUsingFallback = true;
-            fallbackToLocalSpeech(cleanText);
+            console.error("Queue play error:", err);
+            // Fallback to local speech if Google CDN blocks/fails
+            const rawAnswer = document.querySelector('.markdown-content').innerText;
+            playLocalSpeech(rawAnswer, /[\u0900-\u097F]/.test(rawAnswer));
           });
       };
 
-      audioPlayer.onerror = (e) => {
-        console.warn("Audio load error (often due to PythonAnywhere free proxy blocking outbound WebSockets). Falling back to optimized client voice...");
-        isUsingFallback = true;
-        fallbackToLocalSpeech(cleanText);
+      audioPlayer.onerror = () => {
+        console.warn("Google TTS CDN failed. Using local voice...");
+        const rawAnswer = document.querySelector('.markdown-content').innerText;
+        playLocalSpeech(rawAnswer, /[\u0900-\u097F]/.test(rawAnswer));
       };
 
       audioPlayer.onended = () => {
-        resetSpeaker();
+        currentQueueIndex++;
+        playGoogleTTSQueue();
       };
-
     } else {
-      stopSpeaking();
+      resetSpeaker();
     }
   }
 
-  function fallbackToLocalSpeech(text) {
+  function playLocalSpeech(text, hasHindi) {
     if (!window.speechSynthesis) {
-      showToast("Speech synthesis is not supported on this browser.", "error");
+      showToast("Speech synthesis is not supported.", "error");
       resetSpeaker();
       return;
     }
 
-    // Stop HTML5 audio player if active
-    if (audioPlayer) {
-      audioPlayer.pause();
-    }
-
-    const introText = "StudyMate A.I. mein aapka swagat hai. ";
-    const fullText = introText + text;
-
-    speechUtterance = new SpeechSynthesisUtterance(fullText);
-
-    // Get available voices
+    speechUtterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const hasHindi = /[\u0900-\u097F]/.test(text);
 
-    // Force US/UK voices for English to avoid regional Indian accents
     let langVoices = voices.filter(v => {
       const lang = v.lang.toLowerCase();
       if (hasHindi) {
@@ -266,40 +300,26 @@
       langVoices = voices.filter(v => v.lang.toLowerCase().includes(hasHindi ? 'hi' : 'en'));
     }
 
-    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
-    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan', 'en-us-x-iom'];
+    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan'];
+    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan'];
 
     let candidates = [];
     if (selectedGender === 'female') {
       candidates = langVoices.filter(v => {
         const name = v.name.toLowerCase();
-        const matchesFemale = femaleKeywords.some(k => name.includes(k));
-        const matchesMale = maleKeywords.some(k => name.includes(k));
-        return matchesFemale && !matchesMale;
+        return femaleKeywords.some(k => name.includes(k)) && !maleKeywords.some(k => name.includes(k));
       });
     } else {
       candidates = langVoices.filter(v => {
         const name = v.name.toLowerCase();
-        const matchesFemale = femaleKeywords.some(k => name.includes(k));
-        const matchesMale = maleKeywords.some(k => name.includes(k));
-        return matchesMale && !matchesFemale;
+        return maleKeywords.some(k => name.includes(k)) && !femaleKeywords.some(k => name.includes(k));
       });
-    }
-
-    if (candidates.length === 0) {
-      if (selectedGender === 'female') {
-        candidates = langVoices.filter(v => !maleKeywords.some(k => v.name.toLowerCase().includes(k)));
-      } else {
-        candidates = langVoices.filter(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
-      }
     }
 
     const chosenVoice = candidates[0] || langVoices[0];
     if (chosenVoice) {
       speechUtterance.voice = chosenVoice;
       speechUtterance.lang = chosenVoice.lang;
-    } else {
-      speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
     }
 
     speechUtterance.rate = 0.90;
