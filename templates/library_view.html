@@ -60,6 +60,7 @@
 
         <form id="mcqForm" class="quiz-questions-form">
           {% for q in quiz_data %}
+          {% set q_index = loop.index0 %}
           <div class="question-block" id="qBlock_{{ loop.index }}" data-correct="{{ q.correct }}">
             <h4 class="question-title">
               <span class="q-number">{{ loop.index }}.</span> {{ q.question }}
@@ -67,8 +68,8 @@
             
             <div class="options-list">
               {% for key, val in q.options.items() %}
-              <label class="option-item" id="label_{{ loop.index0 }}_{{ key }}">
-                <input type="radio" name="question_{{ loop.index0 }}" value="{{ key }}" required>
+              <label class="option-item" id="label_{{ q_index }}_{{ key }}">
+                <input type="radio" name="question_{{ q_index }}" value="{{ key }}" required>
                 <span class="option-letter">{{ key }}</span>
                 <span class="option-text">{{ val }}</span>
                 <i data-feather="check" class="opt-feedback-icon correct-icon" style="display: none;"></i>
