@@ -170,73 +170,103 @@
     }
   }
 
+  function getBestVoice(gender, langTarget, voices) {
+    const langVoices = voices.filter(v => v.lang.toLowerCase().includes(langTarget));
+    if (langVoices.length === 0) return null;
+
+    // Strict Gender Keyword Lists to identify voices
+    // 'sfg' and 'hie' represent Google TTS female voices on Android Chrome
+    const femaleKeywords = ['zira', 'samantha', 'heera', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan', 'en-us-x-sfg'];
+    // 'iom', 'iob', and 'hid' represent Google TTS male voices on Android Chrome
+    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan', 'en-us-x-iom'];
+
+    let candidates = [];
+
+    // Filter strictly by target keywords and exclude opposing keywords
+    if (gender === 'female') {
+      candidates = langVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        const matchesFemale = femaleKeywords.some(k => name.includes(k));
+        const matchesMale = maleKeywords.some(k => name.includes(k));
+        return matchesFemale && !matchesMale;
+      });
+    } else {
+      candidates = langVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        const matchesFemale = femaleKeywords.some(k => name.includes(k));
+        const matchesMale = maleKeywords.some(k => name.includes(k));
+        return matchesMale && !matchesFemale;
+      });
+    }
+
+    // Fallback 1: If no strict match, filter out the opposing gender keywords
+    if (candidates.length === 0) {
+      if (gender === 'female') {
+        candidates = langVoices.filter(v => !maleKeywords.some(k => v.name.toLowerCase().includes(k)));
+      } else {
+        candidates = langVoices.filter(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
+      }
+    }
+
+    // Fallback 2: Still empty? Use any voice of target language
+    if (candidates.length === 0) {
+      return langVoices[0];
+    }
+
+    // Sort candidates: Prioritize 'Natural' or 'Online' (neural Microsoft/Google) voices first
+    candidates.sort((a, b) => {
+      const aName = a.name.toLowerCase();
+      const bName = b.name.toLowerCase();
+      const aScore = (aName.includes('natural') || aName.includes('online')) ? 3 : (aName.includes('google') ? 2 : 1);
+      const bScore = (bName.includes('natural') || bName.includes('online')) ? 3 : (bName.includes('google') ? 2 : 1);
+      return bScore - aScore; // Descending (highest score first)
+    });
+
+    return candidates[0];
+  }
+
   function toggleSpeakAnswer() {
     const speakBtn = document.getElementById('speakBtn');
     
     if (!isSpeaking) {
       const rawAnswerText = document.querySelector('.markdown-content').innerText;
       
-      // 1. Clean the text for TTS (Remove code blocks, markdown symbols, and stutter-inducing emojis)
+      // Clean up code blocks, markdown punctuation, and emojis for natural flow
       let cleanText = rawAnswerText
-        .replace(/```[\s\S]*?```/g, ' [Code block omitted] ') // Remove code blocks completely
-        .replace(/`([^`]+)`/g, '$1') // Keep inline code text but remove backticks
-        .replace(/[\#\*\_~]/g, '') // Strip markdown header/bold/italic tags
-        .replace(/[✅💡📚📝🎯⚡🧠🛠️🤖🚀🏆🎉🌟]/gu, '') // Strip emojis that cause speech engines to stutter
-        .replace(/\s+/g, ' ') // Normalize spaces
+        .replace(/```[\s\S]*?```/g, ' [Code block omitted] ') 
+        .replace(/`([^`]+)`/g, '$1') 
+        .replace(/[\#\*\_~]/g, '') 
+        .replace(/[✅💡📚📝🎯⚡🧠🛠️🤖🚀🏆🎉🌟]/gu, '') 
+        .replace(/\s+/g, ' ') 
         .trim();
       
-      // Intro Greeting: "StudyMateAI mein aapka swagat hai"
+      // Warm, polite welcome greeting
       const introText = "StudyMate A.I. mein aapka swagat hai. ";
       const fullText = introText + cleanText;
       
       speechUtterance = new SpeechSynthesisUtterance(fullText);
       
-      // Load available voices
+      // Get all available system voices
       const voices = window.speechSynthesis.getVoices();
       
-      // Determine if text contains Hindi characters to set language matching
+      // Detect language
       const hasHindi = /[\u0900-\u097F]/.test(cleanText);
       const langTarget = hasHindi ? 'hi' : 'en';
       
-      const langVoices = voices.filter(v => v.lang.toLowerCase().includes(langTarget));
-      
-      // Heuristic Voice Quality Selector
-      // We explicitly search for names matching the target gender and rank them
-      const femaleKeywords = ['samantha', 'zira', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'heera', 'karen', 'female', 'en-us-x-sfg'];
-      const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'mark', 'george', 'stefan', 'en-us-x-iom'];
-      
-      // Filter voices by gender first
-      let candidates = langVoices.filter(v => {
-        const name = v.name.toLowerCase();
-        if (selectedGender === 'female') {
-          return femaleKeywords.some(f => name.includes(f)) || (!maleKeywords.some(m => name.includes(m)));
-        } else {
-          return maleKeywords.some(m => name.includes(m)) || (!femaleKeywords.some(f => name.includes(f)));
-        }
-      });
-      
-      // Sort candidates: prioritize "Natural" or "Online" (neural Microsoft/Google) voices first
-      candidates.sort((a, b) => {
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
-        const aScore = (aName.includes('natural') || aName.includes('online')) ? 3 : (aName.includes('google') ? 2 : 1);
-        const bScore = (bName.includes('natural') || bName.includes('online')) ? 3 : (bName.includes('google') ? 2 : 1);
-        return bScore - aScore; // Descending (highest score first)
-      });
-      
-      let chosenVoice = candidates[0] || langVoices[0];
+      // Get best voice match
+      const chosenVoice = getBestVoice(selectedGender, langTarget, voices);
       
       if (chosenVoice) {
         speechUtterance.voice = chosenVoice;
         speechUtterance.lang = chosenVoice.lang;
-        console.log("Selected voice for narration:", chosenVoice.name);
+        console.log("Speaking with:", chosenVoice.name);
       } else {
         speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
       }
       
-      // Set audio speeds & pitch accents for professional speech (slightly slower for clarity)
-      speechUtterance.rate = 0.92; // 0.92 is much clearer and easier to follow than 1.0
-      speechUtterance.pitch = 1.0; // Keep pitch standard (1.0) to prevent robotic speed/pitch errors
+      // Tune speed and pitch for a polite, professional, and clear tone
+      speechUtterance.rate = 0.90; // Slower rate for highly clear pronunciation
+      speechUtterance.pitch = (selectedGender === 'female') ? 1.02 : 0.95; // Calm gender accents
       
       speechUtterance.onstart = () => {
         isSpeaking = true;
