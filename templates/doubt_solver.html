@@ -176,9 +176,18 @@
     if (!isSpeaking) {
       const rawAnswerText = document.querySelector('.markdown-content').innerText;
       
-      // Intro Greeting as requested: "StudyMateAI mein aapka swagat hai"
-      const introText = "StudyMate AI mein aapka swagat hai. ";
-      const fullText = introText + rawAnswerText;
+      // 1. Clean the text for TTS (Remove code blocks, markdown symbols, and stutter-inducing emojis)
+      let cleanText = rawAnswerText
+        .replace(/```[\s\S]*?```/g, ' [Code block omitted] ') // Remove code blocks completely
+        .replace(/`([^`]+)`/g, '$1') // Keep inline code text but remove backticks
+        .replace(/[\#\*\_~]/g, '') // Strip markdown header/bold/italic tags
+        .replace(/[✅💡📚📝🎯⚡🧠🛠️🤖🚀🏆🎉🌟]/gu, '') // Strip emojis that cause speech engines to stutter
+        .replace(/\s+/g, ' ') // Normalize spaces
+        .trim();
+      
+      // Intro Greeting: "StudyMateAI mein aapka swagat hai"
+      const introText = "StudyMate A.I. mein aapka swagat hai. ";
+      const fullText = introText + cleanText;
       
       speechUtterance = new SpeechSynthesisUtterance(fullText);
       
@@ -186,14 +195,14 @@
       const voices = window.speechSynthesis.getVoices();
       
       // Determine if text contains Hindi characters to set language matching
-      const hasHindi = /[\u0900-\u097F]/.test(rawAnswerText);
+      const hasHindi = /[\u0900-\u097F]/.test(cleanText);
       const langTarget = hasHindi ? 'hi' : 'en';
       
       const langVoices = voices.filter(v => v.lang.toLowerCase().includes(langTarget));
       
       // Gender voice keyword sorting rules
-      const femaleKeywords = ['google us english', 'samantha', 'google hindi', 'kalpana', 'zira', 'female', 'karen', 'tessa'];
-      const maleKeywords = ['david', 'male', 'hemant', 'ravi', 'google uk english male', 'microsoft ravi', 'mark', 'george'];
+      const femaleKeywords = ['google us english', 'samantha', 'google hindi', 'kalpana', 'zira', 'female', 'karen', 'tessa', 'en-us-x-sfg'];
+      const maleKeywords = ['david', 'male', 'hemant', 'ravi', 'google uk english male', 'microsoft ravi', 'mark', 'george', 'en-us-x-iom'];
       
       let chosenVoice = null;
       if (selectedGender === 'female') {
@@ -209,9 +218,9 @@
         speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
       }
       
-      // Set audio speeds & pitch accents for professional speech
-      speechUtterance.rate = 1.0;
-      speechUtterance.pitch = (selectedGender === 'female') ? 1.05 : 0.95;
+      // Set audio speeds & pitch accents for professional speech (slightly slower for clarity)
+      speechUtterance.rate = 0.92; // 0.92 is much clearer and easier to follow than 1.0
+      speechUtterance.pitch = 1.0; // Keep pitch standard (1.0) to prevent robotic speed/pitch errors
       
       speechUtterance.onstart = () => {
         isSpeaking = true;
