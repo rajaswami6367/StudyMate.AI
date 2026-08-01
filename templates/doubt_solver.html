@@ -200,20 +200,36 @@
       
       const langVoices = voices.filter(v => v.lang.toLowerCase().includes(langTarget));
       
-      // Gender voice keyword sorting rules
-      const femaleKeywords = ['google us english', 'samantha', 'google hindi', 'kalpana', 'zira', 'female', 'karen', 'tessa', 'en-us-x-sfg'];
-      const maleKeywords = ['david', 'male', 'hemant', 'ravi', 'google uk english male', 'microsoft ravi', 'mark', 'george', 'en-us-x-iom'];
+      // Heuristic Voice Quality Selector
+      // We explicitly search for names matching the target gender and rank them
+      const femaleKeywords = ['samantha', 'zira', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'heera', 'karen', 'female', 'en-us-x-sfg'];
+      const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'mark', 'george', 'stefan', 'en-us-x-iom'];
       
-      let chosenVoice = null;
-      if (selectedGender === 'female') {
-        chosenVoice = langVoices.find(v => femaleKeywords.some(k => v.name.toLowerCase().includes(k))) || langVoices[0];
-      } else {
-        chosenVoice = langVoices.find(v => maleKeywords.some(k => v.name.toLowerCase().includes(k))) || langVoices[0];
-      }
+      // Filter voices by gender first
+      let candidates = langVoices.filter(v => {
+        const name = v.name.toLowerCase();
+        if (selectedGender === 'female') {
+          return femaleKeywords.some(f => name.includes(f)) || (!maleKeywords.some(m => name.includes(m)));
+        } else {
+          return maleKeywords.some(m => name.includes(m)) || (!femaleKeywords.some(f => name.includes(f)));
+        }
+      });
+      
+      // Sort candidates: prioritize "Natural" or "Online" (neural Microsoft/Google) voices first
+      candidates.sort((a, b) => {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        const aScore = (aName.includes('natural') || aName.includes('online')) ? 3 : (aName.includes('google') ? 2 : 1);
+        const bScore = (bName.includes('natural') || bName.includes('online')) ? 3 : (bName.includes('google') ? 2 : 1);
+        return bScore - aScore; // Descending (highest score first)
+      });
+      
+      let chosenVoice = candidates[0] || langVoices[0];
       
       if (chosenVoice) {
         speechUtterance.voice = chosenVoice;
         speechUtterance.lang = chosenVoice.lang;
+        console.log("Selected voice for narration:", chosenVoice.name);
       } else {
         speechUtterance.lang = hasHindi ? 'hi-IN' : 'en-US';
       }
