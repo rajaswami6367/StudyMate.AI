@@ -2390,9 +2390,9 @@ body.light-mode .blob { opacity: 0.1; }
 
 /* ── DYNAMIC BACKGROUND & PULSING BLOBS ─────────────────── */
 body {
-  background: linear-gradient(135deg, #06040c 0%, #0d091a 35%, #140d2b 70%, #030206 100%) !important;
+  background: linear-gradient(-45deg, #090514, #1c0a35, #081a36, #1f0b2f, #090514) !important;
   background-size: 400% 400% !important;
-  animation: auroraBackground 20s ease infinite !important;
+  animation: auroraBackground 18s ease infinite !important;
 }
 
 @keyframes auroraBackground {
@@ -2401,24 +2401,34 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* Floating background blobs */
+/* Floating background blobs - Expanded sizes and opacities */
 .blob {
   position: absolute;
   border-radius: 50%;
   mix-blend-mode: screen;
-  filter: blur(80px);
+  filter: blur(110px) !important;
   pointer-events: none;
-  opacity: 0.12 !important; /* Slightly brighter for premium contrast */
+  z-index: 1;
 }
 
 .blob-1 {
-  background: radial-gradient(circle, var(--purple-500) 0%, rgba(139, 92, 246, 0) 70%) !important;
-  animation: floatSlow1 25s infinite ease-in-out alternate !important;
+  top: -10%;
+  left: -5%;
+  width: 550px;
+  height: 550px;
+  opacity: 0.28 !important; /* Highly visible glowing violet clouds */
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(168, 85, 247, 0) 70%) !important;
+  animation: floatSlow1 22s infinite ease-in-out alternate !important;
 }
 
 .blob-2 {
-  background: radial-gradient(circle, #0ea5e9 0%, rgba(14, 165, 233, 0) 70%) !important;
-  animation: floatSlow2 30s infinite ease-in-out alternate !important;
+  bottom: -10%;
+  right: -5%;
+  width: 650px;
+  height: 650px;
+  opacity: 0.24 !important; /* Highly visible cyan blue glow */
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.38) 0%, rgba(6, 182, 212, 0) 70%) !important;
+  animation: floatSlow2 26s infinite ease-in-out alternate !important;
 }
 
 @keyframes floatSlow1 {
@@ -2426,10 +2436,10 @@ body {
     transform: translate(0px, 0px) scale(1);
   }
   33% {
-    transform: translate(100px, -80px) scale(1.2);
+    transform: translate(80px, -60px) scale(1.15);
   }
   66% {
-    transform: translate(-50px, 60px) scale(0.9);
+    transform: translate(-40px, 50px) scale(0.9);
   }
   100% {
     transform: translate(0px, 0px) scale(1);
@@ -2441,7 +2451,7 @@ body {
     transform: translate(0px, 0px) scale(1);
   }
   50% {
-    transform: translate(-120px, 100px) scale(1.15);
+    transform: translate(-100px, 80px) scale(1.1);
   }
   100% {
     transform: translate(0px, 0px) scale(1);
