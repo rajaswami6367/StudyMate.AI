@@ -2387,3 +2387,63 @@ body.light-mode .blob { opacity: 0.1; }
   margin: 0;
   line-height: 1.4;
 }
+
+/* ── DYNAMIC BACKGROUND & PULSING BLOBS ─────────────────── */
+body {
+  background: linear-gradient(135deg, #06040c 0%, #0d091a 35%, #140d2b 70%, #030206 100%) !important;
+  background-size: 400% 400% !important;
+  animation: auroraBackground 20s ease infinite !important;
+}
+
+@keyframes auroraBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating background blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.12 !important; /* Slightly brighter for premium contrast */
+}
+
+.blob-1 {
+  background: radial-gradient(circle, var(--purple-500) 0%, rgba(139, 92, 246, 0) 70%) !important;
+  animation: floatSlow1 25s infinite ease-in-out alternate !important;
+}
+
+.blob-2 {
+  background: radial-gradient(circle, #0ea5e9 0%, rgba(14, 165, 233, 0) 70%) !important;
+  animation: floatSlow2 30s infinite ease-in-out alternate !important;
+}
+
+@keyframes floatSlow1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(100px, -80px) scale(1.2);
+  }
+  66% {
+    transform: translate(-50px, 60px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes floatSlow2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-120px, 100px) scale(1.15);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
