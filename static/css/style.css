@@ -2457,3 +2457,48 @@ body {
     transform: translate(0px, 0px) scale(1);
   }
 }
+
+/* ── CONTAINER TRANSPARENCY OVERRIDES FOR GRADIENT VISIBILITY ── */
+main, .dashboard-section, .hero-bg {
+  background: transparent !important;
+}
+
+/* Full Width Grid Layout */
+.dashboard-grid.full-width-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: var(--space-md) !important;
+  width: 100% !important;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid.full-width-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: var(--space-lg) !important;
+  }
+}
+
+/* Enhanced Glassmorphic Cards */
+.dash-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  border-radius: var(--radius-xl) !important;
+  padding: var(--space-lg) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-md) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dash-card:hover {
+  transform: translateY(-5px) scale(1.02) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important;
+}
+
+/* Individual Glow Hover Borders & Shadows */
+.dash-card.purple-glow:hover { border-color: rgba(168, 85, 247, 0.4) !important; box-shadow: 0 10px 30px rgba(168, 85, 247, 0.2) !important; }
+.dash-card.blue-glow:hover { border-color: rgba(59, 130, 246, 0.4) !important; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2) !important; }
+.dash-card.green-glow:hover { border-color: rgba(16, 185, 129, 0.4) !important; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2) !important; }
+.dash-card.orange-glow:hover { border-color: rgba(249, 115, 22, 0.4) !important; box-shadow: 0 10px 30px rgba(249, 115, 22, 0.2) !important; }

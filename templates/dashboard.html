@@ -3,23 +3,23 @@
 {% block title %}Dashboard — StudyMate AI{% endblock %}
 
 {% block content %}
-<section class="dashboard-section" style="position: relative; overflow: hidden; padding-bottom: 50px;">
+<section class="dashboard-section" style="position: relative; overflow: hidden; padding-bottom: 80px;">
   <!-- Glowing background blobs for dashboard -->
   <div class="hero-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden;">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
   </div>
 
-  <div style="position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 0 var(--space-md);">
+  <div style="position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 var(--space-md);">
     
     <!-- 1. HEADER WELCOME SECTION -->
     <div class="dashboard-header-card" style="margin-bottom: var(--space-lg);">
       <div class="dashboard-welcome-info">
-        <h1 style="font-size: var(--font-size-2xl); font-weight: 800; margin-bottom: 4px;">
+        <h1 style="font-size: var(--font-size-2xl); font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">
           Welcome back, <span class="gradient-text">{{ username }}</span>! 👋
         </h1>
         <p style="color: var(--text-secondary); font-size: var(--font-size-md);">
-          Your intelligent study dashboard is ready. What are we mastering today?
+          Your intelligent study companion is ready. Select a tool to start learning.
         </p>
       </div>
       
@@ -67,102 +67,55 @@
       </div>
     </div>
 
-    <!-- 3. SPLIT CONTAINER: MAIN WORKSPACE & SIDEBAR -->
-    <div class="dashboard-split-layout">
+    <!-- 3. MAIN WORKSPACE GRID (FULL WIDTH) -->
+    <div class="workspace-area">
+      <h2 style="font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--primary-light);">⚡</span> Study Tools Workspace
+      </h2>
       
-      <!-- Left side: Main Workspace Grid -->
-      <div class="workspace-area">
-        <h2 style="font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
-          <span style="color: var(--primary-light);">⚡</span> Study Tools Workspace
-        </h2>
-        
-        <div class="dashboard-grid">
-          <!-- Card 1: AI Notes -->
-          <a href="{{ url_for('ai_notes') }}" class="dash-card purple-glow">
-            <div class="dash-icon purple"><i data-feather="file-text"></i></div>
-            <div class="dash-info">
-              <h3>AI Notes Generator</h3>
-              <p>Convert your topics or chapters into visual colourful revision sheets.</p>
-            </div>
-            <i data-feather="arrow-right" class="dash-arrow"></i>
-          </a>
-
-          <!-- Card 2: Doubt Solver -->
-          <a href="{{ url_for('doubt_solver') }}" class="dash-card blue-glow">
-            <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
-            <div class="dash-info">
-              <h3>AI Doubt Solver</h3>
-              <p>Get instant answers with natural human speech narration.</p>
-            </div>
-            <i data-feather="arrow-right" class="dash-arrow"></i>
-          </a>
-
-          <!-- Card 3: Quiz Generator -->
-          <a href="{{ url_for('quiz') }}" class="dash-card green-glow">
-            <div class="dash-icon green"><i data-feather="check-circle"></i></div>
-            <div class="dash-info">
-              <h3>Quiz Generator</h3>
-              <p>Take interactive MCQ quizzes with score tracking & feedback.</p>
-            </div>
-            <i data-feather="arrow-right" class="dash-arrow"></i>
-          </a>
-
-          <!-- Card 4: Flashcards -->
-          <a href="{{ url_for('flashcards') }}" class="dash-card orange-glow">
-            <div class="dash-icon orange"><i data-feather="layers"></i></div>
-            <div class="dash-info">
-              <h3>Flashcards</h3>
-              <p>Create active-recall flip-cards for quick exam revision.</p>
-            </div>
-            <i data-feather="arrow-right" class="dash-arrow"></i>
-          </a>
-        </div>
-      </div>
-      
-      <!-- Right side: Recent Activity Sidebar -->
-      <div class="sidebar-area">
-        <div class="recent-activity-card">
-          <div class="card-header-flex">
-            <h3><i data-feather="clock" style="width: 18px; height: 18px; color: var(--accent-light);"></i> Recent Activity</h3>
-            <a href="{{ url_for('library') }}" class="btn-text-only">View All</a>
+      <div class="dashboard-grid full-width-grid">
+        <!-- Card 1: AI Notes -->
+        <a href="{{ url_for('ai_notes') }}" class="dash-card purple-glow">
+          <div class="dash-icon purple"><i data-feather="file-text"></i></div>
+          <div class="dash-info">
+            <h3>AI Notes Generator</h3>
+            <p>Generate highly-visual, colorful revision sheets with custom highlights and comparison tables.</p>
           </div>
-          
-          <div class="activity-timeline">
-            {% if recent_items %}
-              {% for item in recent_items %}
-                <div class="activity-item">
-                  <div class="activity-badge {{ item.item_type }}">
-                    {% if item.item_type == 'notes' %}
-                      <i data-feather="file-text"></i>
-                    {% elif item.item_type == 'doubt' %}
-                      <i data-feather="message-circle"></i>
-                    {% elif item.item_type == 'quiz' %}
-                      <i data-feather="check-circle"></i>
-                    {% else %}
-                      <i data-feather="layers"></i>
-                    {% endif %}
-                  </div>
-                  
-                  <div class="activity-content">
-                    <h4>{{ item.title }}</h4>
-                    <p>Saved in library</p>
-                    <a href="{{ url_for('library_view', item_id=item.id) }}" class="activity-action-btn">
-                      Open <i data-feather="chevron-right" style="width:12px; height:12px;"></i>
-                    </a>
-                  </div>
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="activity-empty-state">
-                <div class="empty-icon">📁</div>
-                <p>No saved study materials yet. Generate notes or quizzes to see them here!</p>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
+          <i data-feather="arrow-right" class="dash-arrow"></i>
+        </a>
 
+        <!-- Card 2: Doubt Solver -->
+        <a href="{{ url_for('doubt_solver') }}" class="dash-card blue-glow">
+          <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
+          <div class="dash-info">
+            <h3>AI Doubt Solver</h3>
+            <p>Type or speak your questions to get clear explanations with premium human speech narration.</p>
+          </div>
+          <i data-feather="arrow-right" class="dash-arrow"></i>
+        </a>
+
+        <!-- Card 3: Quiz Generator -->
+        <a href="{{ url_for('quiz') }}" class="dash-card green-glow">
+          <div class="dash-icon green"><i data-feather="check-circle"></i></div>
+          <div class="dash-info">
+            <h3>Quiz Generator</h3>
+            <p>Test your syllabus knowledge with interactive MCQ quizzes, scorecard ratings, and full answers.</p>
+          </div>
+          <i data-feather="arrow-right" class="dash-arrow"></i>
+        </a>
+
+        <!-- Card 4: Flashcards -->
+        <a href="{{ url_for('flashcards') }}" class="dash-card orange-glow">
+          <div class="dash-icon orange"><i data-feather="layers"></i></div>
+          <div class="dash-info">
+            <h3>Flashcards</h3>
+            <p>Generate 3D perspective flip flashcards to test key formulas and definitions using active recall.</p>
+          </div>
+          <i data-feather="arrow-right" class="dash-arrow"></i>
+        </a>
+      </div>
     </div>
+
   </div>
 </section>
 
