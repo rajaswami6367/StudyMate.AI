@@ -35,7 +35,7 @@
     Flask uses this to find the file inside the static/ folder correctly.
     The curly braces are Jinja2 — Flask's way of writing Python inside HTML.
   -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.3" />
 
   <!-- Each page can add its own extra CSS if needed -->
   {% block extra_css %}{% endblock %}

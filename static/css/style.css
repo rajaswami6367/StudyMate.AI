@@ -2390,86 +2390,68 @@ body.light-mode .blob { opacity: 0.1; }
 
 /* ── DYNAMIC BACKGROUND & PULSING BLOBS ─────────────────── */
 body {
-  background: radial-gradient(circle at 50% 50%, #0c081f 0%, #06050b 100%) !important;
+  background: radial-gradient(at 0% 0%, #200d46 0px, transparent 50%), 
+              radial-gradient(at 100% 100%, #082d52 0px, transparent 50%), 
+              #050508 !important;
   background-size: 100% 100% !important;
+  background-attachment: fixed !important;
 }
 
 /* Floating background blobs - Expanded sizes and opacities */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px) !important;
+  filter: blur(70px) !important;
   pointer-events: none;
   z-index: 1;
 }
 
 .blob-1 {
-  top: -10%;
+  top: -5%;
   left: -5%;
-  width: 600px;
-  height: 600px;
-  opacity: 0.35 !important; /* Brighter purple neon glow */
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, rgba(168, 85, 247, 0) 70%) !important;
-  animation: floatSlow1 22s infinite ease-in-out alternate !important;
+  width: 500px;
+  height: 500px;
+  opacity: 0.75 !important; /* Extremely visible glowing violet clouds */
+  background: radial-gradient(circle, #9333ea 0%, transparent 70%) !important;
+  animation: floatVibrant1 18s infinite ease-in-out alternate !important;
 }
 
 .blob-2 {
-  bottom: -10%;
+  bottom: -5%;
   right: -5%;
-  width: 700px;
-  height: 700px;
-  opacity: 0.32 !important; /* Brighter cyan neon glow */
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, rgba(6, 182, 212, 0) 70%) !important;
-  animation: floatSlow2 26s infinite ease-in-out alternate !important;
+  width: 600px;
+  height: 600px;
+  opacity: 0.70 !important; /* Extremely visible cyan blue glow */
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%) !important;
+  animation: floatVibrant2 22s infinite ease-in-out alternate !important;
 }
 
 .blob-3 {
   top: 35%;
-  left: 25%;
-  width: 550px;
-  height: 550px;
-  opacity: 0.28 !important; /* Brighter pink/magenta neon glow */
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.42) 0%, rgba(236, 72, 153, 0) 70%) !important;
-  animation: floatSlow3 28s infinite ease-in-out alternate !important;
+  left: 20%;
+  width: 450px;
+  height: 450px;
+  opacity: 0.65 !important; /* Extremely visible magenta pink cloud */
+  background: radial-gradient(circle, #ec4899 0%, transparent 70%) !important;
+  animation: floatVibrant3 25s infinite ease-in-out alternate !important;
 }
 
-@keyframes floatSlow1 {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(80px, -60px) scale(1.15);
-  }
-  66% {
-    transform: translate(-40px, 50px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+@keyframes floatVibrant1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(120px, -80px) scale(1.2); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
 
-@keyframes floatSlow2 {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  50% {
-    transform: translate(-100px, 80px) scale(1.1);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+@keyframes floatVibrant2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-150px, 100px) scale(1.3); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
 
-@keyframes floatSlow3 {
-  0% {
-    transform: translate(0px, 0px) scale(0.95);
-  }
-  50% {
-    transform: translate(70px, -50px) scale(1.1);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(0.95);
-  }
+@keyframes floatVibrant3 {
+  0% { transform: translate(0px, 0px) scale(0.9); }
+  50% { transform: translate(90px, -60px) scale(1.2); }
+  100% { transform: translate(0px, 0px) scale(0.9); }
 }
 
 /* ── CONTAINER TRANSPARENCY OVERRIDES FOR GRADIENT VISIBILITY ── */
