@@ -2394,17 +2394,10 @@ body {
   background-size: 100% 100% !important;
 }
 
-/* ── DYNAMIC BACKGROUND & PULSING BLOBS ─────────────────── */
-body {
-  background: radial-gradient(circle at 50% 50%, #0c081f 0%, #06050b 100%) !important;
-  background-size: 100% 100% !important;
-}
-
 /* Floating background blobs - Expanded sizes and opacities */
 .blob {
   position: absolute;
   border-radius: 50%;
-  mix-blend-mode: screen;
   filter: blur(120px) !important;
   pointer-events: none;
   z-index: 1;
