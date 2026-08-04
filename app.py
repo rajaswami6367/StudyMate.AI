@@ -385,26 +385,34 @@ def ai_notes():
         if not topic:
             return render_template('ai_notes.html', error='Please enter a topic!')
 
-        prompt = f"""Generate comprehensive, well-structured, and highly readable study notes on: {topic}
-
-Please format them clearly using Markdown with:
-# 📚 Introduction
-[Brief intro explaining the topic with emojis]
-
-# 💡 Key Concepts
-[Main concepts with explanations. Use bold **keyword** to highlight terms]
-
-# 📝 Important Points
-- Use bullet points of must-remember facts.
-- Include visual dividers where helpful.
-
-# ⚙️ Formulas / Definitions (if applicable)
-[Any relevant formulas, equations, or definitions styled clearly]
-
-# 🎯 Summary
-[3-4 line summary highlighting the main takeaways]
-
-Make it clear, educational, and easy to understand for a B.Tech CSE student. Use emojis, subheadings, and bold highlights throughout."""
+        prompt = f"""Generate comprehensive, well-structured, and highly visual study notes on the topic: '{topic}'
+        
+        To make these notes extremely engaging and colorful for B.Tech CSE students, structure them strictly with:
+        
+        # 📚 Introduction
+        [Detailed overview of the topic. Highlight key terms in bold]
+        
+        # 💡 Key Concepts & Callouts
+        Use markdown blockquotes starting with emojis to create colored highlight cards:
+        - For a key definition/term, use:
+        > 📝 **Definition:** [Definition text here]
+        - For an important concept/tip, use:
+        > 💡 **Concept:** [Tip/Concept detail here]
+        - For warnings or critical exam points, use:
+        > ⚠️ **Warning:** [Common mistakes or critical exam questions here]
+        
+        # 📊 Structured Breakdown & Comparison
+        - Draw a markdown comparison table comparing different aspects, types, or architectures of the topic.
+        - Add a clean bulleted list where each bullet starts with a relevant emoji.
+        
+        # ⚙️ Technical Blueprint (Formulas, Equations or Code)
+        - If math-related: use LaTeX block formulas like $$...$$.
+        - If CS/coding-related: provide a clean, commented code snippet in a fenced code block with language specifier (e.g. ```python).
+        
+        # 🎯 Summary Cheat Sheet
+        [Bullet-points summarizing the core takeaways]
+        
+        Use emojis, clear spacing, bold styling for important terms, and visual formatting. Make it detailed, highly structured, and suitable for exam revision."""
 
         result, error = ask_gemini(prompt)
         notes_result = result if result else error

@@ -2008,3 +2008,120 @@ body.light-mode .blob { opacity: 0.1; }
   opacity: 0.8;
   transform: scale(1.05);
 }
+
+/* ── VIBRANT COLORFUL STUDY NOTES SHEET ──────────────────── */
+/* Colorful Headings inside study sheets */
+.markdown-content h1 {
+  background: linear-gradient(135deg, var(--accent-light), #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.15);
+  padding-bottom: var(--space-xs);
+  margin-top: var(--space-xl);
+  font-weight: 800;
+}
+
+.markdown-content h2 {
+  color: #38bdf8 !important; /* light blue */
+  margin-top: var(--space-lg);
+  font-weight: 700;
+  border-left: 3px solid #38bdf8;
+  padding-left: 8px;
+}
+
+.markdown-content h3 {
+  color: #fbbf24 !important; /* amber/yellow */
+  margin-top: var(--space-md);
+  font-weight: 600;
+}
+
+/* Glowing bold highlights (Highlighter pen effect) */
+.markdown-content strong {
+  color: #c084fc !important; /* purple text */
+  background: rgba(168, 85, 247, 0.12) !important; /* soft purple glow background */
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.1);
+  display: inline-block;
+}
+
+/* Styled Blockquote Callout Cards */
+.markdown-content blockquote {
+  margin: var(--space-md) 0 !important;
+  padding: 1.1rem 1.4rem !important;
+  border-radius: var(--radius-lg) !important;
+  font-style: normal !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Violet Tip Card */
+.markdown-content blockquote.callout-tip {
+  border-left: 5px solid #a855f7 !important;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(168, 85, 247, 0.01)) !important;
+}
+
+/* Orange Warning Card */
+.markdown-content blockquote.callout-warning {
+  border-left: 5px solid #f97316 !important;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.01)) !important;
+}
+
+/* Green Definition Card */
+.markdown-content blockquote.callout-definition {
+  border-left: 5px solid #10b981 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.01)) !important;
+}
+
+/* General grey Card */
+.markdown-content blockquote.callout-general {
+  border-left: 5px solid #6b7280 !important;
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(107, 114, 128, 0.01)) !important;
+}
+
+/* Custom Styled Tables for Comparisons */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-lg) 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content th {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.05)) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700;
+  padding: var(--space-md) var(--space-lg);
+  text-align: left;
+  border-bottom: 2px solid rgba(124, 58, 237, 0.3) !important;
+}
+
+.markdown-content td {
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.markdown-content tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.markdown-content tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Bullet list spacing */
+.markdown-content ul, .markdown-content ol {
+  margin: var(--space-md) 0 var(--space-md) var(--space-lg);
+}
+
+.markdown-content li {
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

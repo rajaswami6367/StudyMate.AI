@@ -140,6 +140,20 @@
         if (rawText.trim()) {
           // Parse it using marked.js
           container.innerHTML = marked.parse(rawText.trim());
+          
+          // Style callout blocks dynamically
+          container.querySelectorAll('blockquote').forEach(bq => {
+            const html = bq.innerHTML;
+            if (html.includes('💡') || html.toLowerCase().includes('concept') || html.toLowerCase().includes('tip')) {
+              bq.classList.add('callout-tip');
+            } else if (html.includes('⚠️') || html.toLowerCase().includes('warning') || html.toLowerCase().includes('note')) {
+              bq.classList.add('callout-warning');
+            } else if (html.includes('📝') || html.toLowerCase().includes('definition') || html.toLowerCase().includes('key')) {
+              bq.classList.add('callout-definition');
+            } else {
+              bq.classList.add('callout-general');
+            }
+          });
         }
         // Make it visible smoothly
         container.style.opacity = '1';
