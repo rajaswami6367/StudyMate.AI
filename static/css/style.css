@@ -2394,6 +2394,12 @@ body {
   background-size: 100% 100% !important;
 }
 
+/* ── DYNAMIC BACKGROUND & PULSING BLOBS ─────────────────── */
+body {
+  background: radial-gradient(circle at 50% 50%, #0c081f 0%, #06050b 100%) !important;
+  background-size: 100% 100% !important;
+}
+
 /* Floating background blobs - Expanded sizes and opacities */
 .blob {
   position: absolute;
@@ -2407,30 +2413,30 @@ body {
 .blob-1 {
   top: -10%;
   left: -5%;
-  width: 550px;
-  height: 550px;
-  opacity: 0.28 !important; /* Highly visible glowing violet clouds */
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(168, 85, 247, 0) 70%) !important;
+  width: 600px;
+  height: 600px;
+  opacity: 0.35 !important; /* Brighter purple neon glow */
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, rgba(168, 85, 247, 0) 70%) !important;
   animation: floatSlow1 22s infinite ease-in-out alternate !important;
 }
 
 .blob-2 {
   bottom: -10%;
   right: -5%;
-  width: 650px;
-  height: 650px;
-  opacity: 0.24 !important; /* Highly visible cyan blue glow */
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.38) 0%, rgba(6, 182, 212, 0) 70%) !important;
+  width: 700px;
+  height: 700px;
+  opacity: 0.32 !important; /* Brighter cyan neon glow */
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, rgba(6, 182, 212, 0) 70%) !important;
   animation: floatSlow2 26s infinite ease-in-out alternate !important;
 }
 
 .blob-3 {
   top: 35%;
   left: 25%;
-  width: 500px;
-  height: 500px;
-  opacity: 0.22 !important; /* Highly visible magenta pink cloud */
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, rgba(236, 72, 153, 0) 70%) !important;
+  width: 550px;
+  height: 550px;
+  opacity: 0.28 !important; /* Brighter pink/magenta neon glow */
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.42) 0%, rgba(236, 72, 153, 0) 70%) !important;
   animation: floatSlow3 28s infinite ease-in-out alternate !important;
 }
 
@@ -2474,7 +2480,14 @@ body {
 }
 
 /* ── CONTAINER TRANSPARENCY OVERRIDES FOR GRADIENT VISIBILITY ── */
-main, .dashboard-section, .hero-bg {
+main, .dashboard-section {
+  background: transparent !important;
+}
+
+.hero-bg {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important; /* Bring in front of body background, but behind main content (z-index: 2) */
   background: transparent !important;
 }
 
