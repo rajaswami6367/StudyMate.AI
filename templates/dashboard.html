@@ -3,63 +3,185 @@
 {% block title %}Dashboard — StudyMate AI{% endblock %}
 
 {% block content %}
-<section class="dashboard-section">
-  <div class="dashboard-header">
-    <div class="dashboard-welcome">
-      <h1>Welcome back, <span class="gradient-text">{{ username }}</span>! 👋</h1>
-      <p>What would you like to study today?</p>
-      <a href="{{ url_for('library') }}" class="btn btn-ghost btn-sm" style="margin-top: var(--space-md); display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--border);">
-        <i data-feather="folder" style="width: 16px; height: 16px;"></i> Open My Library
-      </a>
-    </div>
-  </div>
-
+<section class="dashboard-section" style="position: relative; overflow: hidden; padding-bottom: 50px;">
   <!-- Glowing background blobs for dashboard -->
   <div class="hero-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden;">
-    <div class="blob blob-1" style="top: -10%; left: -10%; width: 400px; height: 400px; opacity: 0.08; filter: blur(80px);"></div>
-    <div class="blob blob-2" style="bottom: 10%; right: -10%; width: 500px; height: 500px; opacity: 0.08; filter: blur(100px);"></div>
+    <div class="blob blob-1" style="top: -10%; left: -10%; width: 450px; height: 450px; opacity: 0.08; filter: blur(80px); background: var(--primary);"></div>
+    <div class="blob blob-2" style="bottom: 10%; right: -10%; width: 550px; height: 550px; opacity: 0.08; filter: blur(100px); background: var(--accent);"></div>
   </div>
 
-  <div class="dashboard-grid" style="position: relative; z-index: 2;">
-    <!-- Card 1: AI Notes -->
-    <a href="{{ url_for('ai_notes') }}" class="dash-card purple-glow">
-      <div class="dash-icon purple"><i data-feather="file-text"></i></div>
-      <div class="dash-info">
-        <h3>AI Notes Generator</h3>
-        <p>Convert your topics or PDFs into structured study notes.</p>
+  <div style="position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 0 var(--space-md);">
+    
+    <!-- 1. HEADER WELCOME SECTION -->
+    <div class="dashboard-header-card" style="margin-bottom: var(--space-lg);">
+      <div class="dashboard-welcome-info">
+        <h1 style="font-size: var(--font-size-2xl); font-weight: 800; margin-bottom: 4px;">
+          Welcome back, <span class="gradient-text">{{ username }}</span>! 👋
+        </h1>
+        <p style="color: var(--text-secondary); font-size: var(--font-size-md);">
+          Your intelligent study dashboard is ready. What are we mastering today?
+        </p>
       </div>
-      <i data-feather="arrow-right" class="dash-arrow"></i>
-    </a>
+      
+      <!-- Motivational Study Tip banner -->
+      <div class="motivation-banner">
+        <div class="motivation-icon">💡</div>
+        <div class="motivation-text">
+          <strong>Tip of the Day:</strong> <span id="studyTip">Consistent, small study blocks build stronger memory than one long night cramming session. Try generating a quick MCQ Quiz!</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- Card 2: Doubt Solver -->
-    <a href="{{ url_for('doubt_solver') }}" class="dash-card blue-glow">
-      <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
-      <div class="dash-info">
-        <h3>AI Doubt Solver</h3>
-        <p>Stuck? Ask any question and get an instant, clear explanation.</p>
+    <!-- 2. QUICK STATS ROW -->
+    <div class="stats-row" style="margin-bottom: var(--space-xl);">
+      <div class="stat-widget purple-stat">
+        <div class="stat-icon-box"><i data-feather="file-text"></i></div>
+        <div class="stat-details">
+          <span class="stat-num">{{ stats.notes }}</span>
+          <span class="stat-label">Saved Notes</span>
+        </div>
       </div>
-      <i data-feather="arrow-right" class="dash-arrow"></i>
-    </a>
+      
+      <div class="stat-widget blue-stat">
+        <div class="stat-icon-box"><i data-feather="message-circle"></i></div>
+        <div class="stat-details">
+          <span class="stat-num">{{ stats.doubt }}</span>
+          <span class="stat-label">Solved Doubts</span>
+        </div>
+      </div>
+      
+      <div class="stat-widget green-stat">
+        <div class="stat-icon-box"><i data-feather="check-circle"></i></div>
+        <div class="stat-details">
+          <span class="stat-num">{{ stats.quiz }}</span>
+          <span class="stat-label">Quizzes Taken</span>
+        </div>
+      </div>
+      
+      <div class="stat-widget orange-stat">
+        <div class="stat-icon-box"><i data-feather="layers"></i></div>
+        <div class="stat-details">
+          <span class="stat-num">{{ stats.flashcard }}</span>
+          <span class="stat-label">Revision Cards</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- Card 3: Quiz Generator -->
-    <a href="{{ url_for('quiz') }}" class="dash-card green-glow">
-      <div class="dash-icon green"><i data-feather="check-circle"></i></div>
-      <div class="dash-info">
-        <h3>Quiz Generator</h3>
-        <p>Test your knowledge with AI-generated MCQs.</p>
-      </div>
-      <i data-feather="arrow-right" class="dash-arrow"></i>
-    </a>
+    <!-- 3. SPLIT CONTAINER: MAIN WORKSPACE & SIDEBAR -->
+    <div class="dashboard-split-layout">
+      
+      <!-- Left side: Main Workspace Grid -->
+      <div class="workspace-area">
+        <h2 style="font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
+          <span style="color: var(--primary-light);">⚡</span> Study Tools Workspace
+        </h2>
+        
+        <div class="dashboard-grid">
+          <!-- Card 1: AI Notes -->
+          <a href="{{ url_for('ai_notes') }}" class="dash-card purple-glow">
+            <div class="dash-icon purple"><i data-feather="file-text"></i></div>
+            <div class="dash-info">
+              <h3>AI Notes Generator</h3>
+              <p>Convert your topics or chapters into visual colourful revision sheets.</p>
+            </div>
+            <i data-feather="arrow-right" class="dash-arrow"></i>
+          </a>
 
-    <!-- Card 4: Flashcards -->
-    <a href="{{ url_for('flashcards') }}" class="dash-card orange-glow">
-      <div class="dash-icon orange"><i data-feather="layers"></i></div>
-      <div class="dash-info">
-        <h3>Flashcards</h3>
-        <p>Create flip-cards for quick revision of important terms.</p>
+          <!-- Card 2: Doubt Solver -->
+          <a href="{{ url_for('doubt_solver') }}" class="dash-card blue-glow">
+            <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
+            <div class="dash-info">
+              <h3>AI Doubt Solver</h3>
+              <p>Get instant answers with natural human speech narration.</p>
+            </div>
+            <i data-feather="arrow-right" class="dash-arrow"></i>
+          </a>
+
+          <!-- Card 3: Quiz Generator -->
+          <a href="{{ url_for('quiz') }}" class="dash-card green-glow">
+            <div class="dash-icon green"><i data-feather="check-circle"></i></div>
+            <div class="dash-info">
+              <h3>Quiz Generator</h3>
+              <p>Take interactive MCQ quizzes with score tracking & feedback.</p>
+            </div>
+            <i data-feather="arrow-right" class="dash-arrow"></i>
+          </a>
+
+          <!-- Card 4: Flashcards -->
+          <a href="{{ url_for('flashcards') }}" class="dash-card orange-glow">
+            <div class="dash-icon orange"><i data-feather="layers"></i></div>
+            <div class="dash-info">
+              <h3>Flashcards</h3>
+              <p>Create active-recall flip-cards for quick exam revision.</p>
+            </div>
+            <i data-feather="arrow-right" class="dash-arrow"></i>
+          </a>
+        </div>
       </div>
-      <i data-feather="arrow-right" class="dash-arrow"></i>
-    </a>
+      
+      <!-- Right side: Recent Activity Sidebar -->
+      <div class="sidebar-area">
+        <div class="recent-activity-card">
+          <div class="card-header-flex">
+            <h3><i data-feather="clock" style="width: 18px; height: 18px; color: var(--accent-light);"></i> Recent Activity</h3>
+            <a href="{{ url_for('library') }}" class="btn-text-only">View All</a>
+          </div>
+          
+          <div class="activity-timeline">
+            {% if recent_items %}
+              {% for item in recent_items %}
+                <div class="activity-item">
+                  <div class="activity-badge {{ item.item_type }}">
+                    {% if item.item_type == 'notes' %}
+                      <i data-feather="file-text"></i>
+                    {% elif item.item_type == 'doubt' %}
+                      <i data-feather="message-circle"></i>
+                    {% elif item.item_type == 'quiz' %}
+                      <i data-feather="check-circle"></i>
+                    {% else %}
+                      <i data-feather="layers"></i>
+                    {% endif %}
+                  </div>
+                  
+                  <div class="activity-content">
+                    <h4>{{ item.title }}</h4>
+                    <p>Saved in library</p>
+                    <a href="{{ url_for('library_view', item_id=item.id) }}" class="activity-action-btn">
+                      Open <i data-feather="chevron-right" style="width:12px; height:12px;"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="activity-empty-state">
+                <div class="empty-icon">📁</div>
+                <p>No saved study materials yet. Generate notes or quizzes to see them here!</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
+
+<script>
+  // Dynamic Motivational B.Tech Study Tips
+  const studyTips = [
+    "Consistent study blocks build stronger memory than one long night cramming session. Try generating a quick MCQ Quiz!",
+    "Explaining a concept to someone else (or asking the Doubt Solver) is the best way to identify gaps in your knowledge.",
+    "Practice coding or solve logic problems directly after reading notes. Active involvement doubles memory retention.",
+    "Always review your quiz errors! Take the quiz retake option in the Library to check your improvement.",
+    "Use active recall: Read the front of a flashcard and try to recall the definition out loud before flipping it!"
+  ];
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    const tipText = document.getElementById("studyTip");
+    if (tipText) {
+      const randomIndex = Math.floor(Math.random() * studyTips.length);
+      tipText.textContent = studyTips[randomIndex];
+    }
+  });
+</script>
 {% endblock %}

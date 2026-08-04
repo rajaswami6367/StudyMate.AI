@@ -271,7 +271,37 @@ def dashboard():
     """
     if not is_logged_in():
         return redirect(url_for('login'))
-    return render_template('dashboard.html', username=session.get('username'))
+        
+    conn = get_db_connection()
+    
+    # 1. Total saved items count by type
+    stats_rows = conn.execute(
+        'SELECT item_type, COUNT(*) as count FROM saved_items WHERE user_id = ? GROUP BY item_type',
+        (session['user_id'],)
+    ).fetchall()
+    
+    # Initialize dictionary
+    stats = {'notes': 0, 'doubt': 0, 'quiz': 0, 'flashcard': 0, 'total': 0}
+    for row in stats_rows:
+        itype = row['item_type']
+        if itype in stats:
+            stats[itype] = row['count']
+        stats['total'] += row['count']
+        
+    # 2. Get 3 most recently saved items
+    recent_items = conn.execute(
+        'SELECT id, title, item_type, created_at FROM saved_items WHERE user_id = ? ORDER BY created_at DESC LIMIT 3',
+        (session['user_id'],)
+    ).fetchall()
+    
+    conn.close()
+    
+    return render_template(
+        'dashboard.html', 
+        username=session.get('username'),
+        stats=stats,
+        recent_items=recent_items
+    )
 
 
 # ── AI DOUBT SOLVER ──────────────────────────────────────────
