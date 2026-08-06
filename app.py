@@ -119,38 +119,33 @@ def health():
 def ask_gemini(prompt):
     """
     Sends a prompt to Gemini AI and returns the response text.
-    
-    WHY a separate function?
-    Before, you had the same retry code copy-pasted in 4 places.
-    Now it's in ONE place. If we want to change the model or
-    add logging, we only change it here. This is called DRY:
-    Don't Repeat Yourself — a key professional principle.
+    Uses robust fallback across valid Gemini SDK model names (gemini-2.5-flash, gemini-1.5-flash).
     
     Returns: (result_text, error_message)
     """
     if not client:
         return None, "⚠️ AI not configured. Please add your GEMINI_API_KEY in the .env file."
     
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model='gemini-flash-latest',
-                contents=prompt
-            )
-            return response.text, None  # Success!
+    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
+    last_error = ""
 
-        except Exception as e:
-            error_str = str(e)
-            # 429 = Too Many Requests (quota limit hit)
-            if "429" in error_str and attempt < 2:
-                print(f"⏳ Rate limit hit, waiting 5 seconds... (attempt {attempt + 1}/3)")
-                time.sleep(5)
-                continue
-            else:
-                # Final failure
-                return None, f"AI Error: {error_str}"
+    for model_name in models_to_try:
+        for attempt in range(2):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                if response and response.text:
+                    return response.text, None  # Success!
+            except Exception as e:
+                last_error = str(e)
+                if "429" in last_error:
+                    time.sleep(1.5)
+                else:
+                    break  # Try next model if invalid model name
 
-    return None, "Quota limit reached. Please wait a moment and try again."
+    return None, f"⚠️ Gemini API Error: {last_error}"
 
 
 # ── STEP 7: Helper — Check if user is logged in ──────────────
