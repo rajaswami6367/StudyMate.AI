@@ -108,6 +108,13 @@ def init_db():
 # Initialize DB when app starts
 init_db()
 
+# ── HEALTH / KEEP-ALIVE PING ROUTE ───────────────────────────
+@app.route('/health')
+def health():
+    """Lightweight ping endpoint for keep-alive monitoring to prevent Render cold starts."""
+    return {"status": "ok", "message": "StudyMate AI is active"}, 200
+
+
 # ── STEP 6: Helper Function for Gemini API calls ─────────────
 def ask_gemini(prompt):
     """
