@@ -126,11 +126,11 @@ def ask_gemini(prompt):
     if not client:
         return None, "⚠️ AI not configured. Please add your GEMINI_API_KEY in the .env file."
     
-    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
+    models_to_try = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']
     last_error = ""
 
     for model_name in models_to_try:
-        for attempt in range(2):
+        for attempt in range(3):
             try:
                 response = client.models.generate_content(
                     model=model_name,
@@ -140,10 +140,14 @@ def ask_gemini(prompt):
                     return response.text, None  # Success!
             except Exception as e:
                 last_error = str(e)
-                if "429" in last_error:
-                    time.sleep(1.5)
+                if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
+                    # Rate limit hit — wait 5s then 8s for quota window to reset
+                    time.sleep(5 if attempt == 0 else 8)
                 else:
-                    break  # Try next model if invalid model name
+                    break  # Try next model if model not found/invalid
+
+    if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
+        return None, "⏳ AI Free Quota Limit Reached: Google Gemini free tier rate limit was temporarily reached. Please wait 10 seconds and click Generate again!"
 
     return None, f"⚠️ Gemini API Error: {last_error}"
 
