@@ -85,7 +85,7 @@
             </span>
           </div>
 
-          <form method="POST" action="{{ url_for('save') }}">
+          <form method="POST" action="{{ url_for('save_item') }}">
             <input type="hidden" name="item_type" value="roadmap" />
             <input type="hidden" name="title" value="Roadmap: {{ roadmap_data.title }}" />
             <input type="hidden" name="content" value="{{ raw_json }}" />
