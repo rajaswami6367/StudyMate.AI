@@ -594,7 +594,16 @@ def exam_predictor():
         prompt = f"""Generate an authentic, highly accurate Predicted Model Question Paper for subject: '{subject}' ({branch}).
 Target System: {university} | Exam Category: {exam_type}.
 
-Analyze 5-10 years of past examination papers (PYQs) and structure the output as valid JSON with NO markdown code block wrappers (i.e. no ```json).
+STRICTLY FOLLOW RTU KOTA B.TECH CSE & BOARD EXAMINATION SCHEME BASED ON 5-10 YEAR PYQs:
+- If End-Sem Exam: Total 70 Marks, 3 Hours.
+  - Part A: 10 Compulsory Short Questions (2 Marks each = 20 Marks).
+  - Part B: 5 Conceptual Questions out of 7 (4 Marks each = 20 Marks).
+  - Part C: 3 Comprehensive Numericals / Code / Derivations out of 5 (10 Marks each = 30 Marks).
+- If Midterm Exam: Total 30 Marks, 1.5 Hours.
+  - Part A: 5 Short Questions (2 Marks each = 10 Marks).
+  - Part B: 2 Long Questions (10 Marks each = 20 Marks).
+
+Return output as valid JSON with NO markdown code block wrappers (i.e. no ```json).
 
 JSON Schema:
 {{
@@ -602,13 +611,13 @@ JSON Schema:
   "subject": "{subject}",
   "branch": "{branch}",
   "exam_type": "{exam_type}",
-  "paper_code": "CS-301",
+  "paper_code": "CS-301-RTU",
   "time_allowed": "3 Hours",
   "total_marks": 70,
   "sections": [
     {{
-      "section_name": "Part A (Short Compulsory Questions)",
-      "instructions": "Answer all questions. Each question carries 2 marks.",
+      "section_name": "Part A (Short Compulsory Questions - Units 1 to 5)",
+      "instructions": "Answer all 10 questions. Each question carries 2 marks.",
       "questions": [
         {{
           "q_num": "Q1 (a)",
@@ -620,35 +629,35 @@ JSON Schema:
       ]
     }},
     {{
-      "section_name": "Part B (Conceptual & Derivations)",
-      "instructions": "Answer any 3 questions. Each question carries 8 marks.",
+      "section_name": "Part B (Conceptual & Derivations - Attempt Any 5 out of 7)",
+      "instructions": "Answer any 5 questions out of 7. Each question carries 4 marks.",
       "questions": [
         {{
           "q_num": "Q2",
-          "question": "Explain Banker's Algorithm for Deadlock Avoidance with a neat safety state calculation example.",
-          "marks": 8,
+          "question": "Explain Banker's Algorithm for Deadlock Avoidance with safety algorithm steps.",
+          "marks": 4,
           "model_answer": "Banker's algorithm checks for safe states by testing allocation requests against available resources using Need = Max - Allocation matrix...",
-          "marking_scheme": "3 marks for algorithm explanation, 5 marks for safety state matrix calculation."
+          "marking_scheme": "2 marks for algorithm explanation, 2 marks for safety state condition."
         }}
       ]
     }},
     {{
-      "section_name": "Part C (High-Weightage Numericals & Code)",
-      "instructions": "Answer any 2 questions. Each question carries 15 marks.",
+      "section_name": "Part C (High-Weightage Numericals & Code - Attempt Any 3 out of 5)",
+      "instructions": "Answer any 3 questions out of 5. Each question carries 10 marks.",
       "questions": [
         {{
           "q_num": "Q5",
-          "question": "Consider the following set of processes with burst time and arrival time. Calculate average waiting time using Round-Robin (Quantum = 2ms) and draw the Gantt chart.",
-          "marks": 15,
+          "question": "Consider the following process set with burst time and arrival time. Calculate average waiting time using Round-Robin (Quantum = 2ms) and draw the Gantt chart.",
+          "marks": 10,
           "model_answer": "Gantt Chart: P1[0-2] -> P2[2-4] -> P3[4-5] -> P1[5-7]... Average Waiting Time = 4.5ms.",
-          "marking_scheme": "6 marks for correct Gantt chart, 6 marks for waiting time calculation, 3 marks for turnaround time."
+          "marking_scheme": "4 marks for correct Gantt chart, 4 marks for waiting time calculation, 2 marks for turnaround time."
         }}
       ]
     }}
   ]
 }}
 
-Ensure questions reflect authentic 5-10 year PYQ trends (numericals, code, diagrams). Keep JSON clean and valid."""
+Ensure questions reflect authentic 5-10 year RTU PYQ trends (numericals, code, diagrams). Keep JSON clean and valid."""
 
         result, error_msg = ask_gemini(prompt)
 
@@ -677,88 +686,151 @@ Ensure questions reflect authentic 5-10 year PYQ trends (numericals, code, diagr
 
 def generate_fallback_exam_paper(subject, university, exam_type, branch):
     """
-    Generates an authentic RTU / Midterm / Board 5-10 year PYQ fallback question paper with Model Answers.
+    Generates an authentic RTU Kota B.Tech CSE / Midterm / Board 5-10 year PYQ fallback question paper with Model Answers.
     Guarantees 100% zero-failure uptime.
     """
     sub_title = subject.strip().title()
-    return {
-        "university": university,
-        "subject": sub_title,
-        "branch": branch,
-        "exam_type": exam_type,
-        "paper_code": "CS-301-PYQ",
-        "time_allowed": "3 Hours" if "End-Sem" in exam_type or "Board" in exam_type else "1.5 Hours",
-        "total_marks": 70 if "End-Sem" in exam_type else (30 if "Midterm" in exam_type else 100),
-        "sections": [
-            {
-                "section_name": "Part A (Short Compulsory Questions)",
-                "instructions": "Answer all questions. Each question carries 2 marks.",
-                "questions": [
-                    {
-                        "q_num": "Q1 (a)",
-                        "question": f"Define the primary architectural objective and core definition of {sub_title}.",
-                        "marks": 2,
-                        "model_answer": f"{sub_title} focuses on systematically organizing computation, resources, and data structures to minimize time/space complexity and ensure system correctness.",
-                        "marking_scheme": "1 mark for definition, 1 mark for primary objective."
-                    },
-                    {
-                        "q_num": "Q1 (b)",
-                        "question": "Differentiate between Static Allocation and Dynamic Memory Allocation.",
-                        "marks": 2,
-                        "model_answer": "Static allocation allocates memory at compile time in fixed stack regions, whereas dynamic allocation allocates memory at runtime in heap regions using pointers (malloc/free).",
-                        "marking_scheme": "1 mark for static definition, 1 mark for dynamic definition."
-                    },
-                    {
-                        "q_num": "Q1 (c)",
-                        "question": "What is worst-case time complexity? State Big-O notation.",
-                        "marks": 2,
-                        "model_answer": "Worst-case complexity gives the maximum upper bound on execution time required by an algorithm for an input of size n, represented mathematically by Big-O notation O(f(n)).",
-                        "marking_scheme": "1 mark for definition, 1 mark for Big-O notation."
-                    }
-                ]
-            },
-            {
-                "section_name": "Part B (Conceptual & Derivations)",
-                "instructions": "Answer any 3 questions. Each question carries 8 marks.",
-                "questions": [
-                    {
-                        "q_num": "Q2",
-                        "question": f"Explain the core 5-step operational pipeline of {sub_title} with a neat architectural block diagram.",
-                        "marks": 8,
-                        "model_answer": "The operational pipeline consists of: 1. Input Processing 2. Parsing & Validation 3. State Transformation 4. Optimization Engine 5. Output Emission. Each stage passes data via intermediate representations...",
-                        "marking_scheme": "3 marks for labeled block diagram, 5 marks for detailed stage explanations."
-                    },
-                    {
-                        "q_num": "Q3",
-                        "question": "Compare and contrast synchronous execution vs asynchronous multi-threaded execution.",
-                        "marks": 8,
-                        "model_answer": "Synchronous execution blocks execution until each task completes sequentially. Asynchronous execution dispatches tasks non-blockingly using event loops or thread pools, maximizing CPU core utilization...",
-                        "marking_scheme": "4 marks for comparative matrix, 4 marks for concurrency trade-offs."
-                    }
-                ]
-            },
-            {
-                "section_name": "Part C (High-Weightage Numericals & Code)",
-                "instructions": "Answer any 2 questions. Each question carries 15 marks.",
-                "questions": [
-                    {
-                        "q_num": "Q4",
-                        "question": f"Solve the following numerical problem on {sub_title}: Calculate optimal memory throughput and efficiency given input array size N=1000 and block size B=64.",
-                        "marks": 15,
-                        "model_answer": "Given N=1000, B=64: Number of blocks = ceil(1000/64) = 16 blocks. Memory efficiency = (Internal Data / Total Allocated) = 1000 / (16 * 64) = 97.65%. Total overhead = 24 bytes...",
-                        "marking_scheme": "5 marks for formula identification, 5 marks for step-by-step calculation, 5 marks for final efficiency percentage."
-                    },
-                    {
-                        "q_num": "Q5",
-                        "question": f"Write a complete, clean C++/Python code implementation for {sub_title} core algorithm. Include time complexity analysis.",
-                        "marks": 15,
-                        "model_answer": "```python\ndef solve_problem(data):\n    # Optimized algorithm implementation\n    result = []\n    for item in data:\n        if item not in result:\n            result.append(item)\n    return result\n```\nTime Complexity: O(N), Space Complexity: O(N).",
-                        "marking_scheme": "8 marks for working code logic, 4 marks for edge case handling, 3 marks for time/space complexity analysis."
-                    }
-                ]
-            }
-        ]
-    }
+    is_midterm = "Midterm" in exam_type
+    
+    if is_midterm:
+        return {
+            "university": university,
+            "subject": sub_title,
+            "branch": branch,
+            "exam_type": exam_type,
+            "paper_code": "CS-301-MID",
+            "time_allowed": "1.5 Hours",
+            "total_marks": 30,
+            "sections": [
+                {
+                    "section_name": "Part A (Short Compulsory Questions - 2 Marks Each)",
+                    "instructions": "Answer all 5 questions. Each question carries 2 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q1 (a)",
+                            "question": f"Define the primary architectural objective and core definition of {sub_title}.",
+                            "marks": 2,
+                            "model_answer": f"{sub_title} focuses on systematically organizing computation, resources, and data structures to minimize complexity.",
+                            "marking_scheme": "1 mark for definition, 1 mark for objective."
+                        },
+                        {
+                            "q_num": "Q1 (b)",
+                            "question": "Differentiate between Static Allocation and Dynamic Memory Allocation.",
+                            "marks": 2,
+                            "model_answer": "Static allocation allocates memory at compile time in fixed stack regions, whereas dynamic allocation allocates memory at runtime in heap regions.",
+                            "marking_scheme": "1 mark for static definition, 1 mark for dynamic definition."
+                        },
+                        {
+                            "q_num": "Q1 (c)",
+                            "question": "What is worst-case time complexity? State Big-O notation.",
+                            "marks": 2,
+                            "model_answer": "Worst-case complexity gives the maximum upper bound on execution time required by an algorithm for input of size n, represented by Big-O notation O(f(n)).",
+                            "marking_scheme": "1 mark for definition, 1 mark for Big-O notation."
+                        }
+                    ]
+                },
+                {
+                    "section_name": "Part B (Long Analytical Questions - Attempt Any 2 out of 3)",
+                    "instructions": "Answer any 2 questions. Each question carries 10 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q2",
+                            "question": f"Explain the core 5-step operational pipeline of {sub_title} with a neat architectural block diagram.",
+                            "marks": 10,
+                            "model_answer": "The operational pipeline consists of: 1. Input Processing 2. Parsing & Validation 3. State Transformation 4. Optimization Engine 5. Output Emission...",
+                            "marking_scheme": "4 marks for labeled block diagram, 6 marks for detailed stage explanations."
+                        },
+                        {
+                            "q_num": "Q3",
+                            "question": f"Solve the following numerical problem on {sub_title}: Calculate optimal memory throughput and efficiency given input array size N=1000 and block size B=64.",
+                            "marks": 10,
+                            "model_answer": "Given N=1000, B=64: Number of blocks = ceil(1000/64) = 16 blocks. Memory efficiency = 97.65%...",
+                            "marking_scheme": "3 marks for formula, 4 marks for calculation, 3 marks for efficiency percentage."
+                        }
+                    ]
+                }
+            ]
+        }
+    else:
+        # Authentic RTU Kota 70-Marks Scheme
+        return {
+            "university": university,
+            "subject": sub_title,
+            "branch": branch,
+            "exam_type": exam_type,
+            "paper_code": "CS-301-RTU",
+            "time_allowed": "3 Hours",
+            "total_marks": 70,
+            "sections": [
+                {
+                    "section_name": "Part A (Short Compulsory Questions - Units 1 to 5)",
+                    "instructions": "Answer all 10 questions covering Units 1 to 5. Each question carries 2 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q1 (a)",
+                            "question": f"Define the primary architectural objective of {sub_title}.",
+                            "marks": 2,
+                            "model_answer": f"{sub_title} systematically organizes computation, resources, and data structures to minimize time/space complexity.",
+                            "marking_scheme": "1 mark for definition, 1 mark for objective."
+                        },
+                        {
+                            "q_num": "Q1 (b)",
+                            "question": "Differentiate between Peterson's Solution and TestAndSet instruction.",
+                            "marks": 2,
+                            "model_answer": "Peterson's solution is a software-based mutual exclusion algorithm using turn/flag variables, whereas TestAndSet is a hardware-supported atomic CPU instruction.",
+                            "marking_scheme": "1 mark for Peterson's, 1 mark for TestAndSet."
+                        },
+                        {
+                            "q_num": "Q1 (c)",
+                            "question": "What is the balance factor of an AVL Tree? State valid values.",
+                            "marks": 2,
+                            "model_answer": "Balance Factor = Height(Left Subtree) - Height(Right Subtree). Valid values for an AVL tree node are -1, 0, and +1.",
+                            "marking_scheme": "1 mark for formula, 1 mark for valid values."
+                        }
+                    ]
+                },
+                {
+                    "section_name": "Part B (Conceptual & Derivations - Attempt Any 5 out of 7)",
+                    "instructions": "Answer any 5 questions out of 7. Each question carries 4 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q2",
+                            "question": f"Explain the core 5-step operational pipeline of {sub_title} with a neat architectural block diagram.",
+                            "marks": 4,
+                            "model_answer": "The operational pipeline consists of: 1. Input Processing 2. Parsing & Validation 3. State Transformation 4. Optimization Engine 5. Output Emission...",
+                            "marking_scheme": "2 marks for labeled block diagram, 2 marks for stage explanations."
+                        },
+                        {
+                            "q_num": "Q3",
+                            "question": "Derive the recurrence relation and average-case time complexity of QuickSort algorithm.",
+                            "marks": 4,
+                            "model_answer": "Recurrence T(n) = 2T(n/2) + O(n). By Master Theorem Case 2, Average-case time complexity = O(n log n). Worst-case O(n^2) occurs when array is already sorted...",
+                            "marking_scheme": "2 marks for recurrence derivation, 2 marks for Master Theorem application."
+                        }
+                    ]
+                },
+                {
+                    "section_name": "Part C (High-Weightage Numericals & Code - Attempt Any 3 out of 5)",
+                    "instructions": "Answer any 3 questions out of 5. Each question carries 10 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q4",
+                            "question": f"Consider processes P1(burst=6ms), P2(burst=8ms), P3(burst=7ms) arriving at time 0. Draw Gantt Chart and calculate average waiting time using Round-Robin (Time Quantum = 2ms).",
+                            "marks": 10,
+                            "model_answer": "Gantt Chart: P1[0-2] -> P2[2-4] -> P3[4-6] -> P1[6-8] -> P2[8-10] -> P3[10-12] -> P1[12-14] -> P2[14-16] -> P3[16-17] -> P2[17-19]. Average Waiting Time = 10.33ms.",
+                            "marking_scheme": "4 marks for correct Gantt chart, 4 marks for waiting time calculation, 2 marks for turnaround time."
+                        },
+                        {
+                            "q_num": "Q5",
+                            "question": f"Given Relation R(A,B,C,D,E) with Functional Dependencies F={{A->B, BC->D, E->C}}. Decompose relation R into 3NF and BCNF step-by-step.",
+                            "marks": 10,
+                            "model_answer": "Candidate Key = {A, E}. 1. Check FDs for BCNF violation: A->B violates BCNF since A is not a superkey. 2. Decompose into R1(A,B) and R2(A,C,D,E)... 3. Resulting 3NF relations maintain dependency preservation...",
+                            "marking_scheme": "3 marks for Candidate Key identification, 4 marks for 3NF decomposition, 3 marks for BCNF validation."
+                        }
+                    ]
+                }
+            ]
+        }
 
 
 def generate_fallback_roadmap(topic):
