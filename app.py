@@ -599,9 +599,10 @@ STRICTLY FOLLOW RTU KOTA B.TECH CSE & BOARD EXAMINATION SCHEME BASED ON 5-10 YEA
   - Part A: 10 Compulsory Short Questions (2 Marks each = 20 Marks).
   - Part B: 5 Conceptual Questions out of 7 (4 Marks each = 20 Marks).
   - Part C: 3 Comprehensive Numericals / Code / Derivations out of 5 (10 Marks each = 30 Marks).
-- If Midterm Exam: Total 30 Marks, 1.5 Hours.
-  - Part A: 5 Short Questions (2 Marks each = 10 Marks).
-  - Part B: 2 Long Questions (10 Marks each = 20 Marks).
+- If Midterm Exam: Total 60 Marks, 1.5 Hours (EXACT RTU MIDTERM PATTERN):
+  - Part A: 6 Compulsory Short Questions (3 Marks each = 18 Marks).
+  - Part B: 4 Conceptual Questions out of 6 (6 Marks each = 24 Marks).
+  - Part C: 2 High-Weightage Numericals / Code out of 3 (10.5 Marks each = 21 Marks).
 
 Return output as valid JSON with NO markdown code block wrappers (i.e. no ```json).
 
@@ -612,45 +613,45 @@ JSON Schema:
   "branch": "{branch}",
   "exam_type": "{exam_type}",
   "paper_code": "CS-301-RTU",
-  "time_allowed": "3 Hours",
-  "total_marks": 70,
+  "time_allowed": "1.5 Hours",
+  "total_marks": 60,
   "sections": [
     {{
-      "section_name": "Part A (Short Compulsory Questions - Units 1 to 5)",
-      "instructions": "Answer all 10 questions. Each question carries 2 marks.",
+      "section_name": "Part A (Short Compulsory Questions - 3 Marks Each)",
+      "instructions": "Answer all 6 questions. Each question carries 3 marks.",
       "questions": [
         {{
           "q_num": "Q1 (a)",
           "question": "Define Peterson's Solution for Process Synchronization.",
-          "marks": 2,
+          "marks": 3,
           "model_answer": "Peterson's solution is a concurrent programming algorithm for mutual exclusion that allows two processes to share a single-use resource without conflict, using shared flags and a turn variable.",
-          "marking_scheme": "1 mark for definition, 1 mark for flag/turn variable conditions."
+          "marking_scheme": "1.5 marks for definition, 1.5 marks for flag/turn variable conditions."
         }}
       ]
     }},
     {{
-      "section_name": "Part B (Conceptual & Derivations - Attempt Any 5 out of 7)",
-      "instructions": "Answer any 5 questions out of 7. Each question carries 4 marks.",
+      "section_name": "Part B (Conceptual Questions - Attempt Any 4 out of 6)",
+      "instructions": "Answer any 4 questions out of 6. Each question carries 6 marks.",
       "questions": [
         {{
           "q_num": "Q2",
           "question": "Explain Banker's Algorithm for Deadlock Avoidance with safety algorithm steps.",
-          "marks": 4,
+          "marks": 6,
           "model_answer": "Banker's algorithm checks for safe states by testing allocation requests against available resources using Need = Max - Allocation matrix...",
-          "marking_scheme": "2 marks for algorithm explanation, 2 marks for safety state condition."
+          "marking_scheme": "3 marks for algorithm explanation, 3 marks for safety state condition."
         }}
       ]
     }},
     {{
-      "section_name": "Part C (High-Weightage Numericals & Code - Attempt Any 3 out of 5)",
-      "instructions": "Answer any 3 questions out of 5. Each question carries 10 marks.",
+      "section_name": "Part C (High-Weightage Numericals & Code - Attempt Any 2 out of 3)",
+      "instructions": "Answer any 2 questions out of 3. Each question carries 10.5 marks.",
       "questions": [
         {{
           "q_num": "Q5",
           "question": "Consider the following process set with burst time and arrival time. Calculate average waiting time using Round-Robin (Quantum = 2ms) and draw the Gantt chart.",
-          "marks": 10,
+          "marks": 10.5,
           "model_answer": "Gantt Chart: P1[0-2] -> P2[2-4] -> P3[4-5] -> P1[5-7]... Average Waiting Time = 4.5ms.",
-          "marking_scheme": "4 marks for correct Gantt chart, 4 marks for waiting time calculation, 2 marks for turnaround time."
+          "marking_scheme": "4.5 marks for correct Gantt chart, 4 marks for waiting time calculation, 2 marks for turnaround time."
         }}
       ]
     }}
@@ -685,67 +686,119 @@ Ensure questions reflect authentic 5-10 year RTU PYQ trends (numericals, code, d
 
 
 def generate_fallback_exam_paper(subject, university, exam_type, branch):
-    """
-    Generates an authentic RTU Kota B.Tech CSE / Midterm / Board 5-10 year PYQ fallback question paper with Model Answers.
-    Guarantees 100% zero-failure uptime.
-    """
     sub_title = subject.strip().title()
     is_midterm = "Midterm" in exam_type
     
     if is_midterm:
+        # EXACT RTU Kota Midterm 60-Marks Pattern
         return {
             "university": university,
             "subject": sub_title,
             "branch": branch,
             "exam_type": exam_type,
-            "paper_code": "CS-301-MID",
+            "paper_code": "CS-301-MID60",
             "time_allowed": "1.5 Hours",
-            "total_marks": 30,
+            "total_marks": 60,
             "sections": [
                 {
-                    "section_name": "Part A (Short Compulsory Questions - 2 Marks Each)",
-                    "instructions": "Answer all 5 questions. Each question carries 2 marks.",
+                    "section_name": "Part A (Short Compulsory Questions - 3 Marks Each)",
+                    "instructions": "Answer all 6 questions. Each question carries 3 marks.",
                     "questions": [
                         {
                             "q_num": "Q1 (a)",
                             "question": f"Define the primary architectural objective and core definition of {sub_title}.",
-                            "marks": 2,
+                            "marks": 3,
                             "model_answer": f"{sub_title} focuses on systematically organizing computation, resources, and data structures to minimize complexity.",
-                            "marking_scheme": "1 mark for definition, 1 mark for objective."
+                            "marking_scheme": "1.5 marks for definition, 1.5 marks for objective."
                         },
                         {
                             "q_num": "Q1 (b)",
                             "question": "Differentiate between Static Allocation and Dynamic Memory Allocation.",
-                            "marks": 2,
+                            "marks": 3,
                             "model_answer": "Static allocation allocates memory at compile time in fixed stack regions, whereas dynamic allocation allocates memory at runtime in heap regions.",
-                            "marking_scheme": "1 mark for static definition, 1 mark for dynamic definition."
+                            "marking_scheme": "1.5 marks for static definition, 1.5 marks for dynamic definition."
                         },
                         {
                             "q_num": "Q1 (c)",
                             "question": "What is worst-case time complexity? State Big-O notation.",
-                            "marks": 2,
+                            "marks": 3,
                             "model_answer": "Worst-case complexity gives the maximum upper bound on execution time required by an algorithm for input of size n, represented by Big-O notation O(f(n)).",
-                            "marking_scheme": "1 mark for definition, 1 mark for Big-O notation."
+                            "marking_scheme": "1.5 marks for definition, 1.5 marks for Big-O notation."
+                        },
+                        {
+                            "q_num": "Q1 (d)",
+                            "question": "State the difference between Preemptive and Non-Preemptive Scheduling.",
+                            "marks": 3,
+                            "model_answer": "Preemptive scheduling allows CPU to interrupt a running process (e.g. Round Robin), while Non-Preemptive process holds CPU until completion (e.g. FCFS).",
+                            "marking_scheme": "1.5 marks for preemptive definition, 1.5 marks for non-preemptive definition."
+                        },
+                        {
+                            "q_num": "Q1 (e)",
+                            "question": "What is thrashing in virtual memory systems?",
+                            "marks": 3,
+                            "model_answer": "Thrashing occurs when a system spends more time swapping pages in and out of main memory than executing actual instructions due to insufficient page frames.",
+                            "marking_scheme": "1.5 marks for definition, 1.5 marks for cause."
+                        },
+                        {
+                            "q_num": "Q1 (f)",
+                            "question": "Define Peterson's Algorithm turn and flag variables.",
+                            "marks": 3,
+                            "model_answer": "Turn indicates whose turn it is to enter critical section, while flag array indicates if a process is ready to enter.",
+                            "marking_scheme": "1.5 marks for turn variable, 1.5 marks for flag array."
                         }
                     ]
                 },
                 {
-                    "section_name": "Part B (Long Analytical Questions - Attempt Any 2 out of 3)",
-                    "instructions": "Answer any 2 questions. Each question carries 10 marks.",
+                    "section_name": "Part B (Conceptual Questions - Attempt Any 4 out of 6 - 6 Marks Each)",
+                    "instructions": "Answer any 4 questions out of 6. Each question carries 6 marks.",
                     "questions": [
                         {
                             "q_num": "Q2",
                             "question": f"Explain the core 5-step operational pipeline of {sub_title} with a neat architectural block diagram.",
-                            "marks": 10,
+                            "marks": 6,
                             "model_answer": "The operational pipeline consists of: 1. Input Processing 2. Parsing & Validation 3. State Transformation 4. Optimization Engine 5. Output Emission...",
-                            "marking_scheme": "4 marks for labeled block diagram, 6 marks for detailed stage explanations."
+                            "marking_scheme": "3 marks for labeled block diagram, 3 marks for detailed stage explanations."
                         },
                         {
                             "q_num": "Q3",
                             "question": f"Solve the following numerical problem on {sub_title}: Calculate optimal memory throughput and efficiency given input array size N=1000 and block size B=64.",
-                            "marks": 10,
+                            "marks": 6,
                             "model_answer": "Given N=1000, B=64: Number of blocks = ceil(1000/64) = 16 blocks. Memory efficiency = 97.65%...",
-                            "marking_scheme": "3 marks for formula, 4 marks for calculation, 3 marks for efficiency percentage."
+                            "marking_scheme": "2 marks for formula, 2 marks for calculation, 2 marks for efficiency percentage."
+                        },
+                        {
+                            "q_num": "Q4",
+                            "question": "Explain Banker's Deadlock Avoidance Safety Algorithm with state matrix example.",
+                            "marks": 6,
+                            "model_answer": "Banker's algorithm tests for safe states using Allocation, Max, and Need matrices. If Need <= Available, processes execute safely...",
+                            "marking_scheme": "3 marks for safety condition, 3 marks for example calculation."
+                        },
+                        {
+                            "q_num": "Q5",
+                            "question": "Compare and contrast synchronous execution vs asynchronous multi-threaded execution.",
+                            "marks": 6,
+                            "model_answer": "Synchronous execution blocks execution sequentially. Asynchronous execution dispatches tasks non-blockingly using thread pools...",
+                            "marking_scheme": "3 marks for comparative matrix, 3 marks for concurrency trade-offs."
+                        }
+                    ]
+                },
+                {
+                    "section_name": "Part C (High-Weightage Numericals & Code - Attempt Any 2 out of 3 - 10.5 Marks Each)",
+                    "instructions": "Answer any 2 questions out of 3. Each question carries 10.5 marks.",
+                    "questions": [
+                        {
+                            "q_num": "Q6",
+                            "question": f"Consider processes P1(burst=6ms), P2(burst=8ms), P3(burst=7ms) arriving at time 0. Draw Gantt Chart and calculate average waiting time using Round-Robin (Time Quantum = 2ms).",
+                            "marks": 10.5,
+                            "model_answer": "Gantt Chart: P1[0-2] -> P2[2-4] -> P3[4-6] -> P1[6-8] -> P2[8-10] -> P3[10-12] -> P1[12-14] -> P2[14-16] -> P3[16-17] -> P2[17-19]. Average Waiting Time = 10.33ms.",
+                            "marking_scheme": "4.5 marks for correct Gantt chart, 4 marks for waiting time calculation, 2 marks for turnaround time."
+                        },
+                        {
+                            "q_num": "Q7",
+                            "question": f"Given Relation R(A,B,C,D,E) with Functional Dependencies F={{A->B, BC->D, E->C}}. Decompose relation R into 3NF and BCNF step-by-step.",
+                            "marks": 10.5,
+                            "model_answer": "Candidate Key = {A, E}. 1. Check FDs for BCNF violation: A->B violates BCNF since A is not a superkey. 2. Decompose into R1(A,B) and R2(A,C,D,E)... 3. Resulting 3NF relations maintain dependency preservation...",
+                            "marking_scheme": "3.5 marks for Candidate Key identification, 4 marks for 3NF decomposition, 3 marks for BCNF validation."
                         }
                     ]
                 }
@@ -834,10 +887,6 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 def generate_fallback_roadmap(topic):
-    """
-    Generates a structured roadmap when Google API quota (429) is temporarily hit.
-    Guarantees 100% uptime and instant visual roadmap rendering.
-    """
     clean_topic = topic.strip().title()
     return {
         "title": f"{clean_topic} Mastery Roadmap",
@@ -917,12 +966,6 @@ def generate_fallback_roadmap(topic):
 
 
 def parse_flashcards(text):
-    """
-    Converts raw AI text into a structured list of flashcard dicts.
-    
-    Input:  "Q: What is RAM?\nA: Random Access Memory..."
-    Output: [{'question': 'What is RAM?', 'answer': 'Random Access Memory...'}, ...]
-    """
     cards = []
     lines = text.strip().split('\n')
     current_q = None
@@ -946,23 +989,30 @@ def parse_flashcards(text):
     return cards
 
 
-# ── SAVE ITEM (AJAX) ─────────────────────────────────────────
+# ── SAVE ITEM (FORM & AJAX) ──────────────────────────────────
+@app.route('/save', methods=['POST'])
 @app.route('/save-item', methods=['POST'])
 def save_item():
-    """Saves an AI response to the user's library."""
     if not is_logged_in():
-        return {"success": False, "error": "Please log in first!"}, 401
+        if request.is_json:
+            return {"success": False, "error": "Please log in first!"}, 401
+        return redirect(url_for('login'))
     
-    data = request.get_json()
-    if not data:
-        return {"success": False, "error": "Invalid request data!"}, 400
-        
-    item_type = data.get('item_type', '').strip()
-    title     = data.get('title', '').strip()
-    content   = data.get('content', '').strip()
+    if request.is_json:
+        data = request.get_json()
+        item_type = data.get('item_type', '').strip()
+        title     = data.get('title', '').strip()
+        content   = data.get('content', '').strip()
+    else:
+        item_type = request.form.get('item_type', '').strip()
+        title     = request.form.get('title', '').strip()
+        content   = request.form.get('content', '').strip()
     
     if not item_type or not title or not content:
-        return {"success": False, "error": "All fields are required!"}, 400
+        if request.is_json:
+            return {"success": False, "error": "All fields are required!"}, 400
+        flash("Failed to save: missing required content", "error")
+        return redirect(request.referrer or url_for('dashboard'))
         
     try:
         conn = get_db_connection()
@@ -972,15 +1022,27 @@ def save_item():
         )
         conn.commit()
         conn.close()
-        return {"success": True, "message": "Saved to your library successfully!"}
+        
+        if request.is_json:
+            return {"success": True, "message": "Saved to your library successfully!"}
+            
+        flash(f"Item saved to your library successfully!", "success")
+        return redirect(url_for('library'))
     except Exception as e:
-        return {"success": False, "error": str(e)}, 500
+        if request.is_json:
+            return {"success": False, "error": str(e)}, 500
+        flash(f"Error saving item: {str(e)}", "error")
+        return redirect(request.referrer or url_for('dashboard'))
+
+def save():
+    return save_item()
+
+
 
 
 # ── MY LIBRARY ───────────────────────────────────────────────
 @app.route('/library')
 def library():
-    """Displays all items saved by the logged-in user."""
     if not is_logged_in():
         return redirect(url_for('login'))
         
@@ -997,7 +1059,6 @@ def library():
 # ── VIEW SAVED ITEM ──────────────────────────────────────────
 @app.route('/library/view/<int:item_id>')
 def view_saved_item(item_id):
-    """Shows a single saved item in full detail."""
     if not is_logged_in():
         return redirect(url_for('login'))
         
@@ -1026,7 +1087,6 @@ def view_saved_item(item_id):
 # ── DELETE SAVED ITEM ────────────────────────────────────────
 @app.route('/library/delete/<int:item_id>', methods=['POST'])
 def delete_saved_item(item_id):
-    """Deletes a saved item from the user's library."""
     if not is_logged_in():
         return redirect(url_for('login'))
         
@@ -1047,14 +1107,13 @@ def delete_saved_item(item_id):
 
 # ── NEURAL TEXT-TO-SPEECH STREAMING ──────────────────────────
 async def generate_tts_async(text, voice_name, output_path):
-    """Asynchronously communicates with Edge TTS servers to generate audio."""
     communicate = edge_tts.Communicate(text, voice_name)
     await communicate.save(output_path)
 
 
 @app.route('/speak')
 def speak():
-    """Generates and streams high-fidelity neural MP3 voice audio."""
+
     text = request.args.get('text', '').strip()
     gender = request.args.get('gender', 'female').strip()
     
