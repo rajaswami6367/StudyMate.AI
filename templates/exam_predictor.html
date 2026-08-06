@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}AI Exam Paper Predictor — StudyMate AI{% endblock %}
+
+{% block content %}
+<section class="tool-section" style="position: relative; padding: var(--space-2xl) var(--space-md) var(--space-3xl); max-width: 1100px; margin: 0 auto;">
+
+  <!-- Page Header -->
+  <div class="tool-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); padding: 6px 16px; border-radius: var(--radius-full); font-size: var(--font-size-sm); color: #f472b6; font-weight: 600; margin-bottom: var(--space-md);">
+      <i data-feather="file-text"></i> 5-10 Year PYQ Pattern Analysis
+    </div>
+    <h1 style="font-size: var(--font-size-3xl); font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-xs);">
+      AI Exam Paper Predictor & Question Bank
+    </h1>
+    <p style="color: var(--text-muted); font-size: var(--font-size-md); max-width: 650px; margin: 0 auto;">
+      Select your Board, University (RTU Kota, AKTU, VTU, CBSE), and Exam Type (Midterm vs End-Sem) to generate realistic predicted question papers complete with Model Answers.
+    </p>
+  </div>
+
+  <!-- Selection Form -->
+  <div class="glass-card" style="padding: var(--space-xl); border-radius: var(--radius-xl); background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px); margin-bottom: var(--space-2xl);">
+    <form method="POST" action="{{ url_for('exam_predictor') }}" id="examForm">
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+        
+        <!-- University / Board -->
+        <div>
+          <label style="font-weight: 600; color: var(--text-primary); font-size: 13px; display: block; margin-bottom: 6px;">
+            University / Board Target:
+          </label>
+          <select name="university" id="university" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; outline: none; font-size: 14px;">
+            <option value="RTU Kota (B.Tech)" {% if university == 'RTU Kota (B.Tech)' %}selected{% endif %}>RTU Kota (Rajasthan Tech Univ)</option>
+            <option value="AKTU Lucknow (B.Tech)" {% if university == 'AKTU Lucknow (B.Tech)' %}selected{% endif %}>AKTU Lucknow</option>
+            <option value="VTU Karnataka" {% if university == 'VTU Karnataka' %}selected{% endif %}>VTU Karnataka</option>
+            <option value="CBSE Class 12 Boards" {% if university == 'CBSE Class 12 Boards' %}selected{% endif %}>CBSE Class 12 Boards</option>
+            <option value="Custom College / University" {% if university == 'Custom College / University' %}selected{% endif %}>Custom College / University</option>
+          </select>
+        </div>
+
+        <!-- Exam Type -->
+        <div>
+          <label style="font-weight: 600; color: var(--text-primary); font-size: 13px; display: block; margin-bottom: 6px;">
+            Exam Category / Format:
+          </label>
+          <select name="exam_type" id="exam_type" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; outline: none; font-size: 14px;">
+            <option value="University End-Sem Exam" {% if exam_type == 'University End-Sem Exam' %}selected{% endif %}>University End-Sem (70-100 Marks)</option>
+            <option value="College Midterm Exam" {% if exam_type == 'College Midterm Exam' %}selected{% endif %}>College Midterm (30-50 Marks)</option>
+            <option value="Board Exam Paper" {% if exam_type == 'Board Exam Paper' %}selected{% endif %}>Board Exam Paper (70 Marks)</option>
+          </select>
+        </div>
+
+        <!-- Branch / Stream -->
+        <div>
+          <label style="font-weight: 600; color: var(--text-primary); font-size: 13px; display: block; margin-bottom: 6px;">
+            Branch / Course:
+          </label>
+          <select name="branch" id="branch" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; outline: none; font-size: 14px;">
+            <option value="B.Tech CSE" {% if branch == 'B.Tech CSE' %}selected{% endif %}>B.Tech Computer Science (CSE)</option>
+            <option value="B.Tech IT / AI-ML" {% if branch == 'B.Tech IT / AI-ML' %}selected{% endif %}>B.Tech IT / AI-ML / Data Science</option>
+            <option value="B.Tech ECE / Electrical" {% if branch == 'B.Tech ECE / Electrical' %}selected{% endif %}>B.Tech ECE / Electrical</option>
+            <option value="Class 12 Science (PCM/CS)" {% if branch == 'Class 12 Science (PCM/CS)' %}selected{% endif %}>Class 12 Science (PCM / CS)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Subject Input & Action -->
+      <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+        <input type="text" id="subject" name="subject" value="{{ subject }}" placeholder="Enter Subject Name (e.g., Operating Systems, Data Structures, DBMS, Physics...)" required style="flex: 1; min-width: 280px; padding: 12px 18px; border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-size: var(--font-size-base); outline: none;" />
+        <button type="submit" class="btn btn-primary" id="generateBtn" style="padding: 12px 28px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-md); background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: #fff; cursor: pointer;">
+          <i data-feather="cpu"></i> Generate Model Paper
+        </button>
+      </div>
+
+      <!-- Quick RTU Presets -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px;">
+        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">RTU & College Presets:</span>
+        <button type="button" onclick="setPreset('RTU Kota (B.Tech)', 'University End-Sem Exam', 'B.Tech CSE', 'Operating Systems')" class="pill-suggestion">RTU End-Sem: OS</button>
+        <button type="button" onclick="setPreset('RTU Kota (B.Tech)', 'College Midterm Exam', 'B.Tech CSE', 'Data Structures & Algorithms')" class="pill-suggestion">RTU Midterm: DSA</button>
+        <button type="button" onclick="setPreset('RTU Kota (B.Tech)', 'University End-Sem Exam', 'B.Tech CSE', 'Database Management Systems')" class="pill-suggestion">RTU End-Sem: DBMS</button>
+        <button type="button" onclick="setPreset('RTU Kota (B.Tech)', 'College Midterm Exam', 'B.Tech CSE', 'Compiler Design')" class="pill-suggestion">RTU Midterm: Compiler</button>
+        <button type="button" onclick="setPreset('CBSE Class 12 Boards', 'Board Exam Paper', 'Class 12 Science (PCM/CS)', 'Physics Class 12')" class="pill-suggestion">CBSE 12th Physics</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div id="loadingState" style="display: none; text-align: center; padding: var(--space-3xl) 0;">
+    <div class="spinner" style="width: 48px; height: 48px; border: 4px solid rgba(236, 72, 153, 0.2); border-top-color: #ec4899; border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto var(--space-md);"></div>
+    <h3 style="color: var(--text-primary); font-weight: 700; font-size: var(--font-size-xl);">Analyzing 5-10 Years PYQs & Generating Model Paper...</h3>
+    <p style="color: var(--text-muted);">Structuring Part A, Part B, Part C questions & Model Answer Keys for <strong>"{{ subject }}"</strong>.</p>
+  </div>
+
+  <!-- Model Paper Output Display -->
+  {% if paper_data %}
+    <div class="paper-result" style="animation: fadeIn 0.5s ease-out;">
+      
+      <!-- Top Action Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg);">
+        <div>
+          <span style="background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: #f472b6; padding: 4px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;">
+            {{ paper_data.university }} • {{ paper_data.branch }}
+          </span>
+        </div>
+
+        <div style="display: flex; gap: var(--space-sm);">
+          <button onclick="window.print()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; border-radius: var(--radius-md); background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <i data-feather="printer" style="width: 14px;"></i> Print Paper / PDF
+          </button>
+          
+          <form method="POST" action="{{ url_for('save_item') }}">
+            <input type="hidden" name="item_type" value="exam_paper" />
+            <input type="hidden" name="title" value="Model Paper: {{ paper_data.subject }} ({{ paper_data.university }})" />
+            <input type="hidden" name="content" value="{{ raw_json }}" />
+            <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; border-radius: var(--radius-md); background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <i data-feather="bookmark" style="width: 14px;"></i> Save to Library
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Question Paper Official Sheet Container -->
+      <div class="glass-card" style="padding: var(--space-2xl); border-radius: var(--radius-xl); background: rgba(12, 10, 25, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);">
+        
+        <!-- Official Header -->
+        <div style="text-align: center; border-bottom: 2px double rgba(255, 255, 255, 0.2); padding-bottom: var(--space-lg); margin-bottom: var(--space-xl);">
+          <h2 style="font-size: var(--font-size-xl); font-weight: 800; color: #fff; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">
+            {{ paper_data.university }}
+          </h2>
+          <h3 style="font-size: var(--font-size-lg); font-weight: 700; color: #c084fc; margin-bottom: 8px;">
+            {{ paper_data.exam_type }} — PREDICTED MODEL QUESTION PAPER
+          </h3>
+          <div style="display: flex; justify-content: space-between; max-width: 700px; margin: 0 auto; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+            <span>Branch: <strong>{{ paper_data.branch }}</strong></span>
+            <span>Subject: <strong>{{ paper_data.subject }}</strong></span>
+            <span>Paper Code: <strong>{{ paper_data.paper_code }}</strong></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; max-width: 700px; margin: 8px auto 0; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+            <span>Time Allowed: <strong>{{ paper_data.time_allowed }}</strong></span>
+            <span>Maximum Marks: <strong>{{ paper_data.total_marks }} Marks</strong></span>
+          </div>
+        </div>
+
+        <!-- Sections -->
+        {% for sec in paper_data.sections %}
+          <div class="exam-section-block" style="margin-bottom: var(--space-2xl);">
+            <div style="background: rgba(255, 255, 255, 0.04); border-left: 4px solid #ec4899; padding: 10px 16px; margin-bottom: var(--space-lg); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+              <h4 style="font-size: var(--font-size-md); font-weight: 700; color: #fff; margin: 0 0 2px 0;">
+                {{ sec.section_name }}
+              </h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0; font-style: italic;">
+                Instructions: {{ sec.instructions }}
+              </p>
+            </div>
+
+            <!-- Question List -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-lg);">
+              {% for q in sec.questions %}
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                  
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); margin-bottom: 8px;">
+                    <div style="font-size: var(--font-size-base); font-weight: 600; color: #fff; line-height: 1.5;">
+                      <span style="color: #f472b6; font-weight: 800; margin-right: 6px;">{{ q.q_num }}.</span> {{ q.question }}
+                    </div>
+                    <span style="font-size: 12px; font-weight: 700; background: rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: var(--radius-sm); color: #c084fc; flex-shrink: 0;">
+                      [{{ q.marks }} Marks]
+                    </span>
+                  </div>
+
+                  <!-- Model Answer Toggle Button -->
+                  <div style="margin-top: 12px;">
+                    <button type="button" onclick="toggleAnswer('ans_{{ loop.index }}_{{ loop.index0 }}')" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                      <i data-feather="eye" style="width: 14px;"></i> Show Model Answer & Marking Scheme
+                    </button>
+
+                    <!-- Model Answer Drawer -->
+                    <div id="ans_{{ loop.index }}_{{ loop.index0 }}" style="display: none; margin-top: 10px; padding: 14px; background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-md); border: 1px solid rgba(16, 185, 129, 0.2); animation: fadeIn 0.3s ease-out;">
+                      <div style="font-size: 12px; color: #34d399; font-weight: 700; margin-bottom: 6px;">
+                        💡 Model Solution / Answer:
+                      </div>
+                      <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">
+                        {{ q.model_answer }}
+                      </div>
+                      {% if q.marking_scheme %}
+                        <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px;">
+                          📋 <strong>Marking Breakdown:</strong> {{ q.marking_scheme }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                </div>
+              {% endfor %}
+            </div>
+
+          </div>
+        {% endfor %}
+
+      </div>
+
+    </div>
+  {% endif %}
+
+</section>
+
+<style>
+  .pill-suggestion {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pill-suggestion:hover {
+    background: rgba(236, 72, 153, 0.2);
+    border-color: #f472b6;
+    color: #fff;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+  function setPreset(univ, type, br, sub) {
+    document.getElementById('university').value = univ;
+    document.getElementById('exam_type').value = type;
+    document.getElementById('branch').value = br;
+    document.getElementById('subject').value = sub;
+    document.getElementById('examForm').submit();
+  }
+
+  document.getElementById('examForm').addEventListener('submit', function() {
+    document.getElementById('loadingState').style.display = 'block';
+  });
+
+  function toggleAnswer(ansId) {
+    const el = document.getElementById(ansId);
+    if (el.style.display === 'none') {
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+</script>
+{% endblock %}
