@@ -486,6 +486,81 @@ Make questions test real understanding, not just memorization."""
     return render_template('flashcards.html', flashcards_data=flashcards_data, topic=topic)
 
 
+# ── VISUAL AI MIND MAP & ROADMAP GENERATOR ───────────────────
+@app.route('/ai-roadmap', methods=['GET', 'POST'])
+def ai_roadmap():
+    """Generates an interactive visual mind map / learning roadmap for any topic or career path."""
+    if not is_logged_in():
+        return redirect(url_for('login'))
+
+    roadmap_data = None
+    raw_json = ""
+    topic = ""
+    error = ""
+
+    if request.method == 'POST':
+        topic = request.form.get('topic', '').strip()
+
+        if not topic:
+            return render_template('roadmap.html', error='Please enter a topic or career path!')
+
+        prompt = f"""Generate a comprehensive, structured Visual Learning Roadmap & Mind Map for the topic/career path: '{topic}'.
+Return the output as a valid JSON object with NO markdown code block wrappers (i.e. no ```json).
+
+The JSON object must have this exact structure:
+{{
+  "title": "{topic}",
+  "subtitle": "Complete Step-by-Step Learning & Mastery Roadmap",
+  "estimated_total_hours": 80,
+  "difficulty_level": "Beginner to Advanced",
+  "phases": [
+    {{
+      "phase_num": 1,
+      "phase_title": "Phase 1: Foundations & Prerequisites",
+      "icon": "book-open",
+      "summary": "Core concepts to learn first before diving deeper.",
+      "nodes": [
+        {{
+          "id": "p1_n1",
+          "title": "Topic Title",
+          "desc": "Short explanation of what this topic covers and why it's important.",
+          "hours": 10,
+          "difficulty": "Easy",
+          "key_takeaways": ["Takeaway 1", "Takeaway 2"],
+          "action_step": "Practice exercise or mini project suggestion"
+        }}
+      ]
+    }}
+  ]
+}}
+
+Provide 3 to 4 distinct phases (e.g. Phase 1: Foundations, Phase 2: Core Concepts, Phase 3: Advanced Topics, Phase 4: Real-World Projects).
+Each phase should contain 2 to 4 nodes.
+Ensure the JSON is valid, properly escaped, and strictly follows the schema."""
+
+        result, error_msg = ask_gemini(prompt)
+
+        if result:
+            raw_json = result.strip()
+            if raw_json.startswith("```"):
+                lines = raw_json.split('\n')
+                if lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines[-1].startswith("```"):
+                    lines = lines[:-1]
+                raw_json = "\n".join(lines).strip()
+
+            try:
+                roadmap_data = json.loads(raw_json)
+            except Exception as e:
+                error = f"Failed to parse AI Roadmap data: {str(e)}"
+        else:
+            error = error_msg
+
+    return render_template('roadmap.html', roadmap_data=roadmap_data, raw_json=raw_json, topic=topic, error=error)
+
+
+
 def parse_flashcards(text):
     """
     Converts raw AI text into a structured list of flashcard dicts.
