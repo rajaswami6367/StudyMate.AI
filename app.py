@@ -307,6 +307,9 @@ def dashboard():
 
 #  AI DOUBT SOLVER 
 @app.route('/doubt-solver', methods=['GET', 'POST'])
+@app.route('/doubt_solver', methods=['GET', 'POST'])
+@app.route('/ask_doubt', methods=['GET', 'POST'])
+@app.route('/ask-doubt', methods=['GET', 'POST'])
 def doubt_solver():
     """Accepts a question and returns an AI-generated answer."""
     if not is_logged_in():
@@ -403,6 +406,7 @@ Example structure:
 
 #  AI NOTES GENERATOR 
 @app.route('/ai-notes', methods=['GET', 'POST'])
+@app.route('/ai_notes', methods=['GET', 'POST'])
 def ai_notes():
     """Generates structured study notes on any topic."""
     if not is_logged_in():
@@ -491,6 +495,9 @@ Make questions test real understanding, not just memorization."""
 
 #  VISUAL AI MIND MAP & ROADMAP GENERATOR 
 @app.route('/ai-roadmap', methods=['GET', 'POST'])
+@app.route('/ai_roadmap', methods=['GET', 'POST'])
+@app.route('/visual_learning', methods=['GET', 'POST'])
+@app.route('/visual-learning', methods=['GET', 'POST'])
 def ai_roadmap():
     """Generates an interactive visual mind map / learning roadmap for any topic or career path."""
     if not is_logged_in():
@@ -566,6 +573,7 @@ Keep JSON concise (exactly 3 phases, 2 nodes per phase) so it generates super fa
 
 #  AI EXAM PAPER PREDICTOR & QUESTION PAPER GENERATOR 
 @app.route('/exam-predictor', methods=['GET', 'POST'])
+@app.route('/exam_predictor', methods=['GET', 'POST'])
 def exam_predictor():
     """Generates authentic predicted model question papers with Model Answers based on 5-10 year PYQ analysis for RTU, B.Tech CSE, Midterms, and Boards."""
     if not is_logged_in():
