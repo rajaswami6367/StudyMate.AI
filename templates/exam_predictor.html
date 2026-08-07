@@ -160,6 +160,20 @@
               {% for q in sec.questions %}
                 <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-lg); padding: var(--space-lg);">
                   
+                  <!-- RTU 5-10 Year Unit & PYQ Source Badges -->
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                    {% if q.unit %}
+                      <span style="font-size: 11px; font-weight: 700; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                        📌 {{ q.unit }}
+                      </span>
+                    {% endif %}
+                    {% if q.pyq_source %}
+                      <span style="font-size: 11px; font-weight: 700; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                        🔥 {{ q.pyq_source }}
+                      </span>
+                    {% endif %}
+                  </div>
+
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); margin-bottom: 8px;">
                     <div style="font-size: var(--font-size-base); font-weight: 600; color: #fff; line-height: 1.5;">
                       <span style="color: #f472b6; font-weight: 800; margin-right: 6px;">{{ q.q_num }}.</span> {{ q.question }}
