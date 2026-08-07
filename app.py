@@ -641,6 +641,9 @@ JSON structure per question item:
 
             try:
                 paper_data = json.loads(raw_json)
+                if not isinstance(paper_data, dict) or "sections" not in paper_data or not isinstance(paper_data.get("sections"), list):
+                    paper_data = generate_fallback_exam_paper(subject, university, exam_type, branch)
+                    raw_json = json.dumps(paper_data)
             except Exception as e:
                 paper_data = generate_fallback_exam_paper(subject, university, exam_type, branch)
                 raw_json = json.dumps(paper_data)
