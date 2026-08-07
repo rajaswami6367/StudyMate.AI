@@ -779,6 +779,65 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
             {"q_num": "Q6", "question": f"Design a complete, end-to-end production architecture for {sub_title}. Write clean, commented pseudocode/code implementing the core algorithm and analyze time/space complexity.", "marks": 10.5 if is_midterm else 10, "model_answer": f"```python\ndef execute_{sub_lower.replace(' ', '_')}_pipeline(data_stream):\n    # Core production pipeline for {sub_title}\n    results = []\n    for item in data_stream:\n        if item is not None:\n            results.append(item * 2)\n    return results\n```\nTime Complexity: O(N), Space Complexity: O(N).", "marking_scheme": "3.5 marks for architecture design diagram, 4.5 marks for clean code implementation, 2.5 marks for complexity analysis." if is_midterm else "3 marks for architecture, 4 marks for code, 3 marks for complexity."}
         ]
 
+    # ── ENFORCE EXACT QUESTION COUNTS & SCHEMES ─────────────────────────
+    # End-Sem (70 Marks): Part A = 10 Compulsory (2m = 20m), Part B = 7 (Attempt 5 x 4m = 20m), Part C = 5 (Attempt 3 x 10m = 30m)
+    # Midterm (60 Marks): Part A = 6 Compulsory (3m = 18m), Part B = 6 (Attempt 4 x 6m = 24m), Part C = 3 (Attempt 2 x 10.5m = 21m)
+    
+    target_a_count = 6 if is_midterm else 10
+    target_b_count = 6 if is_midterm else 7
+    target_c_count = 3 if is_midterm else 5
+
+    sub_a_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+    
+    # Fill & trim Part A
+    while len(part_a_qs) < target_a_count:
+        idx = len(part_a_qs)
+        let = sub_a_letters[idx] if idx < 10 else f"a{idx}"
+        part_a_qs.append({
+            "q_num": f"Q1 ({let})",
+            "question": f"Explain key concept #{idx+1} in {sub_title}.",
+            "marks": 3 if is_midterm else 2,
+            "model_answer": f"{sub_title} concept #{idx+1} provides essential domain functionality and structural abstraction.",
+            "marking_scheme": "1.5 marks for definition, 1.5 marks for explanation." if is_midterm else "1 mark for definition, 1 mark for explanation."
+        })
+    part_a_qs = part_a_qs[:target_a_count]
+    for idx, q in enumerate(part_a_qs):
+        q["q_num"] = f"Q1 ({sub_a_letters[idx]})"
+        q["marks"] = 3 if is_midterm else 2
+
+    # Fill & trim Part B
+    while len(part_b_qs) < target_b_count:
+        idx = len(part_b_qs)
+        q_no = idx + 2
+        part_b_qs.append({
+            "q_num": f"Q{q_no}",
+            "question": f"Explain key design methodology #{idx+1} in {sub_title} with architectural diagram.",
+            "marks": 6 if is_midterm else 4,
+            "model_answer": f"Methodology #{idx+1} structures inputs, optimizes intermediate execution, and ensures error resilience in {sub_title}.",
+            "marking_scheme": "3 marks for diagram, 3 marks for explanation." if is_midterm else "2 marks for diagram, 2 marks for explanation."
+        })
+    part_b_qs = part_b_qs[:target_b_count]
+    for idx, q in enumerate(part_b_qs):
+        q["q_num"] = f"Q{idx+2}"
+        q["marks"] = 6 if is_midterm else 4
+
+    # Fill & trim Part C
+    c_start_num = len(part_b_qs) + 2
+    while len(part_c_qs) < target_c_count:
+        idx = len(part_c_qs)
+        q_no = c_start_num + idx
+        part_c_qs.append({
+            "q_num": f"Q{q_no}",
+            "question": f"Given a real-world enterprise scenario in {sub_title}, design the full multi-tier solution architecture, write complete implementation code, and perform asymptotic complexity analysis.",
+            "marks": 10.5 if is_midterm else 10,
+            "model_answer": f"Enterprise architecture uses a multi-tier pipeline for {sub_title}:\n1. Ingestion Layer\n2. Processing Engine\n3. Storage & Cache Layer.\nTime Complexity: O(N log N), Space Complexity: O(N).",
+            "marking_scheme": "3.5 marks for architecture design, 4.5 marks for code, 2.5 marks for complexity." if is_midterm else "3 marks for architecture, 4 marks for code, 3 marks for complexity."
+        })
+    part_c_qs = part_c_qs[:target_c_count]
+    for idx, q in enumerate(part_c_qs):
+        q["q_num"] = f"Q{c_start_num + idx}"
+        q["marks"] = 10.5 if is_midterm else 10
+
     # Return structured paper object
     paper_code = f"CS-{301 if is_midterm else 401}-{'MID60' if is_midterm else 'RTU70'}"
     time_allowed = "1.5 Hours" if is_midterm else "3 Hours"
@@ -787,17 +846,17 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
     sections = [
         {
             "section_name": f"Part A (Short Compulsory Questions - {'3 Marks Each' if is_midterm else '2 Marks Each'})",
-            "instructions": f"Answer all {'6' if is_midterm else '10'} questions. Each question carries {'3' if is_midterm else '2'} marks.",
+            "instructions": f"Answer all {'6' if is_midterm else '10'} compulsory questions. Each question carries {'3' if is_midterm else '2'} marks.",
             "questions": part_a_qs
         },
         {
             "section_name": f"Part B (Conceptual Questions - Attempt Any {'4 out of 6' if is_midterm else '5 out of 7'})",
-            "instructions": f"Answer any {'4' if is_midterm else '5'} questions. Each question carries {'6' if is_midterm else '4'} marks.",
+            "instructions": f"Answer any {'4 out of 6' if is_midterm else '5 out of 7'} questions. Each question carries {'6' if is_midterm else '4'} marks.",
             "questions": part_b_qs
         },
         {
             "section_name": f"Part C (High-Weightage Numericals & Code - Attempt Any {'2 out of 3' if is_midterm else '3 out of 5'})",
-            "instructions": f"Answer any {'2' if is_midterm else '3'} questions. Each question carries {'10.5' if is_midterm else '10'} marks.",
+            "instructions": f"Answer any {'2 out of 3' if is_midterm else '3 out of 5'} questions. Each question carries {'10.5' if is_midterm else '10'} marks.",
             "questions": part_c_qs
         }
     ]
