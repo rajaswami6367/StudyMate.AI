@@ -1,18 +1,18 @@
 # ============================================================
-#  StudyMate AI — app.py  (Professional Version)
+#  StudyMate AI  app.py  (Professional Version)
 #  Author  : Raja Swami
 #  Version : 2.0
 #
 #  WHAT'S FIXED vs your original:
-#  ✅ API key moved to .env (no more exposed keys!)
-#  ✅ Passwords are now HASHED (secure storage)
-#  ✅ Secret key loaded from .env
-#  ✅ Homepage shows landing page (not redirecting to login)
-#  ✅ Retry logic extracted into one helper function (DRY)
-#  ✅ Proper error handling everywhere
-#  ✅ Code comments added so you understand every line
-#  ✅ Logout added
-#  ✅ All your existing features preserved
+#   API key moved to .env (no more exposed keys!)
+#   Passwords are now HASHED (secure storage)
+#   Secret key loaded from .env
+#   Homepage shows landing page (not redirecting to login)
+#   Retry logic extracted into one helper function (DRY)
+#   Proper error handling everywhere
+#   Code comments added so you understand every line
+#   Logout added
+#   All your existing features preserved
 # ============================================================
 
 import os
@@ -21,26 +21,27 @@ import json
 import time
 import asyncio
 import edge_tts
+import random
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from google import genai
 
-# ── STEP 1: Load secrets from .env file ─────────────────────
+#  STEP 1: Load secrets from .env file 
 # This reads your .env file and makes the variables available
 # via os.environ.get(). The API key is NEVER in this file.
 load_dotenv()
 
-# ── STEP 2: Create Flask App ─────────────────────────────────
+#  STEP 2: Create Flask App 
 app = Flask(__name__)
 
 # Secret key is used to encrypt session cookies (login sessions)
-# It's now loaded from .env — much safer!
+# It's now loaded from .env  much safer!
 app.secret_key = os.environ.get('SECRET_KEY', 'fallback_dev_key_change_this')
 
-# ── STEP 3: Setup Google Gemini AI Client ────────────────────
-# We read the API key from .env — NOT hardcoded!
+#  STEP 3: Setup Google Gemini AI Client 
+# We read the API key from .env  NOT hardcoded!
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 if not GEMINI_API_KEY or GEMINI_API_KEY == 'YOUR_GEMINI_API_KEY_HERE':
@@ -51,11 +52,11 @@ else:
     client = genai.Client(api_key=GEMINI_API_KEY)
     print("[OK] Gemini AI client connected successfully!")
 
-# ── STEP 4: Ensure required folders exist ────────────────────
+#  STEP 4: Ensure required folders exist 
 os.makedirs('database', exist_ok=True)
 os.makedirs('uploads', exist_ok=True)
 
-# ── STEP 5: Database Setup ───────────────────────────────────
+#  STEP 5: Database Setup 
 def get_db_connection():
     """
     Opens a connection to the SQLite database.
@@ -69,10 +70,10 @@ def get_db_connection():
 def init_db():
     """
     Creates the database tables if they don't exist yet.
-    This runs every time the app starts — safely.
+    This runs every time the app starts  safely.
     
     NOTE: Passwords are stored as HASHES, not plain text.
-    Example: "raja123" → "$pbkdf2-sha256$..." (unreadable hash)
+    Example: "raja123"  "$pbkdf2-sha256$..." (unreadable hash)
     Even if someone steals the database, they can't read passwords.
     """
     conn = get_db_connection()
@@ -108,14 +109,14 @@ def init_db():
 # Initialize DB when app starts
 init_db()
 
-# ── HEALTH / KEEP-ALIVE PING ROUTE ───────────────────────────
+#  HEALTH / KEEP-ALIVE PING ROUTE 
 @app.route('/health')
 def health():
     """Lightweight ping endpoint for keep-alive monitoring to prevent Render cold starts."""
     return {"status": "ok", "message": "StudyMate AI is active"}, 200
 
 
-# ── STEP 6: Helper Function for Gemini API calls ─────────────
+#  STEP 6: Helper Function for Gemini API calls 
 def ask_gemini(prompt):
     """
     Sends a prompt to Gemini AI and returns the response text.
@@ -124,7 +125,7 @@ def ask_gemini(prompt):
     Returns: (result_text, error_message)
     """
     if not client:
-        return None, "⚠️ AI not configured. Please add your GEMINI_API_KEY in the .env file."
+        return None, " AI not configured. Please add your GEMINI_API_KEY in the .env file."
     
     models_to_try = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']
     last_error = ""
@@ -141,28 +142,28 @@ def ask_gemini(prompt):
             except Exception as e:
                 last_error = str(e)
                 if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-                    # Rate limit hit — wait 5s then 8s for quota window to reset
+                    # Rate limit hit  wait 5s then 8s for quota window to reset
                     time.sleep(5 if attempt == 0 else 8)
                 else:
                     break  # Try next model if model not found/invalid
 
     if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-        return None, "⏳ AI Free Quota Limit Reached: Google Gemini free tier rate limit was temporarily reached. Please wait 10 seconds and click Generate again!"
+        return None, " AI Free Quota Limit Reached: Google Gemini free tier rate limit was temporarily reached. Please wait 10 seconds and click Generate again!"
 
-    return None, f"⚠️ Gemini API Error: {last_error}"
+    return None, f" Gemini API Error: {last_error}"
 
 
-# ── STEP 7: Helper — Check if user is logged in ──────────────
+#  STEP 7: Helper  Check if user is logged in 
 def is_logged_in():
     """Returns True if user has an active session."""
     return 'user_id' in session
 
 
-# ══════════════════════════════════════════════════════════════
-#  ROUTES — Each function handles one URL
-# ══════════════════════════════════════════════════════════════
+# 
+#  ROUTES  Each function handles one URL
+# 
 
-# ── HOME PAGE ────────────────────────────────────────────────
+#  HOME PAGE 
 @app.route('/')
 def index():
     """
@@ -174,12 +175,12 @@ def index():
     return render_template('index.html')
 
 
-# ── SIGNUP ───────────────────────────────────────────────────
+#  SIGNUP 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     """
-    GET  → Show the signup form
-    POST → Process the form (create new user)
+    GET   Show the signup form
+    POST  Process the form (create new user)
     """
     # If already logged in, no need to sign up again
     if is_logged_in():
@@ -197,8 +198,8 @@ def signup():
         if len(password) < 6:
             return render_template('signup.html', error='Password must be at least 6 characters!')
 
-        # 🔐 Hash the password BEFORE storing it in database
-        # "raja123" → "$pbkdf2-sha256$260000$..." (secure hash)
+        #  Hash the password BEFORE storing it in database
+        # "raja123"  "$pbkdf2-sha256$260000$..." (secure hash)
         hashed_password = generate_password_hash(password)
 
         try:
@@ -222,12 +223,12 @@ def signup():
     return render_template('signup.html')
 
 
-# ── LOGIN ────────────────────────────────────────────────────
+#  LOGIN 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    GET  → Show the login form
-    POST → Check credentials and log user in
+    GET   Show the login form
+    POST  Check credentials and log user in
     """
     if is_logged_in():
         return redirect(url_for('dashboard'))
@@ -246,7 +247,7 @@ def login():
         conn.close()
 
         # check_password_hash compares plain password with stored hash
-        # This is secure — we NEVER store plain passwords!
+        # This is secure  we NEVER store plain passwords!
         if user and check_password_hash(user['password'], password):
             # Save user info in session (like a login token)
             session['user_id']  = user['id']
@@ -259,7 +260,7 @@ def login():
     return render_template('login.html')
 
 
-# ── LOGOUT ───────────────────────────────────────────────────
+#  LOGOUT 
 @app.route('/logout')
 def logout():
     """Clears the session and redirects to login."""
@@ -268,7 +269,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-# ── DASHBOARD ────────────────────────────────────────────────
+#  DASHBOARD 
 @app.route('/dashboard')
 def dashboard():
     """
@@ -310,7 +311,7 @@ def dashboard():
     )
 
 
-# ── AI DOUBT SOLVER ──────────────────────────────────────────
+#  AI DOUBT SOLVER 
 @app.route('/doubt-solver', methods=['GET', 'POST'])
 def doubt_solver():
     """Accepts a question and returns an AI-generated answer."""
@@ -341,7 +342,7 @@ Question: {question}"""
     return render_template('doubt_solver.html', answer=answer, question=question)
 
 
-# ── QUIZ GENERATOR ───────────────────────────────────────────
+#  QUIZ GENERATOR 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
     """Generates a 5-question MCQ quiz on any topic."""
@@ -406,7 +407,7 @@ Example structure:
     return render_template('quiz_generator.html', quiz_data=quiz_data, raw_quiz_json=raw_quiz_json, topic=topic, error=error)
 
 
-# ── AI NOTES GENERATOR ───────────────────────────────────────
+#  AI NOTES GENERATOR 
 @app.route('/ai-notes', methods=['GET', 'POST'])
 def ai_notes():
     """Generates structured study notes on any topic."""
@@ -426,27 +427,27 @@ def ai_notes():
         
         To make these notes extremely engaging and colorful for B.Tech CSE students, structure them strictly with:
         
-        # 📚 Introduction
+        #  Introduction
         [Detailed overview of the topic. Highlight key terms in bold]
         
-        # 💡 Key Concepts & Callouts
+        #  Key Concepts & Callouts
         Use markdown blockquotes starting with emojis to create colored highlight cards:
         - For a key definition/term, use:
-        > 📝 **Definition:** [Definition text here]
+        >  **Definition:** [Definition text here]
         - For an important concept/tip, use:
-        > 💡 **Concept:** [Tip/Concept detail here]
+        >  **Concept:** [Tip/Concept detail here]
         - For warnings or critical exam points, use:
-        > ⚠️ **Warning:** [Common mistakes or critical exam questions here]
+        >  **Warning:** [Common mistakes or critical exam questions here]
         
-        # 📊 Structured Breakdown & Comparison
+        #  Structured Breakdown & Comparison
         - Draw a markdown comparison table comparing different aspects, types, or architectures of the topic.
         - Add a clean bulleted list where each bullet starts with a relevant emoji.
         
-        # ⚙️ Technical Blueprint (Formulas, Equations or Code)
+        #  Technical Blueprint (Formulas, Equations or Code)
         - If math-related: use LaTeX block formulas like $$...$$.
         - If CS/coding-related: provide a clean, commented code snippet in a fenced code block with language specifier (e.g. ```python).
         
-        # 🎯 Summary Cheat Sheet
+        #  Summary Cheat Sheet
         [Bullet-points summarizing the core takeaways]
         
         Use emojis, clear spacing, bold styling for important terms, and visual formatting. Make it detailed, highly structured, and suitable for exam revision."""
@@ -457,7 +458,7 @@ def ai_notes():
     return render_template('ai_notes.html', notes=notes_result, topic=topic)
 
 
-# ── FLASHCARDS ───────────────────────────────────────────────
+#  FLASHCARDS 
 @app.route('/flashcards', methods=['GET', 'POST'])
 def flashcards():
     """Generates 10 Q&A flashcards on any topic."""
@@ -479,7 +480,7 @@ Use EXACTLY this format for each card (no deviation):
 Q: [Question here]
 A: [Short, clear answer here]
 
-Keep answers concise — maximum 2 sentences each.
+Keep answers concise  maximum 2 sentences each.
 Make questions test real understanding, not just memorization."""
 
         result, error = ask_gemini(prompt)
@@ -494,7 +495,7 @@ Make questions test real understanding, not just memorization."""
 
 
 
-# ── VISUAL AI MIND MAP & ROADMAP GENERATOR ───────────────────
+#  VISUAL AI MIND MAP & ROADMAP GENERATOR 
 @app.route('/ai-roadmap', methods=['GET', 'POST'])
 def ai_roadmap():
     """Generates an interactive visual mind map / learning roadmap for any topic or career path."""
@@ -569,7 +570,7 @@ Keep JSON concise (exactly 3 phases, 2 nodes per phase) so it generates super fa
     return render_template('roadmap.html', roadmap_data=roadmap_data, raw_json=raw_json, topic=topic, error=error)
 
 
-# ── AI EXAM PAPER PREDICTOR & QUESTION PAPER GENERATOR ───────
+#  AI EXAM PAPER PREDICTOR & QUESTION PAPER GENERATOR 
 @app.route('/exam-predictor', methods=['GET', 'POST'])
 def exam_predictor():
     """Generates authentic predicted model question papers with Model Answers based on 5-10 year PYQ analysis for RTU, B.Tech CSE, Midterms, and Boards."""
@@ -597,7 +598,7 @@ def exam_predictor():
 Target System: {university} | Exam Category: {exam_type}.
 
 CRITICAL DIRECTIVE ON QUESTION QUALITY:
-- Do NOT use generic placeholder text (e.g. do NOT write 'Define core objective of {subject}' or 'Explain 5-step pipeline of {subject}').
+- Do NOT use generic placeholder text.
 - Instead, construct REAL, IN-DEPTH, AUTHENTIC subject-specific questions directly from 5-10 year RTU Kota PYQs for '{subject}'.
 - Include real numerical values, data tables, process burst times, SQL schemas, C++/Python algorithms, block diagrams, and mathematical proofs.
 
@@ -642,144 +643,176 @@ Every question MUST include a detailed step-by-step 'model_answer' (with step ca
 def generate_fallback_exam_paper(subject, university, exam_type, branch):
     """
     Generates authentic, subject-specific RTU Kota B.Tech CSE 5-10 year PYQ question papers.
-    Includes subject detection for OOPS, Operating Systems, DBMS, Data Structures, Computer Networks, Compiler Design, Physics, Software Eng, Math.
+    Includes dynamic shuffling and randomized numerical variations on every generation.
     """
     sub_title = subject.strip().title()
     sub_lower = subject.strip().lower()
     sub_words = set(sub_lower.split())
     is_midterm = "Midterm" in exam_type
-    
-    # ── SUBJECT-SPECIFIC DEEP PYQ TEMPLATES ──────────────────────────────
+
+    # Dynamic numerical generators
+    ref_string = ", ".join(str(random.randint(0, 7)) for _ in range(12))
+    p1_b, p2_b, p3_b, p4_b = random.randint(3, 8), random.randint(2, 6), random.randint(4, 9), random.randint(3, 7)
+    tlb_hit = random.choice([75, 80, 85, 90])
+    ip_third = random.randint(1, 50)
+    ip_fourth = random.randint(10, 200)
+    cidr_bits = random.choice([25, 26, 27, 28])
+    rsa_p, rsa_q = random.choice([(7, 11), (5, 13), (3, 11), (11, 13)])
+    rsa_m = random.randint(3, 9)
+
+    #  SUBJECT-SPECIFIC DEEP PYQ TEMPLATES WITH VARIATIONS 
     if "oops" in sub_lower or "object" in sub_lower or "c++" in sub_lower or "java" in sub_lower:
-        # Object-Oriented Programming (OOPS) PYQs
         part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "Define the 4 primary pillars of Object-Oriented Programming (Encapsulation, Abstraction, Inheritance, Polymorphism).", "marks": 3 if is_midterm else 2, "model_answer": "Encapsulation binds data and functions together into a single unit (class). Abstraction hides background implementation details. Inheritance allows a derived class to inherit properties from a base class. Polymorphism allows one interface to take multiple forms.", "marking_scheme": "1.5 marks for Encapsulation & Abstraction, 1.5 marks for Inheritance & Polymorphism." if is_midterm else "1 mark for Encapsulation/Abstraction, 1 mark for Inheritance/Polymorphism."},
-            {"q_num": "Q1 (b)", "question": "What is a Virtual Function in C++? Explain the working of VTABLE and VPTR.", "marks": 3 if is_midterm else 2, "model_answer": "A virtual function is a member function declared in a base class and overridden in a derived class to achieve runtime polymorphism. The compiler creates a VTABLE (array of function pointers) and inserts VPTR in each object.", "marking_scheme": "1.5 marks for virtual function definition, 1.5 marks for VTABLE/VPTR explanation." if is_midterm else "1 mark for definition, 1 mark for VTABLE/VPTR."},
-            {"q_num": "Q1 (c)", "question": "Differentiate between Deep Copy and Shallow Copy in Copy Constructors with code snippets.", "marks": 3 if is_midterm else 2, "model_answer": "Shallow copy copies raw memory address pointers, leading to dangling pointers when objects are deleted. Deep copy allocates new memory and copies the actual underlying values.", "marking_scheme": "1.5 marks for Shallow Copy, 1.5 marks for Deep Copy." if is_midterm else "1 mark for Shallow, 1 mark for Deep."},
-            {"q_num": "Q1 (d)", "question": "What is a Friend Function in C++? Can a Friend Function access private members of a class?", "marks": 3 if is_midterm else 2, "model_answer": "A friend function is a non-member function granted special access to private and protected members of a class using the 'friend' keyword in class definition.", "marking_scheme": "1.5 marks for definition, 1.5 marks for private access explanation." if is_midterm else "1 mark for definition, 1 mark for private access."},
-            {"q_num": "Q1 (e)", "question": "Explain the Diamond Problem in Multiple Inheritance. How is it resolved using Virtual Base Classes?", "marks": 3 if is_midterm else 2, "model_answer": "Occurs when a class inherits from two classes that both inherit from a common base class, causing duplicate ambiguity. Solved by declaring intermediate classes using 'virtual public Base'.", "marking_scheme": "1.5 marks for Diamond Problem diagram, 1.5 marks for Virtual Base Class solution." if is_midterm else "1 mark for Diamond problem, 1 mark for Virtual Base Class."},
-            {"q_num": "Q1 (f)", "question": "Differentiate between Function Overloading (Compile-time) and Function Overriding (Runtime).", "marks": 3 if is_midterm else 2, "model_answer": "Function Overloading defines functions with same name but different signatures in same scope. Overriding redefines a base virtual function in a derived class with exact same signature.", "marking_scheme": "1.5 marks for Overloading, 1.5 marks for Overriding." if is_midterm else "1 mark for Overloading, 1 mark for Overriding."}
+            {"question": "Define the 4 primary pillars of Object-Oriented Programming (Encapsulation, Abstraction, Inheritance, Polymorphism).", "model_answer": "Encapsulation binds data and functions together. Abstraction hides implementation. Inheritance reuses base class properties. Polymorphism allows multiple forms.", "marking_scheme": "1.5 marks for Encapsulation/Abstraction, 1.5 marks for Inheritance/Polymorphism."},
+            {"question": "What is a Virtual Function in C++? Explain VTABLE and VPTR mechanism.", "model_answer": "Virtual function enables runtime polymorphism. Compiler creates VTABLE (function pointer array) and inserts VPTR in each object.", "marking_scheme": "1.5 marks for definition, 1.5 marks for VTABLE/VPTR."},
+            {"question": "Differentiate between Deep Copy and Shallow Copy in Copy Constructors with C++ code.", "model_answer": "Shallow copy duplicates raw pointers causing dangling pointers. Deep copy allocates fresh heap memory for underlying values.", "marking_scheme": "1.5 marks for Shallow Copy, 1.5 marks for Deep Copy."},
+            {"question": "What is a Friend Function in C++? Explain syntax and private member accessibility.", "model_answer": "A friend function is a non-member granted access to private/protected members using 'friend' keyword inside class declaration.", "marking_scheme": "1.5 marks for definition, 1.5 marks for private access."},
+            {"question": "Explain the Diamond Problem in Multiple Inheritance and its solution via Virtual Base Classes.", "model_answer": "Occurs when a class inherits from two classes sharing a common base. Resolved using 'virtual public Base' inheritance.", "marking_scheme": "1.5 marks for ambiguity diagram, 1.5 marks for Virtual Base Class."},
+            {"question": "Differentiate Function Overloading (Compile-time) vs Function Overriding (Runtime).", "model_answer": "Overloading redefines same name with different signatures. Overriding redefines base virtual method with identical signature.", "marking_scheme": "1.5 marks for Overloading, 1.5 marks for Overriding."},
+            {"question": "What is a Pure Virtual Function? What is an Abstract Class?", "model_answer": "A pure virtual function is declared as `virtual void draw() = 0;`. A class with at least one pure virtual function is an Abstract Class.", "marking_scheme": "1.5 marks for Pure Virtual Function, 1.5 marks for Abstract Class."},
+            {"question": "Explain Constructor Chaining and Destructor Execution Order in Multilevel Inheritance.", "model_answer": "Constructors execute Top-to-Bottom (Base -> Derived). Destructors execute Bottom-to-Top (Derived -> Base).", "marking_scheme": "1.5 marks for constructor order, 1.5 marks for destructor order."},
+            {"question": "What is `this` pointer in C++? Explain its implicit passing mechanism.", "model_answer": "`this` is a constant pointer holding the memory address of the invoking object inside member functions.", "marking_scheme": "1.5 marks for definition, 1.5 marks for mechanism."},
+            {"question": "Explain Exception Handling using `try`, `catch`, and `throw` keywords in C++/Java.", "model_answer": "`try` wraps dangerous code, `throw` raises an exception object, `catch` handles the caught exception.", "marking_scheme": "1.5 marks for keywords, 1.5 marks for execution flow."}
         ]
         part_b_qs = [
-            {"q_num": "Q2", "question": "Explain Virtual Destructors in C++. Why is a virtual destructor necessary when deleting a derived object via a base class pointer?", "marks": 6 if is_midterm else 4, "model_answer": "If a base class destructor is not virtual, deleting a derived object via base pointer invokes ONLY base destructor, causing derived class memory leaks. Virtual destructor ensures both derived and base destructors execute in reverse order.", "marking_scheme": "3 marks for Virtual Destructor concept, 3 marks for memory leak prevention code." if is_midterm else "2 marks for concept, 2 marks for code."},
-            {"q_num": "Q3", "question": "Explain Operator Overloading in C++. Write a complete C++ program to overload '+' operator for adding two Complex numbers.", "marks": 6 if is_midterm else 4, "model_answer": "```cpp\nclass Complex {\n    float real, imag;\npublic:\n    Complex(float r=0, float i=0): real(r), imag(i) {}\n    Complex operator + (const Complex& obj) {\n        return Complex(real + obj.real, imag + obj.imag);\n    }\n};\n```", "marking_scheme": "3 marks for Operator Overloading concept, 3 marks for Complex class C++ code." if is_midterm else "2 marks for concept, 2 marks for code."}
+            {"question": "Explain Virtual Destructors in C++. Why are they mandatory when deleting derived objects via base pointers?", "model_answer": "Without virtual destructor, deleting via base pointer invokes ONLY base destructor causing memory leak. Virtual destructor ensures reverse destruction.", "marking_scheme": "3 marks for Virtual Destructor concept, 3 marks for code."},
+            {"question": f"Explain Operator Overloading. Write C++ program to overload '+' operator for adding two Complex numbers (a + bi).", "model_answer": "Overloads `+` operator returning `Complex(real + obj.real, imag + obj.imag)`.", "marking_scheme": "3 marks for concept, 3 marks for code."},
+            {"question": "Explain Multiple Inheritance vs Multilevel Inheritance with clean UML diagrams and C++ code.", "model_answer": "Multiple: Class C inherits from Class A and B. Multilevel: Class C inherits from B, which inherits from A.", "marking_scheme": "3 marks for UML diagrams, 3 marks for C++ code."},
+            {"question": "Explain Constructor Delegation, Member Initializer Lists, and Explicit Constructors in C++11.", "model_answer": "Initializer list initializes members directly before constructor body. `explicit` prevents implicit type conversions.", "marking_scheme": "3 marks for Initializer lists, 3 marks for `explicit` keyword."},
+            {"question": "Differentiate between `dynamic_cast`, `static_cast`, `const_cast`, and `reinterpret_cast` in C++.", "model_answer": "dynamic_cast performs safe runtime downcasting, static_cast does compile-time conversion, const_cast casts away constness.", "marking_scheme": "3 marks for dynamic_cast vs static_cast, 3 marks for others."},
+            {"question": "Explain C++ Standard Template Library (STL). Demonstrate `std::vector`, `std::map`, and `std::sort` usage.", "model_answer": "STL provides containers (vector, map), iterators, and algorithms (sort, find).", "marking_scheme": "3 marks for STL concepts, 3 marks for vector/map code."},
+            {"question": "Explain Template Meta-programming. Write C++ Function Template and Class Template for generic Stack.", "model_answer": "`template <typename T> class Stack` allows generic type instantiation.", "marking_scheme": "3 marks for Function Template, 3 marks for Class Template."}
         ]
         part_c_qs = [
-            {"q_num": "Q6", "question": "Design an Object-Oriented Banking System in C++/Java. Create an abstract Base class 'Account' with pure virtual method 'withdraw()', derived classes 'SavingsAccount' (with minimum balance check) and 'CurrentAccount' (with overdraft limit). Write complete working code demonstrating runtime polymorphism using base pointers.", "marks": 10.5 if is_midterm else 10, "model_answer": "```cpp\nclass Account {\nprotected: double balance;\npublic:\n    Account(double b): balance(b) {}\n    virtual void withdraw(double amt) = 0;\n};\nclass SavingsAccount: public Account {\npublic:\n    SavingsAccount(double b): Account(b) {}\n    void withdraw(double amt) override {\n        if (balance - amt >= 1000) balance -= amt;\n    }\n};\n```\nProgram demonstrates base pointer `Account* acc = new SavingsAccount(5000); acc->withdraw(2000);` triggering dynamic dispatch.", "marking_scheme": "3.5 marks for OOP class hierarchy design, 4.5 marks for clean C++/Java implementation, 2.5 marks for runtime polymorphism main() code." if is_midterm else "3 marks for design, 4 marks for code, 3 marks for main()."}
+            {"question": "Design an Object-Oriented Banking System in C++/Java. Create an abstract Base class 'Account' with pure virtual method 'withdraw()', derived classes 'SavingsAccount' (minimum balance check) and 'CurrentAccount' (overdraft limit). Demonstrate runtime polymorphism using base pointers.", "model_answer": "Abstract class Account with virtual withdraw(). Base pointer `Account* acc = new SavingsAccount(5000); acc->withdraw(2000);` demonstrates dynamic dispatch.", "marking_scheme": "3.5 marks for architecture, 4.5 marks for C++/Java code, 2.5 marks for main()."},
+            {"question": "Design an E-Commerce Inventory & Order System in C++/Java using Inheritance, Encapsulation, and Polymorphism. Create Base 'Product' class, derived 'Electronics' (with warranty calculation) and 'Clothing' (with size discount). Implement pure virtual `calculateFinalPrice()`.", "model_answer": "Polymorphic price calculation where derived classes override `calculateFinalPrice()`.", "marking_scheme": "3.5 marks for class design, 4.5 marks for code, 2.5 marks for test execution."},
+            {"question": "Design an Employee Payroll System in C++/Java with abstract class 'Employee' having pure virtual `computeSalary()`. Derived classes 'FullTimeEmployee' (base + HRA + DA) and 'ContractEmployee' (hourly rate * hours). Implement runtime polymorphic array processing.", "model_answer": "Array of base pointers `Employee* emp[10]` calling `emp[i]->computeSalary()` dynamically.", "marking_scheme": "3.5 marks for design, 4.5 marks for code, 2.5 marks for polymorphic loop."},
+            {"question": "Design a Library Media Management System in C++/Java with base 'MediaItem', derived 'Book', 'Journal', 'AudioCD'. Implement Operator Overloading for `==` checking duplicate ISBNs and `<<` for streaming object info.", "model_answer": "Overloads `operator==` and `operator<<` for stream output.", "marking_scheme": "3.5 marks for class design, 4.5 marks for operator overloading code, 2.5 marks for main()."},
+            {"question": "Design a Vehicle Rental System in C++/Java demonstrating Abstract Classes, Virtual Destructors, Copy Constructors, and File Stream I/O for saving rental transactions.", "model_answer": "Integrates File I/O `fstream` with OOP hierarchy to persist rental contracts.", "marking_scheme": "3.5 marks for OOP design, 4.5 marks for code & File I/O, 2.5 marks for main()."}
         ]
 
     elif "operat" in sub_lower or "os" in sub_words or "operating" in sub_lower:
-        # Operating Systems PYQs
         part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "Define Peterson's Solution for Process Synchronization. State the turn and flag variables.", "marks": 3 if is_midterm else 2, "model_answer": "Peterson's solution achieves mutual exclusion for two processes using shared variables 'int turn' and 'bool flag[2]'. A process sets flag[i]=True and turn=j before entering its critical section.", "marking_scheme": "1.5 marks for definition, 1.5 marks for shared variables." if is_midterm else "1 mark for definition, 1 mark for variables."},
-            {"q_num": "Q1 (b)", "question": "Differentiate between Preemptive and Non-Preemptive CPU Scheduling algorithms with examples.", "marks": 3 if is_midterm else 2, "model_answer": "Preemptive scheduling interrupts running processes when higher priority processes arrive (e.g., SRTF, Round Robin). Non-preemptive runs a process to completion (e.g., FCFS, SJF).", "marking_scheme": "1.5 marks for preemptive definition/example, 1.5 marks for non-preemptive." if is_midterm else "1 mark for preemptive, 1 mark for non-preemptive."},
-            {"q_num": "Q1 (c)", "question": "What is Belady's Anomaly? Name the page replacement algorithm that suffers from it.", "marks": 3 if is_midterm else 2, "model_answer": "Belady's Anomaly is the phenomenon where increasing the number of page frames results in an increase in page faults. FIFO page replacement suffers from it.", "marking_scheme": "1.5 marks for definition, 1.5 marks for algorithm identification." if is_midterm else "1 mark for definition, 1 mark for FIFO identification."},
-            {"q_num": "Q1 (d)", "question": "Explain Thrashing in Virtual Memory. State its primary cause.", "marks": 3 if is_midterm else 2, "model_answer": "Thrashing occurs when the system spends more time swapping pages in/out of main memory than executing instructions. It occurs when total working set size exceeds available physical RAM.", "marking_scheme": "1.5 marks for definition, 1.5 marks for working set cause." if is_midterm else "1 mark for definition, 1 mark for cause."},
-            {"q_num": "Q1 (e)", "question": "What is Translation Lookaside Buffer (TLB)? Calculate effective access time if TLB hit ratio is 80%.", "marks": 3 if is_midterm else 2, "model_answer": "TLB is a high-speed associative hardware cache for page table entries. EAT = Hit_Ratio*(TLB_time + RAM_time) + (1-Hit_Ratio)*(TLB_time + 2*RAM_time).", "marking_scheme": "1.5 marks for TLB definition, 1.5 marks for EAT formula." if is_midterm else "1 mark for definition, 1 mark for formula."},
-            {"q_num": "Q1 (f)", "question": "State the necessary 4 conditions for Deadlock occurrence in an Operating System.", "marks": 3 if is_midterm else 2, "model_answer": "1. Mutual Exclusion 2. Hold and Wait 3. No Preemption 4. Circular Wait.", "marking_scheme": "3 marks for listing all 4 conditions." if is_midterm else "2 marks for listing all 4 conditions."}
+            {"question": "Define Peterson's Solution for Process Synchronization. State the turn and flag variables.", "model_answer": "Peterson's solution achieves mutual exclusion for two processes using shared variables 'int turn' and 'bool flag[2]'.", "marking_scheme": "1.5 marks for definition, 1.5 marks for variables."},
+            {"question": "Differentiate between Preemptive and Non-Preemptive CPU Scheduling algorithms with examples.", "model_answer": "Preemptive interrupts running processes (SRTF, RR). Non-preemptive runs to completion (FCFS, SJF).", "marking_scheme": "1.5 marks for preemptive, 1.5 marks for non-preemptive."},
+            {"question": "What is Belady's Anomaly? Name the page replacement algorithm that suffers from it.", "model_answer": "Belady's Anomaly is when increasing page frames increases page faults. Suffered by FIFO.", "marking_scheme": "1.5 marks for definition, 1.5 marks for FIFO."},
+            {"question": "Explain Thrashing in Virtual Memory. State its primary cause.", "model_answer": "Occurs when system spends more time swapping pages than executing instructions.", "marking_scheme": "1.5 marks for definition, 1.5 marks for cause."},
+            {"question": f"What is TLB? Calculate effective access time if TLB hit ratio is {tlb_hit}%.", "model_answer": f"EAT = {tlb_hit/100:.2f}*(TLB+RAM) + (1-{tlb_hit/100:.2f})*(TLB+2*RAM).", "marking_scheme": "1.5 marks for TLB, 1.5 marks for EAT calculation."},
+            {"question": "State the necessary 4 conditions for Deadlock occurrence in an OS.", "model_answer": "1. Mutual Exclusion 2. Hold & Wait 3. No Preemption 4. Circular Wait.", "marking_scheme": "3 marks for listing 4 conditions."},
+            {"question": "Differentiate between Paging and Segmentation memory management.", "model_answer": "Paging divides memory into fixed physical pages. Segmentation divides into logical variable blocks.", "marking_scheme": "1.5 marks for Paging, 1.5 marks for Segmentation."},
+            {"question": "Explain System Calls vs Library Functions with examples.", "model_answer": "System call invokes OS kernel mode (`fork()`, `read()`). Library function runs in user space (`printf()`).", "marking_scheme": "1.5 marks for System Call, 1.5 marks for Library Function."},
+            {"question": "What is a Critical Section Problem? State the 3 necessary requirements for a valid solution.", "model_answer": "Requirements: 1. Mutual Exclusion 2. Progress 3. Bounded Waiting.", "marking_scheme": "3 marks for 3 requirements."},
+            {"question": "Differentiate between Hard Real-Time and Soft Real-Time Operating Systems.", "model_answer": "Hard RTOS guarantees strict deadline completion. Soft RTOS prioritizes speed but tolerates occasional delay.", "marking_scheme": "1.5 marks for Hard RTOS, 1.5 marks for Soft RTOS."}
         ]
         part_b_qs = [
-            {"q_num": "Q2", "question": "Explain Banker's Algorithm for Deadlock Avoidance. Write the steps of the Safety Algorithm.", "marks": 6 if is_midterm else 4, "model_answer": "Banker's algorithm checks if allocating requested resources leaves the system in a safe state. Safety algorithm uses Work=Available and Finish[i]=False vectors to find a safe process execution sequence.", "marking_scheme": "3 marks for Banker's concept, 3 marks for Safety algorithm steps." if is_midterm else "2 marks for concept, 2 marks for safety algorithm."},
-            {"q_num": "Q3", "question": "Consider a reference string: 7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2. Given 3 page frames, calculate page faults using FIFO and LRU algorithms.", "marks": 6 if is_midterm else 4, "model_answer": "FIFO Page Faults = 9. LRU Page Faults = 8. LRU replaces the page that has not been used for the longest period of time.", "marking_scheme": "3 marks for FIFO step table, 3 marks for LRU step table." if is_midterm else "2 marks for FIFO, 2 marks for LRU."},
-            {"q_num": "Q4", "question": "Explain UNIX File System Inode structure with block pointers diagram (Direct, Single Indirect, Double Indirect).", "marks": 6 if is_midterm else 4, "model_answer": "An inode contains file metadata, 12 direct block pointers (4KB each = 48KB), 1 single indirect pointer (1024 blocks = 4MB), 1 double indirect pointer (4GB), and 1 triple indirect pointer.", "marking_scheme": "3 marks for Inode block structure diagram, 3 marks for capacity calculation." if is_midterm else "2 marks for diagram, 2 marks for capacity."},
-            {"q_num": "Q5", "question": "Differentiate between Counting Semaphores and Binary Semaphores. Solve Producer-Consumer problem using Semaphores.", "marks": 6 if is_midterm else 4, "model_answer": "Binary semaphores take values 0/1 (mutex), while Counting semaphores take unrestricted non-negative integer values. Solution uses mutex=1, full=0, empty=N with wait() and signal() operations.", "marking_scheme": "3 marks for difference matrix, 3 marks for Producer-Consumer code." if is_midterm else "2 marks for difference, 2 marks for code."}
+            {"question": "Explain Banker's Algorithm for Deadlock Avoidance. Write the steps of the Safety Algorithm.", "model_answer": "Uses Available, Allocation, Max, and Need matrices to find safe execution sequence.", "marking_scheme": "3 marks for Banker's concept, 3 marks for Safety algorithm."},
+            {"question": f"Consider a reference string: {ref_string}. Given 3 page frames, calculate page faults using FIFO and LRU algorithms.", "model_answer": f"Calculates page fault steps for reference string: {ref_string}.", "marking_scheme": "3 marks for FIFO table, 3 marks for LRU table."},
+            {"question": "Explain UNIX File System Inode structure with block pointers diagram (Direct, Single, Double Indirect).", "model_answer": "Inode contains metadata, 12 direct pointers, 1 single indirect, 1 double indirect pointer.", "marking_scheme": "3 marks for diagram, 3 marks for capacity calculation."},
+            {"question": "Differentiate Counting Semaphores and Binary Semaphores. Solve Producer-Consumer problem.", "model_answer": "Binary takes 0/1 (mutex). Counting takes integer values. Uses wait() and signal().", "marking_scheme": "3 marks for semaphores comparison, 3 marks for Producer-Consumer code."},
+            {"question": "Explain Disk Scheduling algorithms (FCFS, SSTF, SCAN, C-SCAN) for cylinder queue: [98, 183, 37, 122, 14, 124, 65, 67].", "model_answer": "Calculates total head movements for SSTF and SCAN disk scheduling.", "marking_scheme": "3 marks for SSTF calculation, 3 marks for SCAN calculation."},
+            {"question": "Explain Dining Philosophers Problem using Semaphores. How is deadlock prevented?", "model_answer": "Prevents deadlock by picking chopsticks in asymmetric order or limiting dining philosophers to N-1.", "marking_scheme": "3 marks for problem setup, 3 marks for deadlock prevention code."},
+            {"question": "Explain Inter-Process Communication (IPC) models: Shared Memory vs Message Passing.", "model_answer": "Shared Memory provides maximum speed via shared region. Message Passing uses send()/receive().", "marking_scheme": "3 marks for Shared Memory, 3 marks for Message Passing."}
         ]
         part_c_qs = [
-            {"q_num": "Q6", "question": "Consider processes P1(burst=8ms, arrival=0), P2(burst=4ms, arrival=1), P3(burst=9ms, arrival=2), P4(burst=5ms, arrival=3). Draw Gantt charts and calculate average waiting time and turnaround time for Round-Robin (Quantum=2ms) and SRTF.", "marks": 10.5 if is_midterm else 10, "model_answer": "SRTF Gantt Chart: P1[0-1] -> P2[1-5] -> P4[5-10] -> P1[10-17] -> P3[17-26]. SRTF Avg Waiting Time = 4.25ms. Round-Robin Avg Waiting Time = 7.75ms.", "marking_scheme": "4.5 marks for Gantt charts, 4 marks for waiting time calculations, 2 marks for turnaround time." if is_midterm else "4 marks for Gantt charts, 4 marks for waiting time, 2 marks for turnaround time."},
-            {"q_num": "Q7", "question": "Given 5 processes P0-P4 and 3 resource types A(10), B(5), C(7). Allocation matrix: P0[0,1,0], P1[2,0,0], P2[3,0,2], P3[2,1,1], P4[0,0,2]. Max matrix: P0[7,5,3], P1[3,2,2], P2[9,0,2], P3[2,2,2], P4[4,3,3]. Available=[3,3,2]. Calculate Need matrix and verify if system is in a Safe State using Banker's Algorithm.", "marks": 10.5 if is_midterm else 10, "model_answer": "Need Matrix = Max - Allocation. Need: P0[7,4,3], P1[1,2,2], P2[6,0,0], P3[0,1,1], P4[4,3,1]. Safe Execution Sequence: <P1, P3, P4, P0, P2>. System is in a SAFE STATE.", "marking_scheme": "3.5 marks for Need matrix computation, 4.5 marks for step-by-step safety sequence execution, 2.5 marks for conclusion." if is_midterm else "3 marks for Need matrix, 4 marks for safety sequence, 3 marks for conclusion."}
+            {"question": f"Consider 4 processes: P1(arrival=0, burst={p1_b}ms), P2(arrival=1, burst={p2_b}ms), P3(arrival=2, burst={p3_b}ms), P4(arrival=3, burst={p4_b}ms). Draw Gantt charts and calculate average waiting time and turnaround time for Round-Robin (Quantum=2ms) and SRTF.", "model_answer": f"Draws SRTF & Round-Robin Gantt charts for burst times P1={p1_b}, P2={p2_b}, P3={p3_b}, P4={p4_b}.", "marking_scheme": "3.5 marks for Gantt charts, 4.5 marks for waiting time, 2.5 marks for turnaround time."},
+            {"question": "Given 5 processes P0-P4 and 3 resource types A(10), B(5), C(7). Allocation: P0[0,1,0], P1[2,0,0], P2[3,0,2], P3[2,1,1], P4[0,0,2]. Max: P0[7,5,3], P1[3,2,2], P2[9,0,2], P3[2,2,2], P4[4,3,3]. Available=[3,3,2]. Calculate Need matrix and verify if system is in a Safe State using Banker's Algorithm.", "model_answer": "Need Matrix = Max - Allocation. Safe Execution Sequence: <P1, P3, P4, P0, P2>.", "marking_scheme": "3.5 marks for Need matrix, 4.5 marks for safety sequence, 2.5 marks for proof."},
+            {"question": "Explain Memory Allocation algorithms: First Fit, Best Fit, and Worst Fit. Given memory blocks [100K, 500K, 200K, 300K, 600K], show step-by-step allocation for process requests of 212K, 417K, 112K, 426K. Calculate internal and external fragmentation.", "model_answer": "Compares block allocations and fragmentation for First Fit, Best Fit, Worst Fit.", "marking_scheme": "3.5 marks for allocation steps, 4.5 marks for step tables, 2.5 marks for fragmentation comparison."}
         ]
 
     elif "dbms" in sub_words or "database" in sub_lower:
-        # DBMS PYQs
         part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "Differentiate between Candidate Key, Primary Key, and Super Key with a relational example.", "marks": 3 if is_midterm else 2, "model_answer": "Super Key is any attribute set identifying tuples uniquely. Candidate Key is a minimal Super Key with no redundant attributes. Primary Key is the chosen Candidate Key.", "marking_scheme": "1.5 marks for key definitions, 1.5 marks for relational example." if is_midterm else "1 mark for definitions, 1 mark for example."},
-            {"q_num": "Q1 (b)", "question": "Explain ACID properties of Database Transactions.", "marks": 3 if is_midterm else 2, "model_answer": "Atomicity (all or nothing), Consistency (preserves invariants), Isolation (concurrent execution equivalent to serial), Durability (committed changes persist).", "marking_scheme": "3 marks for explaining all 4 ACID properties." if is_midterm else "2 marks for explaining all 4 ACID properties."},
-            {"q_num": "Q1 (c)", "question": "Define 3NF (Third Normal Form) and BCNF (Boyce-Codd Normal Form).", "marks": 3 if is_midterm else 2, "model_answer": "3NF: For A->B, either A is a superkey or B is a prime attribute (no transitive dependency). BCNF: For A->B, A MUST be a superkey.", "marking_scheme": "1.5 marks for 3NF definition, 1.5 marks for BCNF condition." if is_midterm else "1 mark for 3NF, 1 mark for BCNF."},
-            {"q_num": "Q1 (d)", "question": "Explain Two-Phase Locking (2PL) protocol. Differentiate Strict 2PL vs Rigorous 2PL.", "marks": 3 if is_midterm else 2, "model_answer": "2PL has Growing Phase (acquiring locks) and Shrinking Phase (releasing locks). Strict 2PL holds exclusive locks until commit; Rigorous 2PL holds all locks until commit.", "marking_scheme": "1.5 marks for 2PL concept, 1.5 marks for Strict vs Rigorous." if is_midterm else "1 mark for 2PL, 1 mark for types."},
-            {"q_num": "Q1 (e)", "question": "What is Foreign Key integrity constraint? Give SQL Syntax for ON DELETE CASCADE.", "marks": 3 if is_midterm else 2, "model_answer": "Foreign Key enforces referential integrity between child and parent tables. Syntax: FOREIGN KEY (dept_id) REFERENCES Department(id) ON DELETE CASCADE.", "marking_scheme": "1.5 marks for definition, 1.5 marks for SQL syntax." if is_midterm else "1 mark for definition, 1 mark for SQL syntax."},
-            {"q_num": "Q1 (f)", "question": "Differentiate B-Tree and B+ Tree indexing structures.", "marks": 3 if is_midterm else 2, "model_answer": "In B-Trees, data pointers are stored in both internal and leaf nodes. In B+ Trees, data pointers exist ONLY in leaf nodes connected via linked list pointers.", "marking_scheme": "3 marks for structural comparison." if is_midterm else "2 marks for structural comparison."}
+            {"question": "Differentiate Candidate Key, Primary Key, and Super Key with a relational example.", "model_answer": "Super Key uniquely identifies tuples. Candidate Key is minimal Super Key. Primary Key is chosen Candidate Key.", "marking_scheme": "1.5 marks for definitions, 1.5 marks for relational example."},
+            {"question": "Explain ACID properties of Database Transactions.", "model_answer": "Atomicity (all/nothing), Consistency (invariants), Isolation (concurrent equivalence), Durability (persisted).", "marking_scheme": "3 marks for 4 ACID properties."},
+            {"question": "Define 3NF (Third Normal Form) and BCNF (Boyce-Codd Normal Form).", "model_answer": "3NF: A->B requires A is superkey or B is prime. BCNF: A->B requires A MUST be superkey.", "marking_scheme": "1.5 marks for 3NF, 1.5 marks for BCNF."},
+            {"question": "Explain Two-Phase Locking (2PL) protocol. Differentiate Strict 2PL vs Rigorous 2PL.", "model_answer": "2PL has Growing & Shrinking phases. Strict 2PL holds exclusive locks until commit; Rigorous holds all locks.", "marking_scheme": "1.5 marks for 2PL, 1.5 marks for Strict vs Rigorous."},
+            {"question": "What is Foreign Key integrity constraint? Give SQL Syntax for ON DELETE CASCADE.", "model_answer": "Enforces referential integrity. Syntax: `FOREIGN KEY (dept_id) REFERENCES Department(id) ON DELETE CASCADE`.", "marking_scheme": "1.5 marks for definition, 1.5 marks for SQL syntax."},
+            {"question": "Differentiate B-Tree and B+ Tree indexing structures.", "model_answer": "B-Tree stores data pointers in internal & leaf nodes. B+ Tree stores data pointers ONLY in leaf nodes.", "marking_scheme": "3 marks for structural comparison."},
+            {"question": "Explain DDL vs DML vs DCL vs TCL SQL statements with command examples.", "model_answer": "DDL (CREATE, ALTER), DML (INSERT, UPDATE), DCL (GRANT, REVOKE), TCL (COMMIT, ROLLBACK).", "marking_scheme": "3 marks for categories and syntax."},
+            {"question": "Define Relational Algebra operations: Selection (sigma) vs Projection (pi).", "model_answer": "Selection filters rows based on predicate. Projection selects specific attribute columns.", "marking_scheme": "1.5 marks for Selection, 1.5 marks for Projection."},
+            {"question": "What is a Database View? Differentiate physical tables from logical views.", "model_answer": "A View is a virtual table defined by a stored SELECT query. Does not store physical data.", "marking_scheme": "1.5 marks for View definition, 1.5 marks for physical difference."},
+            {"question": "State Lossless Join Decomposition condition for relation R decomposed into R1 and R2.", "model_answer": "R1 Intersect R2 must be a Super Key for R1 or R2.", "marking_scheme": "3 marks for Lossless Join condition."}
         ]
         part_b_qs = [
-            {"q_num": "Q2", "question": "Draw E-R Diagram for a University Management System showing Entity sets, Attributes, Relationships, Cardinality ratios, and Weak Entities.", "marks": 6 if is_midterm else 4, "model_answer": "Entities: Student, Course, Instructor, Department. Weak Entity: Dependent/Section. Cardinalities: Student M:N Course, Department 1:N Instructor.", "marking_scheme": "3 marks for labeled ER diagram, 3 marks for cardinality and key attributes." if is_midterm else "2 marks for ER diagram, 2 marks for cardinalities."},
-            {"q_num": "Q3", "question": "Given Relation R(A, B, C, D, E) with Functional Dependencies F = { A -> BC, CD -> E, B -> D, E -> A }. Find all Candidate Keys of R.", "marks": 6 if is_midterm else 4, "model_answer": "Compute attribute closures: (A)+ = ABCDE, (E)+ = ABCDE, (BC)+ = BCDE -> A -> ABCDE. Candidate Keys are {A}, {E}, {B,C}.", "marking_scheme": "3 marks for attribute closure calculations, 3 marks for candidate keys identification." if is_midterm else "2 marks for closure, 2 marks for candidate keys."}
+            {"question": "Draw E-R Diagram for a University Management System showing Entity sets, Attributes, Relationships, Cardinalities, and Weak Entities.", "model_answer": "Entities: Student, Course, Instructor. Weak Entity: Dependent/Section. Cardinalities: M:N, 1:N.", "marking_scheme": "3 marks for ER diagram, 3 marks for cardinalities."},
+            {"question": "Given Relation R(A, B, C, D, E) with FDs F = { A -> BC, CD -> E, B -> D, E -> A }. Find all Candidate Keys of R.", "model_answer": "(A)+ = ABCDE, (E)+ = ABCDE, (BC)+ = BCDE -> Candidate Keys {A}, {E}, {B,C}.", "marking_scheme": "3 marks for closure calculations, 3 marks for candidate keys."},
+            {"question": "Explain Conflict Serializability. Test if Schedule S: r1(X), r2(Y), w1(X), r1(Y), w2(Y) is conflict serializable using Precedence Graph.", "model_answer": "Draws Precedence Graph. If no cycle exists, schedule is conflict serializable.", "marking_scheme": "3 marks for conflict definition, 3 marks for precedence graph test."},
+            {"question": "Explain Log-Based Recovery techniques: Deferred Database Modification vs Immediate Database Modification.", "model_answer": "Deferred writes changes to DB ONLY after commit. Immediate writes changes concurrently during transaction execution.", "marking_scheme": "3 marks for Deferred, 3 marks for Immediate modification."},
+            {"question": "Write SQL Queries for Employee(emp_id, name, dept_id, salary) and Department(dept_id, dept_name):\n1. Find top 3 highest paid employees\n2. Find departments with average salary > 50000.", "model_answer": "1. `SELECT * FROM Employee ORDER BY salary DESC LIMIT 3;` 2. `SELECT dept_id, AVG(salary) FROM Employee GROUP BY dept_id HAVING AVG(salary) > 50000;`", "marking_scheme": "3 marks for Query 1, 3 marks for Query 2."},
+            {"question": "Explain Sparse Indexing vs Dense Indexing with labeled diagrams.", "model_answer": "Dense Index has index record for EVERY search key. Sparse Index has records for ONLY some search keys.", "marking_scheme": "3 marks for Dense Index, 3 marks for Sparse Index."},
+            {"question": "Explain Shadow Paging recovery technique and its advantages over WAL.", "model_answer": "Maintains Current Page Table and Shadow Page Table. On commit, shadow page table pointer is updated atomically.", "marking_scheme": "3 marks for Shadow Paging diagram, 3 marks for recovery process."}
         ]
         part_c_qs = [
-            {"q_num": "Q6", "question": "Given Relation R(A, B, C, D, E, F) and FDs F = { A -> B, BC -> DE, E -> F, F -> A }. Find candidate keys, test for 3NF and BCNF violations, and decompose R into BCNF step-by-step.", "marks": 10.5 if is_midterm else 10, "model_answer": "Candidate Keys: {A,C}, {E,C}, {F,C}, {B,C}. BCNF Violation: A->B (A is not a superkey). Decompose into R1(A,B) and R2(A,C,D,E,F). Next check R2: E->F violates BCNF. Decompose R2 into R21(E,F) and R22(A,C,D,E). Final BCNF relations: R1(A,B), R21(E,F), R22(A,C,D,E).", "marking_scheme": "3.5 marks for candidate keys, 4 marks for BCNF violation checks, 3 marks for step-by-step decomposition." if is_midterm else "3 marks for keys, 4 marks for violations, 3 marks for decomposition."}
+            {"question": "Given Relation R(A, B, C, D, E, F) and FDs F = { A -> B, BC -> DE, E -> F, F -> A }. Find candidate keys, test for 3NF and BCNF violations, and decompose R into BCNF step-by-step.", "model_answer": "Candidate Keys: {A,C}, {E,C}, {F,C}, {B,C}. Decomposes into BCNF relations R1(A,B), R21(E,F), R22(A,C,D,E).", "marking_scheme": "3.5 marks for keys, 4.5 marks for BCNF checks, 2.5 marks for step decomposition."},
+            {"question": "Design full Relational Schema for an E-Commerce Platform (Users, Products, Orders, OrderDetails, Payments). Show Primary Keys, Foreign Keys, and write 5 complex SQL Queries involving JOINs, GROUP BY, and Subqueries.", "model_answer": "Full SQL Schema with FOREIGN KEY constraints and multi-table JOIN queries.", "marking_scheme": "3.5 marks for Relational Schema, 4.5 marks for SQL Queries, 2.5 marks for FK constraints."},
+            {"question": "Explain Concurrency Control protocols: Timestamp Ordering Protocol vs Validation-Based Protocol. Show read_TS(X) and write_TS(X) update rules.", "model_answer": "Timestamp ordering compares TS(T) with Read_TS(X) and Write_TS(X) to enforce serializability.", "marking_scheme": "3.5 marks for Timestamp rules, 4.5 marks for Validation phases, 2.5 marks for comparison."}
         ]
 
     elif "netw" in sub_lower or "cn" in sub_words or "network" in sub_lower:
-        # Computer Networks PYQs
         part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "Given IP address 192.168.10.35/26, calculate Network ID, Broadcast ID, and Subnet Mask.", "marks": 3 if is_midterm else 2, "model_answer": "/26 means Subnet Mask 255.255.255.192. Block size = 64. Network ID = 192.168.10.0, Broadcast ID = 192.168.10.63.", "marking_scheme": "1.5 marks for Subnet Mask, 1.5 marks for Network/Broadcast ID." if is_midterm else "1 mark for Subnet Mask, 1 mark for IDs."},
-            {"q_num": "Q1 (b)", "question": "Differentiate between CSMA/CD and CSMA/CA protocols.", "marks": 3 if is_midterm else 2, "model_answer": "CSMA/CD detects collisions during transmission (Ethernet 802.3). CSMA/CA avoids collisions before transmission using RTS/CTS frames (WiFi 802.11).", "marking_scheme": "1.5 marks for CSMA/CD, 1.5 marks for CSMA/CA." if is_midterm else "1 mark for CSMA/CD, 1 mark for CSMA/CA."},
-            {"q_num": "Q1 (c)", "question": "Explain TCP 3-Way Handshake mechanism for connection establishment.", "marks": 3 if is_midterm else 2, "model_answer": "1. Client sends SYN (seq=x) 2. Server sends SYN-ACK (seq=y, ack=x+1) 3. Client sends ACK (ack=y+1). Connection established.", "marking_scheme": "3 marks for 3-way handshake diagram and seq/ack numbers." if is_midterm else "2 marks for 3-way handshake."},
-            {"q_num": "Q1 (d)", "question": "What is Count-to-Infinity problem in Distance Vector Routing? State its solution.", "marks": 3 if is_midterm else 2, "model_answer": "Occurs when a link fails and routers exchange outdated distance metrics in a loop. Solution: Split Horizon and Poison Reverse.", "marking_scheme": "1.5 marks for definition, 1.5 marks for Split Horizon solution." if is_midterm else "1 mark for definition, 1 mark for solution."},
-            {"q_num": "Q1 (e)", "question": "State the differences between IPv4 and IPv6 packet headers.", "marks": 3 if is_midterm else 2, "model_answer": "IPv4 has 32-bit addresses and variable header size (20-60 bytes). IPv6 has 128-bit addresses and fixed 40-byte base header without checksum.", "marking_scheme": "1.5 marks for address size, 1.5 marks for header structure." if is_midterm else "1 mark for address size, 1 mark for header."},
-            {"q_num": "Q1 (f)", "question": "Calculate efficiency of Stop-and-Wait protocol if Frame size=1000 bits, Bandwidth=1 Mbps, RTT=20 ms.", "marks": 3 if is_midterm else 2, "model_answer": "Transmission time Tt = 1000 / 10^6 = 1 ms. Efficiency = Tt / (Tt + RTT) = 1 / (1 + 20) = 4.76%.", "marking_scheme": "1.5 marks for Tt formula, 1.5 marks for efficiency calculation." if is_midterm else "1 mark for formula, 1 mark for efficiency."}
+            {"question": f"Given IP address 192.168.{ip_third}.{ip_fourth}/{cidr_bits}, calculate Network ID, Broadcast ID, and Subnet Mask.", "model_answer": f"Calculates CIDR /{cidr_bits} Subnet Mask and Network ID for 192.168.{ip_third}.{ip_fourth}.", "marking_scheme": "1.5 marks for Subnet Mask, 1.5 marks for Network/Broadcast ID."},
+            {"question": "Differentiate between CSMA/CD and CSMA/CA protocols.", "model_answer": "CSMA/CD detects collisions (Ethernet 802.3). CSMA/CA avoids collisions (WiFi 802.11).", "marking_scheme": "1.5 marks for CSMA/CD, 1.5 marks for CSMA/CA."},
+            {"question": "Explain TCP 3-Way Handshake mechanism for connection establishment.", "model_answer": "1. Client SYN (seq=x) 2. Server SYN-ACK (seq=y, ack=x+1) 3. Client ACK (ack=y+1).", "marking_scheme": "3 marks for 3-way handshake."},
+            {"question": "What is Count-to-Infinity problem in Distance Vector Routing? State its solution.", "model_answer": "Occurs when link fails and distance metrics loop infinitely. Solved via Split Horizon and Poison Reverse.", "marking_scheme": "1.5 marks for problem, 1.5 marks for Split Horizon."},
+            {"question": "State the differences between IPv4 and IPv6 packet headers.", "model_answer": "IPv4 has 32-bit addresses and variable header. IPv6 has 128-bit addresses and fixed 40-byte base header.", "marking_scheme": "1.5 marks for address size, 1.5 marks for header."},
+            {"question": "Calculate efficiency of Stop-and-Wait protocol if Frame size=1000 bits, Bandwidth=1 Mbps, RTT=20 ms.", "model_answer": "Tt = 1ms. Efficiency = Tt / (Tt + RTT) = 1 / 21 = 4.76%.", "marking_scheme": "1.5 marks for Tt, 1.5 marks for efficiency."},
+            {"question": "Differentiate ARP (Address Resolution Protocol) and RARP.", "model_answer": "ARP maps IP address to MAC address. RARP maps MAC address to IP address.", "marking_scheme": "1.5 marks for ARP, 1.5 marks for RARP."},
+            {"question": "Explain Bandwidth-Delay Product (BDP) with mathematical formula.", "model_answer": "BDP = Bandwidth * Round_Trip_Time. Defines maximum data volume in flight in channel.", "marking_scheme": "1.5 marks for formula, 1.5 marks for significance."},
+            {"question": "Differentiate Distance Vector Routing vs Link State Routing protocols.", "model_answer": "Distance Vector (RIP) uses Bellman-Ford. Link State (OSPF) uses Dijkstra algorithm.", "marking_scheme": "1.5 marks for Distance Vector, 1.5 marks for Link State."},
+            {"question": "What is Congestion Control? Differentiate Flow Control vs Congestion Control.", "model_answer": "Flow control prevents sender from overwhelming receiver. Congestion control prevents network overload.", "marking_scheme": "1.5 marks for Flow Control, 1.5 marks for Congestion Control."}
         ]
         part_b_qs = [
-            {"q_num": "Q2", "question": "Explain 7 layers of OSI Reference Model with functions and PDU formats (Data, Segment, Packet, Frame, Bits).", "marks": 6 if is_midterm else 4, "model_answer": "Physical (Bits), Data Link (Frames), Network (Packets/IP), Transport (Segments/TCP), Session, Presentation, Application (Data).", "marking_scheme": "3 marks for OSI layer diagram, 3 marks for PDU formats and functions." if is_midterm else "2 marks for diagram, 2 marks for functions."},
-            {"q_num": "Q3", "question": "Explain Sliding Window Protocol. Differentiate Go-Back-N ARQ and Selective Repeat ARQ.", "marks": 6 if is_midterm else 4, "model_answer": "Go-Back-N retransmits all frames starting from lost frame (Sender window N, Receiver 1). Selective Repeat retransmits ONLY the lost frame (Sender window N, Receiver N).", "marking_scheme": "3 marks for Sliding Window concept, 3 marks for Go-Back-N vs Selective Repeat." if is_midterm else "2 marks for concept, 2 marks for comparison."}
+            {"question": "Explain 7 layers of OSI Reference Model with functions and PDU formats (Data, Segment, Packet, Frame, Bits).", "model_answer": "Physical (Bits), Data Link (Frames), Network (Packets), Transport (Segments), Session, Presentation, Application.", "marking_scheme": "3 marks for OSI layer diagram, 3 marks for PDUs."},
+            {"question": "Explain Sliding Window Protocol. Differentiate Go-Back-N ARQ and Selective Repeat ARQ.", "model_answer": "Go-Back-N retransmits all frames from lost frame. Selective Repeat retransmits ONLY the lost frame.", "marking_scheme": "3 marks for Sliding Window, 3 marks for Go-Back-N vs Selective Repeat."},
+            {"question": "Explain Leaky Bucket and Token Bucket Traffic Shaping algorithms with diagrams.", "model_answer": "Leaky Bucket enforces constant output rate. Token Bucket allows bursty traffic up to token capacity.", "marking_scheme": "3 marks for Leaky Bucket, 3 marks for Token Bucket."},
+            {"question": "Explain Domain Name System (DNS) architecture. Differentiate Recursive vs Iterative DNS resolution.", "model_answer": "Recursive resolution delegates lookup down the hierarchy. Iterative resolution returns referral pointers to client.", "marking_scheme": "3 marks for DNS hierarchy, 3 marks for Recursive vs Iterative."},
+            {"question": "Explain Cyclic Redundancy Check (CRC) error detection algorithm. Given Data string 110101 and Generator polynomial G(x) = x^3 + x + 1, calculate CRC checksum bits.", "model_answer": "Performs CRC polynomial binary division (mod 2) to compute 3 checksum bits.", "marking_scheme": "3 marks for CRC concept, 3 marks for polynomial division calculation."},
+            {"question": f"Given RSA primes p={rsa_p}, q={rsa_q}, calculate Modulus n, Euler Totient phi(n), and Encrypt message M={rsa_m}.", "model_answer": f"n = {rsa_p * rsa_q}, phi = {(rsa_p-1)*(rsa_q-1)}. Encrypts message M={rsa_m}.", "marking_scheme": "3 marks for RSA setup, 3 marks for encryption calculation."},
+            {"question": "Explain TCP Congestion Control phases: Slow Start, Congestion Avoidance, Fast Retransmit, and Fast Recovery.", "model_answer": "Slow start doubles cwnd per RTT. Congestion avoidance increases cwnd linearly (+1 per RTT).", "marking_scheme": "3 marks for Slow Start/Avoidance, 3 marks for Fast Retransmit/Recovery."}
         ]
         part_c_qs = [
-            {"q_num": "Q6", "question": "Given primes p = 7, q = 11, public exponent e = 13. Perform RSA Public Key Cryptography calculation: 1. Find Modulus n and Euler Totient phi(n) 2. Calculate Private Key d 3. Encrypt message M = 5 to ciphertext C.", "marks": 10.5 if is_midterm else 10, "model_answer": "1. n = 7*11 = 77, phi(n) = 6*10 = 60. 2. e*d = 1 mod 60 => 13*d = 1 mod 60 => d = 37. 3. Ciphertext C = M^e mod n = 5^13 mod 77 = 26.", "marking_scheme": "3.5 marks for n and phi(n), 4 marks for private key d calculation, 3 marks for encryption step." if is_midterm else "3 marks for n/phi, 4 marks for d, 3 marks for encryption."}
-        ]
-
-    elif "physic" in sub_lower:
-        # Physics / Engineering Physics PYQs
-        part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "State Gauss's Law in Electrostatics. Write its differential form.", "marks": 3 if is_midterm else 2, "model_answer": "Total electric flux through a closed surface equals Q_enclosed / epsilon_0. Differential form: div(E) = rho / epsilon_0.", "marking_scheme": "1.5 marks for integral definition, 1.5 marks for differential equation." if is_midterm else "1 mark for definition, 1 mark for differential form."},
-            {"q_num": "Q1 (b)", "question": "Explain Young's Double Slit Experiment fringe width formula beta = lambda * D / d.", "marks": 3 if is_midterm else 2, "model_answer": "Fringe width beta is directly proportional to wavelength lambda and slit-to-screen distance D, and inversely proportional to slit separation d.", "marking_scheme": "1.5 marks for setup description, 1.5 marks for formula derivation." if is_midterm else "1 mark for setup, 1 mark for formula."},
-            {"q_num": "Q1 (c)", "question": "State Photoelectric Effect Einstein's equation E = h*nu - W_0.", "marks": 3 if is_midterm else 2, "model_answer": "Maximum kinetic energy of emitted photoelectrons equals photon energy (h*nu) minus work function (W_0).", "marking_scheme": "1.5 marks for Einstein's formula, 1.5 marks for work function definition." if is_midterm else "1 mark for formula, 1 mark for work function."},
-            {"q_num": "Q1 (d)", "question": "Explain p-n Junction Diode depletion region and barrier potential.", "marks": 3 if is_midterm else 2, "model_answer": "Diffusion of electrons and holes creates an uncompensated immobile ion region called depletion layer, creating contact potential (0.7V for Si, 0.3V for Ge).", "marking_scheme": "1.5 marks for depletion layer, 1.5 marks for barrier potential values." if is_midterm else "1 mark for layer, 1 mark for values."},
-            {"q_num": "Q1 (e)", "question": "What is Heisenberg's Uncertainty Principle? State mathematical inequality.", "marks": 3 if is_midterm else 2, "model_answer": "It is impossible to simultaneously measure position and momentum of a subatomic particle with absolute precision. Delta_x * Delta_p >= h / (4 * pi).", "marking_scheme": "1.5 marks for statement, 1.5 marks for inequality." if is_midterm else "1 mark for statement, 1 mark for inequality."},
-            {"q_num": "Q1 (f)", "question": "Differentiate between Intrinsic and Extrinsic Semiconductors.", "marks": 3 if is_midterm else 2, "model_answer": "Intrinsic is pure semiconductor (n=p). Extrinsic is doped semiconductor (n-type doped with pentavalent, p-type with trivalent impurities).", "marking_scheme": "3 marks for doping comparison." if is_midterm else "2 marks for comparison."}
-        ]
-        part_b_qs = [
-            {"q_num": "Q2", "question": "Derive Maxwell's 4 Electromagnetic Equations in differential and integral forms.", "marks": 6 if is_midterm else 4, "model_answer": "1. div(E)=rho/eps_0 2. div(B)=0 3. curl(E)=-dB/dt 4. curl(B)=mu_0*J + mu_0*eps_0*dE/dt.", "marking_scheme": "3 marks for differential forms, 3 marks for physical significance." if is_midterm else "2 marks for forms, 2 marks for significance."},
-            {"q_num": "Q3", "question": "Explain Michelson Interferometer construction and working principle with ray diagram.", "marks": 6 if is_midterm else 4, "model_answer": "Splits light beam into two perpendicular paths using beam splitter, reflects them from mirrors M1 and M2 to produce interference fringes.", "marking_scheme": "3 marks for ray diagram, 3 marks for fringe formation derivation." if is_midterm else "2 marks for diagram, 2 marks for derivation."}
-        ]
-        part_c_qs = [
-            {"q_num": "Q6", "question": "Derive 1D Time-Independent Schrodinger Wave Equation for a particle trapped in an infinite potential well of width L. Find energy eigenvalues E_n and normalized wavefunctions psi_n(x).", "marks": 10.5 if is_midterm else 10, "model_answer": "Schrodinger equation: d^2(psi)/dx^2 + (2mE/hbar^2)psi = 0. Boundary conditions: psi(0)=0, psi(L)=0. Eigenvalues: E_n = (n^2 * pi^2 * hbar^2) / (2m * L^2). Wavefunctions: psi_n(x) = sqrt(2/L) * sin(n * pi * x / L).", "marking_scheme": "3.5 marks for differential setup, 4.5 marks for eigenvalue derivation, 2.5 marks for normalization." if is_midterm else "3 marks for setup, 4 marks for eigenvalues, 3 marks for normalization."}
-        ]
-
-    elif "struct" in sub_lower or "dsa" in sub_words or "algorithm" in sub_lower:
-        # Data Structures & Algorithms PYQs
-        part_a_qs = [
-            {"q_num": "Q1 (a)", "question": "Define Balance Factor of an AVL Tree. State valid balance factor values for an AVL node.", "marks": 3 if is_midterm else 2, "model_answer": "Balance Factor = Height(Left Subtree) - Height(Right Subtree). Valid values for an AVL tree node are -1, 0, and +1.", "marking_scheme": "1.5 marks for formula, 1.5 marks for valid values." if is_midterm else "1 mark for formula, 1 mark for valid values."},
-            {"q_num": "Q1 (b)", "question": "Differentiate Big-O, Big-Omega, and Big-Theta asymptotic notations.", "marks": 3 if is_midterm else 2, "model_answer": "Big-O gives asymptotic upper bound (worst-case), Big-Omega gives lower bound (best-case), Big-Theta gives tight bound (exact asymptotic rate).", "marking_scheme": "3 marks for definitions and bounds." if is_midterm else "2 marks for definitions and bounds."},
-            {"q_num": "Q1 (c)", "question": "State the Max-Heap property. What is the time complexity of building a Max-Heap of N elements?", "marks": 3 if is_midterm else 2, "model_answer": "Max-Heap Property: Parent node value >= Children node values. Building a Max-Heap takes linear time O(N) using bottom-up Heapify.", "marking_scheme": "1.5 marks for Max-Heap property, 1.5 marks for O(N) complexity proof." if is_midterm else "1 mark for property, 1 mark for complexity."},
-            {"q_num": "Q1 (d)", "question": "Differentiate between Adjacency Matrix and Adjacency List graph representations.", "marks": 3 if is_midterm else 2, "model_answer": "Adjacency Matrix uses V x V 2D array taking O(V^2) space. Adjacency List uses array of linked lists taking O(V + E) space.", "marking_scheme": "1.5 marks for matrix space/time, 1.5 marks for list space/time." if is_midterm else "1 mark for matrix, 1 mark for list."},
-            {"q_num": "Q1 (e)", "question": "Explain Linear Probing and Separate Chaining collision resolution techniques in Hash Tables.", "marks": 3 if is_midterm else 2, "model_answer": "Linear Probing searches next sequential slot (i+1)%M upon collision (causes primary clustering). Separate Chaining maintains linked list at each index slot.", "marking_scheme": "1.5 marks for Linear Probing, 1.5 marks for Chaining." if is_midterm else "1 mark for Probing, 1 mark for Chaining."},
-            {"q_num": "Q1 (f)", "question": "What is a Stable Sorting algorithm? Is QuickSort stable?", "marks": 3 if is_midterm else 2, "model_answer": "A sorting algorithm is stable if it preserves the relative order of duplicate elements. QuickSort is NOT stable in its standard in-place form.", "marking_scheme": "1.5 marks for stability definition, 1.5 marks for QuickSort stability answer." if is_midterm else "1 mark for definition, 1 mark for QuickSort."}
-        ]
-        part_b_qs = [
-            {"q_num": "Q2", "question": "Construct an AVL Tree by inserting keys step-by-step: 10, 20, 30, 40, 50, 25. Show LL, RR, LR, RL rotations performed.", "marks": 6 if is_midterm else 4, "model_answer": "Insert 10,20,30 -> RR Rotation on 10 -> Root=20. Insert 40,50 -> RR Rotation on 30. Insert 25 -> RL Rotation on 20. Final Tree Root = 30.", "marking_scheme": "3 marks for insertion steps, 3 marks for rotation identification." if is_midterm else "2 marks for steps, 2 marks for rotations."},
-            {"q_num": "Q3", "question": "Derive the worst-case and average-case time complexity of QuickSort algorithm using recurrence relations.", "marks": 6 if is_midterm else 4, "model_answer": "Average Recurrence: T(N) = 2T(N/2) + O(N) -> O(N log N) by Master Theorem. Worst Recurrence: T(N) = T(N-1) + O(N) -> O(N^2) when array is already sorted.", "marking_scheme": "3 marks for average case derivation, 3 marks for worst case derivation." if is_midterm else "2 marks for average case, 2 marks for worst case."}
-        ]
-        part_c_qs = [
-            {"q_num": "Q6", "question": "Given 0/1 Knapsack problem with weights W = [2, 3, 4, 5] and values V = [3, 4, 5, 6], Knapsack Capacity C = 5. Solve using Dynamic Programming DP table matrix and find optimal item subset.", "marks": 10.5 if is_midterm else 10, "model_answer": "DP State Equation: DP[i][w] = max(DP[i-1][w], V[i-1] + DP[i-1][w - W[i-1]]). DP Table Matrix generated: Row 4, Col 5 = Max Profit 7 (Items 1 and 2 with weights 2 and 3).", "marking_scheme": "3.5 marks for DP state recurrence formula, 4.5 marks for step-by-step DP table matrix construction, 2.5 marks for optimal subset backtracking." if is_midterm else "3 marks for formula, 4 marks for DP table, 3 marks for subset."}
+            {"question": f"Given RSA Public Key Cryptography parameters p={rsa_p}, q={rsa_q}, e=13. 1. Calculate Modulus n and phi(n) 2. Compute Private Key d 3. Encrypt message M={rsa_m} to Ciphertext C 4. Decrypt C back to M.", "model_answer": f"Calculates RSA modulus n={rsa_p*rsa_q}, private key d, and verifies encryption/decryption cycle for M={rsa_m}.", "marking_scheme": "3.5 marks for n/phi, 4.5 marks for private key d, 2.5 marks for encryption/decryption proof."},
+            {"question": "Explain Dijkstra's Shortest Path Link State Routing algorithm. Given a 6-node network graph with weighted edge distances, compute step-by-step shortest path tree from Source Node A to all destination nodes.", "model_answer": "Executes Dijkstra algorithm initialization, minimum distance node extraction, and distance relaxation array table.", "marking_scheme": "3.5 marks for Dijkstra algorithm steps, 4.5 marks for relaxation table, 2.5 marks for shortest path tree."},
+            {"question": f"An Enterprise Network is assigned IP block 172.16.0.0/16. Design Subnetting architecture for 4 departments: HR (500 hosts), Engineering (2000 hosts), Sales (250 hosts), Support (100 hosts). Specify Subnet Masks, Network IDs, and Usable IP ranges.", "model_answer": "Allocates variable length subnet masks (VLSM) optimized for requested host capacities.", "marking_scheme": "3.5 marks for VLSM host allocation plan, 4.5 marks for Network IDs & Masks, 2.5 marks for Usable IP ranges."}
         ]
 
     else:
-        # Dynamic Subject Generator for Any Custom Subject
+        # Generic Dynamic Subject Generator
         part_a_qs = [
-            {"q_num": "Q1 (a)", "question": f"Define the fundamental architectural objective of {sub_title}.", "marks": 3 if is_midterm else 2, "model_answer": f"{sub_title} systematically structures concepts, algorithms, and models to optimize operational efficiency and reliability.", "marking_scheme": "1.5 marks for definition, 1.5 marks for objective." if is_midterm else "1 mark for definition, 1 mark for objective."},
-            {"q_num": "Q1 (b)", "question": f"Differentiate between Static and Dynamic execution models in {sub_title}.", "marks": 3 if is_midterm else 2, "model_answer": "Static execution resolves structures and memory at compile time, whereas Dynamic execution evaluates parameters dynamically at runtime.", "marking_scheme": "1.5 marks for static model, 1.5 marks for dynamic model." if is_midterm else "1 mark for static, 1 mark for dynamic."},
-            {"q_num": "Q1 (c)", "question": f"What are the core design trade-offs involved in {sub_title}?", "marks": 3 if is_midterm else 2, "model_answer": f"Primary trade-offs in {sub_title} involve balancing time complexity, space consumption, security overhead, and modular maintainability.", "marking_scheme": "1.5 marks for trade-offs listing, 1.5 marks for impact analysis." if is_midterm else "1 mark for trade-offs, 1 mark for impact."},
-            {"q_num": "Q1 (d)", "question": f"Explain the role of modularity and component separation in {sub_title}.", "marks": 3 if is_midterm else 2, "model_answer": "Modularity decouples independent logic, enabling parallel development, unit testing, and isolated error handling.", "marking_scheme": "1.5 marks for modularity concept, 1.5 marks for benefits." if is_midterm else "1 mark for concept, 1 mark for benefits."},
-            {"q_num": "Q1 (e)", "question": f"State two critical industry standards governing {sub_title} implementations.", "marks": 3 if is_midterm else 2, "model_answer": f"Industry standards specify data formats, security protocols, and interface specifications for robust {sub_title} deployment.", "marking_scheme": "1.5 marks per industry standard." if is_midterm else "1 mark per standard."},
-            {"q_num": "Q1 (f)", "question": f"What is the primary worst-case performance bottleneck in {sub_title}?", "marks": 3 if is_midterm else 2, "model_answer": f"Bottlenecks occur during high resource contention, unindexed lookup operations, or inefficient recursive execution in {sub_title}.", "marking_scheme": "1.5 marks for bottleneck identification, 1.5 marks for mitigation." if is_midterm else "1 mark for identification, 1 mark for mitigation."}
+            {"question": f"Define the fundamental architectural objective of {sub_title}.", "model_answer": f"{sub_title} systematically structures principles and models to optimize domain efficiency.", "marking_scheme": "1.5 marks for definition, 1.5 marks for objective."},
+            {"question": f"Differentiate between Static and Dynamic execution models in {sub_title}.", "model_answer": "Static execution resolves structures at compile time; Dynamic evaluates parameters at runtime.", "marking_scheme": "1.5 marks for static model, 1.5 marks for dynamic model."},
+            {"question": f"What are the core design trade-offs involved in {sub_title}?", "model_answer": f"Trade-offs in {sub_title} involve balancing time complexity, space overhead, security, and maintainability.", "marking_scheme": "1.5 marks for trade-offs, 1.5 marks for impact."},
+            {"question": f"Explain the role of modularity and component separation in {sub_title}.", "model_answer": "Modularity decouples independent logic, enabling parallel development and unit testing.", "marking_scheme": "1.5 marks for modularity, 1.5 marks for benefits."},
+            {"question": f"State two critical industry standards governing {sub_title} implementations.", "model_answer": f"Industry standards specify data formats and interface specifications for robust {sub_title} deployment.", "marking_scheme": "1.5 marks per standard."},
+            {"question": f"What is the primary worst-case performance bottleneck in {sub_title}?", "model_answer": f"Bottlenecks occur during high resource contention or unindexed lookup operations in {sub_title}.", "marking_scheme": "1.5 marks for bottleneck, 1.5 marks for mitigation."},
+            {"question": f"Explain error detection and exception handling principles in {sub_title}.", "model_answer": "Validates preconditions and catches execution exceptions gracefully.", "marking_scheme": "1.5 marks for validation, 1.5 marks for exception handling."},
+            {"question": f"Differentiate synchronous vs asynchronous execution in {sub_title}.", "model_answer": "Synchronous blocks execution until complete; Asynchronous executes concurrently in background.", "marking_scheme": "1.5 marks for synchronous, 1.5 marks for asynchronous."},
+            {"question": f"Explain memory allocation and garbage collection principles in {sub_title}.", "model_answer": "Allocates heap objects and reclaims unreferenced memory blocks.", "marking_scheme": "1.5 marks for allocation, 1.5 marks for collection."},
+            {"question": f"State two key security vulnerabilities in {sub_title} and their mitigations.", "model_answer": "Mitigates buffer overflows and unauthorized access via input sanitization and access control.", "marking_scheme": "1.5 marks for vulnerabilities, 1.5 marks for mitigations."}
         ]
         part_b_qs = [
-            {"q_num": "Q2", "question": f"Explain the core 5-stage operational pipeline of {sub_title} with a detailed block diagram.", "marks": 6 if is_midterm else 4, "model_answer": f"Pipeline stages: 1. Input Processing 2. Parsing & Validation 3. Core Transformation Engine 4. Optimization Layer 5. Output Emission for {sub_title}.", "marking_scheme": "3 marks for labeled block diagram, 3 marks for stage descriptions." if is_midterm else "2 marks for diagram, 2 marks for descriptions."},
-            {"q_num": "Q3", "question": f"Compare and contrast traditional monolithic approaches versus modern distributed frameworks in {sub_title}.", "marks": 6 if is_midterm else 4, "model_answer": f"Monolithic systems offer simplicity but suffer single point of failure. Distributed frameworks in {sub_title} provide fault tolerance and horizontal scalability.", "marking_scheme": "3 marks for structural matrix, 3 marks for trade-off comparison." if is_midterm else "2 marks for matrix, 2 marks for comparison."}
+            {"question": f"Explain the core 5-stage operational pipeline of {sub_title} with a detailed block diagram.", "model_answer": f"Pipeline stages: 1. Input Processing 2. Parsing 3. Transformation 4. Optimization 5. Output for {sub_title}.", "marking_scheme": "3 marks for block diagram, 3 marks for stage descriptions."},
+            {"question": f"Compare traditional monolithic approaches versus modern distributed frameworks in {sub_title}.", "model_answer": "Monolithic is simple but single-point-of-failure. Distributed provides fault tolerance and scalability.", "marking_scheme": "3 marks for comparison matrix, 3 marks for trade-offs."},
+            {"question": f"Explain high-performance optimization techniques for {sub_title} systems.", "model_answer": "Optimizes execution using caching, indexing, and parallel execution threads.", "marking_scheme": "3 marks for caching/indexing, 3 marks for parallelism."},
+            {"question": f"Explain data modeling and schema definition principles in {sub_title}.", "model_answer": "Defines entities, attributes, constraints, and relationships.", "marking_scheme": "3 marks for schema principles, 3 marks for constraints."},
+            {"question": f"Explain testing methodologies (Unit, Integration, System) for {sub_title}.", "model_answer": "Unit tests individual functions; Integration tests interaction; System tests end-to-end functionality.", "marking_scheme": "3 marks for Unit/Integration, 3 marks for System testing."},
+            {"question": f"Explain security authentication and authorization mechanisms in {sub_title}.", "model_answer": "Authenticates identity via credentials and authorizes permissions via Role-Based Access Control (RBAC).", "marking_scheme": "3 marks for Authentication, 3 marks for Authorization."},
+            {"question": f"Explain scalability strategies (Vertical vs Horizontal Scaling) for {sub_title}.", "model_answer": "Vertical adds resources to existing node; Horizontal adds more nodes to cluster.", "marking_scheme": "3 marks for Vertical scaling, 3 marks for Horizontal scaling."}
         ]
         part_c_qs = [
-            {"q_num": "Q6", "question": f"Design a complete, end-to-end production architecture for {sub_title}. Write clean, commented pseudocode/code implementing the core algorithm and analyze time/space complexity.", "marks": 10.5 if is_midterm else 10, "model_answer": f"```python\ndef execute_{sub_lower.replace(' ', '_')}_pipeline(data_stream):\n    # Core production pipeline for {sub_title}\n    results = []\n    for item in data_stream:\n        if item is not None:\n            results.append(item * 2)\n    return results\n```\nTime Complexity: O(N), Space Complexity: O(N).", "marking_scheme": "3.5 marks for architecture design diagram, 4.5 marks for clean code implementation, 2.5 marks for complexity analysis." if is_midterm else "3 marks for architecture, 4 marks for code, 3 marks for complexity."}
+            {"question": f"Design a complete, end-to-end production architecture for {sub_title}. Write clean, commented pseudocode/code implementing the core algorithm and analyze time/space complexity.", "model_answer": f"Multi-tier production architecture for {sub_title}. Time Complexity: O(N log N), Space Complexity: O(N).", "marking_scheme": "3.5 marks for architecture diagram, 4.5 marks for code, 2.5 marks for complexity."},
+            {"question": f"Design a Fault-Tolerant High-Availability Enterprise System for {sub_title} incorporating Load Balancing, Redundancy, Data Replication, and Automated Failover mechanisms.", "model_answer": "Enterprise solution with active-passive replication and automated failover.", "marking_scheme": "3.5 marks for system architecture, 4.5 marks for replication/failover, 2.5 marks for SLA guarantees."},
+            {"question": f"Perform deep performance profiling for a high-concurrency {sub_title} platform. Identify memory leaks, CPU bottlenecks, thread contention, and propose refactored code fixes.", "model_answer": "Identifies lock contention and refactors data access layer for high throughput.", "marking_scheme": "3.5 marks for bottleneck identification, 4.5 marks for refactored code, 2.5 marks for benchmarking."}
         ]
 
-    # ── ENFORCE EXACT QUESTION COUNTS & SCHEMES ─────────────────────────
+    #  SHUFFLE POOLS FOR EVERY GENERATION 
+    random.shuffle(part_a_qs)
+    random.shuffle(part_b_qs)
+    #  SHUFFLE POOLS FOR EVERY GENERATION 
+    random.shuffle(part_a_qs)
+    random.shuffle(part_b_qs)
+    random.shuffle(part_c_qs)
+
+    #  ENFORCE EXACT QUESTION COUNTS & SCHEMES 
     # End-Sem (70 Marks): Part A = 10 Compulsory (2m = 20m), Part B = 7 (Attempt 5 x 4m = 20m), Part C = 5 (Attempt 3 x 10m = 30m)
     # Midterm (60 Marks): Part A = 6 Compulsory (3m = 18m), Part B = 6 (Attempt 4 x 6m = 24m), Part C = 3 (Attempt 2 x 10.5m = 21m)
     
@@ -794,10 +827,8 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
         idx = len(part_a_qs)
         let = sub_a_letters[idx] if idx < 10 else f"a{idx}"
         part_a_qs.append({
-            "q_num": f"Q1 ({let})",
             "question": f"Explain key concept #{idx+1} in {sub_title}.",
-            "marks": 3 if is_midterm else 2,
-            "model_answer": f"{sub_title} concept #{idx+1} provides essential domain functionality and structural abstraction.",
+            "model_answer": f"{sub_title} concept #{idx+1} provides essential domain functionality.",
             "marking_scheme": "1.5 marks for definition, 1.5 marks for explanation." if is_midterm else "1 mark for definition, 1 mark for explanation."
         })
     part_a_qs = part_a_qs[:target_a_count]
@@ -810,10 +841,8 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
         idx = len(part_b_qs)
         q_no = idx + 2
         part_b_qs.append({
-            "q_num": f"Q{q_no}",
             "question": f"Explain key design methodology #{idx+1} in {sub_title} with architectural diagram.",
-            "marks": 6 if is_midterm else 4,
-            "model_answer": f"Methodology #{idx+1} structures inputs, optimizes intermediate execution, and ensures error resilience in {sub_title}.",
+            "model_answer": f"Methodology #{idx+1} structures inputs and ensures error resilience in {sub_title}.",
             "marking_scheme": "3 marks for diagram, 3 marks for explanation." if is_midterm else "2 marks for diagram, 2 marks for explanation."
         })
     part_b_qs = part_b_qs[:target_b_count]
@@ -827,12 +856,38 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
         idx = len(part_c_qs)
         q_no = c_start_num + idx
         part_c_qs.append({
-            "q_num": f"Q{q_no}",
             "question": f"Given a real-world enterprise scenario in {sub_title}, design the full multi-tier solution architecture, write complete implementation code, and perform asymptotic complexity analysis.",
-            "marks": 10.5 if is_midterm else 10,
-            "model_answer": f"Enterprise architecture uses a multi-tier pipeline for {sub_title}:\n1. Ingestion Layer\n2. Processing Engine\n3. Storage & Cache Layer.\nTime Complexity: O(N log N), Space Complexity: O(N).",
+            "model_answer": f"Enterprise architecture uses a multi-tier pipeline for {sub_title}:\n1. Ingestion Layer\n2. Processing Engine\n3. Storage Layer.\nTime Complexity: O(N log N), Space Complexity: O(N).",
             "marking_scheme": "3.5 marks for architecture design, 4.5 marks for code, 2.5 marks for complexity." if is_midterm else "3 marks for architecture, 4 marks for code, 3 marks for complexity."
         })
+    part_c_qs = part_c_qs[:target_c_count]
+    for idx, q in enumerate(part_c_qs):
+        q["q_num"] = f"Q{c_start_num + idx}"
+        q["marks"] = 10.5 if is_midterm else 10
+
+    # Return structured paper object
+    paper_code = f"CS-{301 if is_midterm else 401}-{'MID60' if is_midterm else 'RTU70'}"
+    time_allowed = "1.5 Hours" if is_midterm else "3 Hours"
+    total_marks = 60 if is_midterm else 70
+
+    sections = [
+        {
+            "section_name": f"Part A (Short Compulsory Questions - {'3 Marks Each' if is_midterm else '2 Marks Each'})",
+            "instructions": f"Answer all {'6' if is_midterm else '10'} compulsory questions. Each question carries {'3' if is_midterm else '2'} marks.",
+            "questions": part_a_qs
+        },
+        {
+            "section_name": f"Part B (Conceptual Questions - Attempt Any {'4 out of 6' if is_midterm else '5 out of 7'})",
+            "instructions": f"Answer any {'4 out of 6' if is_midterm else '5 out of 7'} questions. Each question carries {'6' if is_midterm else '4'} marks.",
+            "questions": part_b_qs
+        },
+        {
+            "section_name": f"Part C (High-Weightage Numericals & Code - Attempt Any {'2 out of 3' if is_midterm else '3 out of 5'})",
+            "instructions": f"Answer any {'2 out of 3' if is_midterm else '3 out of 5'} questions. Each question carries {'10.5' if is_midterm else '10'} marks.",
+            "questions": part_c_qs
+        }
+    ]
+
     part_c_qs = part_c_qs[:target_c_count]
     for idx, q in enumerate(part_c_qs):
         q["q_num"] = f"Q{c_start_num + idx}"
@@ -980,18 +1035,18 @@ def parse_flashcards(text):
 
 def generate_fallback_doubt(question):
     clean_q = question.strip()
-    return f"""# 💡 Academic Explanation: {clean_q}
+    return f"""#  Academic Explanation: {clean_q}
 
-> 📝 **Core Summary:** Here is a clear, step-by-step breakdown of your question regarding **{clean_q}**.
+>  **Core Summary:** Here is a clear, step-by-step breakdown of your question regarding **{clean_q}**.
 
-### 🔍 Key Concepts & Principles
+###  Key Concepts & Principles
 - **Core Definition:** Understand the foundational mechanics and objectives involved in {clean_q}.
 - **Operational Workflow:** Inputs are parsed, transformed, and executed to produce optimized outcomes.
 - **Key Advantage:** Reduces runtime complexity and ensures deterministic execution.
 
-> 💡 **Pro Exam Tip:** Always sketch labeled architectural diagrams and state time/space complexity when answering RTU & University exam questions on this topic!
+>  **Pro Exam Tip:** Always sketch labeled architectural diagrams and state time/space complexity when answering RTU & University exam questions on this topic!
 
-### ⚙️ Technical Blueprint
+###  Technical Blueprint
 ```python
 # Conceptual implementation workflow
 def process_concept(data_input):
@@ -1003,7 +1058,7 @@ def process_concept(data_input):
     return result
 ```
 
-🎯 **Summary:** Mastery of **{clean_q}** requires balancing theoretical definitions with practical problem-solving."""
+ **Summary:** Mastery of **{clean_q}** requires balancing theoretical definitions with practical problem-solving."""
 
 
 def generate_fallback_quiz(topic):
@@ -1069,23 +1124,24 @@ def generate_fallback_quiz(topic):
 
 def generate_fallback_notes(topic):
     clean_t = topic.strip().title()
-    return f"""# 📚 Introduction: {clean_t}
+    func_name = clean_t.lower().replace(' ', '_')
+    return f"""#  Introduction: {clean_t}
 
 **{clean_t}** is a fundamental domain in Computer Science & Engineering. It encompasses theoretical principles, mathematical models, and practical architectural patterns necessary for building scalable, high-performance systems.
 
 ---
 
-# 💡 Key Concepts & Callouts
+#  Key Concepts & Callouts
 
-> 📝 **Definition:** **{clean_t}** is defined as the systematic study and application of computational mechanics, algorithm design, and resource management.
+>  **Definition:** **{clean_t}** is defined as the systematic study and application of computational mechanics, algorithm design, and resource management.
 
-> 💡 **Concept:** Master the core trade-offs between **Time Complexity O(N)** and **Space Complexity O(N)** when designing algorithms for {clean_t}.
+>  **Concept:** Master the core trade-offs between **Time Complexity O(N)** and **Space Complexity O(N)** when designing algorithms for {clean_t}.
 
-> ⚠️ **Warning:** Common exam pitfall: Confusing worst-case Big-O upper bounds with average-case Theta notation in University PYQs!
+>  **Warning:** Common exam pitfall: Confusing worst-case Big-O upper bounds with average-case Theta notation in University PYQs!
 
 ---
 
-# 📊 Structured Breakdown & Comparison
+#  Structured Breakdown & Comparison
 
 | Feature / Aspect | Basic Approach | Optimized {clean_t} Approach |
 | :--- | :--- | :--- |
@@ -1094,19 +1150,19 @@ def generate_fallback_notes(topic):
 | **Search / Lookup** | Linear Search O(N) | Hash Table / BST O(1) ~ O(log N) |
 | **Scalability** | Limited to small datasets | Enterprise Production Grade |
 
-### 🔑 Essential Pillars of {clean_t}:
-- 🚀 **Efficiency:** Minimizes CPU cycles and memory footprint.
-- 🔒 **Robustness:** Handles boundary conditions and invalid inputs gracefully.
-- 🧩 **Modularity:** Decouples core logic into reusable components.
+###  Essential Pillars of {clean_t}:
+-  **Efficiency:** Minimizes CPU cycles and memory footprint.
+-  **Robustness:** Handles boundary conditions and invalid inputs gracefully.
+-  **Modularity:** Decouples core logic into reusable components.
 
 ---
 
-# ⚙️ Technical Blueprint (Implementation & Formulas)
+#  Technical Blueprint (Implementation & Formulas)
 
-$$T(n) = 2T\\left(\\frac{{n}}{{2}}\\right) + O(n) \\implies O(n \\log n)$$
+T(n) = 2 * T(n/2) + O(n) => O(n log n)
 
 ```python
-def execute_{clean_t.lower().replace(' ', '_')}(data_stream):
+def execute_{func_name}(data_stream):
     # Optimized implementation blueprint for {clean_t}
     processed_results = []
     for item in data_stream:
@@ -1119,7 +1175,7 @@ def execute_{clean_t.lower().replace(' ', '_')}(data_stream):
 
 ---
 
-# 🎯 Summary Cheat Sheet
+#  Summary Cheat Sheet
 
 - **Core Focus:** Master definitions, block diagrams, and algorithmic complexity.
 - **Exam Strategy:** Draw neat labeled diagrams and write pseudocode for 10-mark Part C questions.
@@ -1143,7 +1199,7 @@ def generate_fallback_flashcards(topic):
 
 
 
-# ── SAVE ITEM (FORM & AJAX) ──────────────────────────────────
+#  SAVE ITEM (FORM & AJAX) 
 @app.route('/save', methods=['POST'])
 @app.route('/save-item', methods=['POST'])
 def save_item():
@@ -1194,7 +1250,7 @@ def save():
 
 
 
-# ── MY LIBRARY ───────────────────────────────────────────────
+#  MY LIBRARY 
 @app.route('/library')
 def library():
     if not is_logged_in():
@@ -1210,7 +1266,7 @@ def library():
     return render_template('library.html', items=items)
 
 
-# ── VIEW SAVED ITEM ──────────────────────────────────────────
+#  VIEW SAVED ITEM 
 @app.route('/library/view/<int:item_id>')
 def view_saved_item(item_id):
     if not is_logged_in():
@@ -1238,7 +1294,7 @@ def view_saved_item(item_id):
     return render_template('library_view.html', item=item, quiz_data=quiz_data)
 
 
-# ── DELETE SAVED ITEM ────────────────────────────────────────
+#  DELETE SAVED ITEM 
 @app.route('/library/delete/<int:item_id>', methods=['POST'])
 def delete_saved_item(item_id):
     if not is_logged_in():
@@ -1259,7 +1315,7 @@ def delete_saved_item(item_id):
     return redirect(url_for('library'))
 
 
-# ── NEURAL TEXT-TO-SPEECH STREAMING ──────────────────────────
+#  NEURAL TEXT-TO-SPEECH STREAMING 
 async def generate_tts_async(text, voice_name, output_path):
     communicate = edge_tts.Communicate(text, voice_name)
     await communicate.save(output_path)
@@ -1315,7 +1371,7 @@ def speak():
     return send_from_directory(temp_dir, filename)
 
 
-# ── RUN THE APP ──────────────────────────────────────────────
+#  RUN THE APP 
 if __name__ == '__main__':
     print("\n" + "="*50)
     print("  StudyMate AI -- Starting Server")
