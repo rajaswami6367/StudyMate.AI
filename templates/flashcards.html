@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Flashcards — StudyMate AI{% endblock %}
+{% block title %}3D Interactive Flashcards — StudyMate AI{% endblock %}
 
 {% block content %}
 <section class="tool-section">
-  <div class="tool-header">
-    <div class="tool-icon orange"><i data-feather="layers"></i></div>
-    <h2>Flashcards Maker</h2>
-    <p>Generate study flashcards with key terms and definitions.</p>
+  <div class="tool-header" style="text-align: center; margin-bottom: 28px;">
+    <div class="tool-icon orange" style="margin: 0 auto 12px auto;"><i data-feather="layers"></i></div>
+    <h2 style="font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">3D Interactive Flashcards</h2>
+    <p style="color: #94a3b8; font-size: 15px;">Generate 3D flip cards to master key definitions, formulas, and concepts fast.</p>
   </div>
 
   <div class="tool-container">
@@ -15,59 +15,115 @@
     <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('flashcards') }}" class="tool-form" onsubmit="showLoading()">
-      <div class="form-group">
-        <label>Topic</label>
-        <input type="text" name="topic" placeholder="e.g. Biology Cell Organelles" required value="{{ topic if topic else '' }}">
+    <form method="POST" action="{{ url_for('flashcards') }}" onsubmit="showLoading()">
+      <div class="glass-command-bar">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="color: #f59e0b; padding-top: 4px;">
+            <i data-feather="box" style="width: 22px; height: 22px;"></i>
+          </div>
+          <input type="text" name="topic" id="topicInput" class="glass-command-input" placeholder="Enter topic for Flashcard Deck (e.g. Operating System Virtual Memory, DBMS SQL Functions)..." required value="{{ topic if topic else '' }}" />
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+          <span style="font-size: 12px; color: #94a3b8;">🃏 Generates 10 3D Interactive Flip Cards</span>
+          <button type="submit" class="btn-cyber-primary" id="submitBtn" style="background: linear-gradient(135deg, #f59e0b, #ec4899);">
+            <i data-feather="layers" style="width: 16px; height: 16px;"></i> Create Flashcard Deck
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary" id="submitBtn">
-        <i data-feather="copy"></i> Create Flashcards
-      </button>
-      
-      <div id="loadingIndicator" class="loading-state" style="display: none;">
-        <div class="spinner"></div>
-        <p>Creating flashcards...</p>
+
+      <!-- Quick Topic Preset Chips -->
+      <div style="margin-top: 16px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+          ⚡ Popular Flashcard Decks:
+        </span>
+        <div class="prompt-chips-container">
+          <div class="prompt-chip" onclick="fillTopic('Operating Systems: Process States, Semaphores & Paging')">
+            ⚡ OS Core Concepts
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('DBMS: SQL Joins, ACID Properties & Indexing')">
+            🎯 DBMS Terms & SQL
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('C++ OOP Vocabulary: Virtual VTABLE, Inheritance & Friend Functions')">
+            🚀 C++ OOP Terminology
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('Computer Networks: OSI Layers, Protocols & Subnetting')">
+            ⚙️ Network Protocols & Ports
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
+        <div class="spinner" style="border-top-color: #f59e0b; width: 36px; height: 36px;"></div>
+        <p style="color: #fbbf24; font-weight: 700; margin-left: 12px;">Building 3D Flashcard Deck...</p>
       </div>
     </form>
 
     {% if flashcards_data %}
-    <div class="result-card mt-4" style="border: none; background: transparent; box-shadow: none; backdrop-filter: none;">
-      <div class="result-header" style="border: 1px solid var(--border); border-radius: var(--radius-xl); margin-bottom: var(--space-md); background: var(--surface); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-        <h3><i data-feather="layers"></i> Flashcards</h3>
-        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('flashcard', '{{ topic | escape }}', document.getElementById('rawFlashcardData').value)">
-          <i data-feather="folder-plus"></i> Save to Library
-        </button>
+    <div class="result-card mt-4" style="background: transparent; border: none; box-shadow: none;">
+      
+      <!-- Action Bar & Progress Counter -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 14px 20px; backdrop-filter: blur(16px); margin-bottom: 24px;">
+        <div style="font-size: 14px; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+          <i data-feather="layers"></i> Deck: {{ topic }} 
+          <span style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;">
+            10 Cards
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('flashcard', '{{ topic | escape }}', document.getElementById('rawFlashcardData').value)">
+            <i data-feather="folder-plus"></i> Save Deck
+          </button>
+        </div>
       </div>
 
-      <!-- Hidden textarea to store raw flashcard text for database saving -->
       <textarea id="rawFlashcardData" style="display: none;">{% for card in flashcards_data %}Q: {{ card.question }}
 A: {{ card.answer }}
 {% endfor %}</textarea>
 
+      <!-- 3D Interactive Deck Container -->
       <div class="flashcards-grid">
         {% for card in flashcards_data %}
-        <div class="flashcard" onclick="this.classList.toggle('flipped')">
-          <div class="flashcard-inner">
-            <!-- Front of the card (Question) -->
-            <div class="flashcard-front">
-              <span class="card-badge front-badge">Q {{ loop.index }}</span>
-              <p class="card-text">{{ card.question }}</p>
-              <div class="card-hint">
-                <i data-feather="repeat" style="width: 14px; height: 14px;"></i> Tap to reveal answer
+        <div class="perspective-container">
+          <div class="flip-card-inner" onclick="this.classList.toggle('is-flipped')">
+            
+            <!-- Front of Card (Question) -->
+            <div class="flip-card-front">
+              <span style="position: absolute; top: 16px; left: 20px; font-size: 12px; font-weight: 800; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 10px; border-radius: 999px;">
+                Question #{{ loop.index }}
+              </span>
+              
+              <div style="font-size: 18px; font-weight: 700; color: #ffffff; line-height: 1.6; max-width: 90%;">
+                {{ card.question }}
+              </div>
+              
+              <div style="position: absolute; bottom: 16px; font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                <i data-feather="rotate-cw" style="width: 13px;"></i> Tap or Click Card to Flip Answer
               </div>
             </div>
-            <!-- Back of the card (Answer) -->
-            <div class="flashcard-back">
-              <span class="card-badge back-badge">Answer</span>
-              <p class="card-text">{{ card.answer }}</p>
-              <div class="card-hint">
-                <i data-feather="repeat" style="width: 14px; height: 14px;"></i> Tap to flip back
+
+            <!-- Back of Card (Answer) -->
+            <div class="flip-card-back">
+              <span style="position: absolute; top: 16px; left: 20px; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 10px; border-radius: 999px;">
+                Answer #{{ loop.index }}
+              </span>
+
+              <div style="font-size: 16px; font-weight: 600; color: #e2e8f0; line-height: 1.6; max-width: 90%;">
+                {{ card.answer }}
+              </div>
+
+              <div style="position: absolute; bottom: 16px; font-size: 12px; color: #a78bfa; display: flex; align-items: center; gap: 6px;">
+                <i data-feather="rotate-ccw" style="width: 13px;"></i> Tap to Flip Back
               </div>
             </div>
+
           </div>
         </div>
         {% endfor %}
       </div>
+
     </div>
     {% endif %}
   </div>
@@ -75,6 +131,12 @@ A: {{ card.answer }}
 
 {% block extra_js %}
 <script>
+  function fillTopic(text) {
+    const input = document.getElementById('topicInput');
+    input.value = text;
+    input.focus();
+  }
+
   function showLoading() {
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('loadingIndicator').style.display = 'flex';

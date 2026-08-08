@@ -2554,3 +2554,215 @@ main, .dashboard-section {
 .dash-card.blue-glow:hover { border-color: rgba(59, 130, 246, 0.4) !important; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2) !important; }
 .dash-card.green-glow:hover { border-color: rgba(16, 185, 129, 0.4) !important; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2) !important; }
 .dash-card.orange-glow:hover { border-color: rgba(249, 115, 22, 0.4) !important; box-shadow: 0 10px 30px rgba(249, 115, 22, 0.2) !important; }
+
+
+/* ============================================================
+   StudyMate AI — ULTRA-MODERN GLASS DESIGN SYSTEM (2.0 OVERHAUL)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  
+  --bg-obsidian: #080c14;
+  --bg-card-glass: rgba(15, 23, 42, 0.75);
+  --bg-card-glass-hover: rgba(30, 41, 59, 0.85);
+  
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(236, 72, 153, 0.4);
+  
+  --primary-pink: #ec4899;
+  --primary-purple: #8b5cf6;
+  --primary-blue: #3b82f6;
+  --primary-emerald: #10b981;
+  
+  --gradient-cyber: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+  --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --shadow-neon: 0 0 35px rgba(236, 72, 153, 0.25), 0 0 70px rgba(139, 92, 246, 0.15);
+}
+
+body {
+  font-family: var(--font-body) !important;
+  background-color: var(--bg-obsidian) !important;
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(236, 72, 153, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 90% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: #f8fafc;
+}
+
+h1, h2, h3, h4, h5, h6, .nav-logo {
+  font-family: var(--font-heading) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(8, 12, 20, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ec4899, #8b5cf6);
+  border-radius: 999px;
+}
+
+/* Glass Floating Command Bar */
+.glass-command-bar {
+  position: relative;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 16px 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-command-bar:focus-within {
+  border-color: rgba(236, 72, 153, 0.6);
+  box-shadow: 0 0 30px rgba(236, 72, 153, 0.3), 0 20px 50px rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.glass-command-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  resize: none;
+}
+
+.glass-command-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Interactive Quick Prompt Chips */
+.prompt-chips-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.prompt-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+}
+
+.prompt-chip:hover {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: rgba(236, 72, 153, 0.4);
+  color: #f472b6;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.2);
+}
+
+/* Glowing Action Button */
+.btn-cyber-primary {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);
+  background-size: 200% 200%;
+  animation: cyberGlowGradient 4s ease infinite;
+  color: #ffffff;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.35);
+  transition: all 0.3s ease;
+}
+
+.btn-cyber-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.5);
+}
+
+@keyframes cyberGlowGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 3D Flip Card Styles */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  text-align: center;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 24px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(15, 23, 42, 0.95));
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Visual Node Connections */
+.roadmap-timeline-node {
+  position: relative;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.roadmap-timeline-node:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.25);
+  transform: translateY(-3px);
+}

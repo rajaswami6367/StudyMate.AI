@@ -15,21 +15,57 @@
     <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('doubt_solver') }}" class="tool-form" onsubmit="showLoading()">
-      <div class="form-group" style="position: relative;">
-        <textarea name="question" id="questionInput" rows="4" placeholder="e.g. Can you explain how Photosynthesis works in simple terms?" required>{{ question if question else '' }}</textarea>
-        <button type="button" class="btn btn-ghost btn-sm" id="micBtn" onclick="toggleSpeech()" style="position: absolute; right: 10px; bottom: 10px; border-radius: 50%; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10; border: 1px solid var(--border); transition: all 0.3s;" title="Speak Question">
-          <i data-feather="mic" style="width: 16px; height: 16px;"></i>
-        </button>
+    <form method="POST" action="{{ url_for('doubt_solver') }}" onsubmit="showLoading()">
+      <div class="glass-command-bar">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="color: #ec4899; padding-top: 4px;">
+            <i data-feather="sparkles" style="width: 22px; height: 22px;"></i>
+          </div>
+          <textarea name="question" id="questionInput" class="glass-command-input" rows="3" placeholder="Ask any academic doubt, RTU PYQ formula, code logic, or concept (e.g. Explain Peterson's Solution for Process Synchronization)..." required>{{ question if question else '' }}</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-ghost btn-sm" id="micBtn" onclick="toggleSpeech()" style="border-radius: 999px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ec4899;" title="Speak Question">
+              <i data-feather="mic" style="width: 15px; height: 15px;"></i> Voice Input
+            </button>
+            <span style="font-size: 11px; color: #94a3b8;">Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #fff;">Enter</kbd> to submit</span>
+          </div>
+
+          <button type="submit" class="btn-cyber-primary" id="submitBtn">
+            <i data-feather="send" style="width: 16px; height: 16px;"></i> Ask AI Assistant
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary" id="submitBtn">
-        <i data-feather="send"></i> Ask AI
-      </button>
+
+      <!-- Quick Prompt Suggestion Chips -->
+      <div style="margin-top: 16px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+          ⚡ Popular Academic Doubts:
+        </span>
+        <div class="prompt-chips-container">
+          <div class="prompt-chip" onclick="fillPrompt('Explain Peterson's Solution for Process Synchronization with shared variables turn and flag[2].')">
+            ⚡ Peterson's Algorithm
+          </div>
+          <div class="prompt-chip" onclick="fillPrompt('Solve 10-Mark RTU PYQ: Banker's Algorithm for Deadlock Avoidance with step-by-step Need matrix calculation.')">
+            🎯 Banker's Algorithm PYQ
+          </div>
+          <div class="prompt-chip" onclick="fillPrompt('Differentiate 3NF and BCNF with a relational database example and functional dependency losslessness.')">
+            💡 3NF vs BCNF
+          </div>
+          <div class="prompt-chip" onclick="fillPrompt('Write complete C++ program demonstrating Virtual Functions, VTABLE, and Virtual Destructors.')">
+            🚀 C++ Virtual Functions
+          </div>
+          <div class="prompt-chip" onclick="fillPrompt('Explain TCP 3-Way Handshake mechanism for connection establishment with sequence numbers.')">
+            ⚙️ TCP 3-Way Handshake
+          </div>
+        </div>
+      </div>
       
       <!-- Loading indicator (hidden by default) -->
-      <div id="loadingIndicator" class="loading-state" style="display: none;">
-        <div class="spinner"></div>
-        <p>AI is thinking...</p>
+      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
+        <div class="spinner" style="border-top-color: #ec4899; width: 36px; height: 36px;"></div>
+        <p style="color: #ec4899; font-weight: 700; margin-left: 12px;">AI Assistant is analyzing concepts & drafting detailed explanation...</p>
       </div>
     </form>
 
@@ -71,6 +107,12 @@
 
 {% block extra_js %}
 <script>
+  function fillPrompt(text) {
+    const input = document.getElementById('questionInput');
+    input.value = text;
+    input.focus();
+  }
+
   function showLoading() {
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('loadingIndicator').style.display = 'flex';

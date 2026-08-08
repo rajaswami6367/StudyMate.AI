@@ -15,18 +15,48 @@
     <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
     {% endif %}
 
-    <form method="POST" action="{{ url_for('quiz') }}" class="tool-form" onsubmit="showLoading()">
-      <div class="form-group">
-        <label>Enter Topic</label>
-        <input type="text" name="topic" placeholder="e.g. World War II or Newton's Laws" required value="{{ topic if topic else '' }}">
+    <form method="POST" action="{{ url_for('quiz') }}" onsubmit="showLoading()">
+      <div class="glass-command-bar">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="color: #10b981; padding-top: 4px;">
+            <i data-feather="check-circle" style="width: 22px; height: 22px;"></i>
+          </div>
+          <input type="text" name="topic" id="topicInput" class="glass-command-input" placeholder="Enter topic for 5-Question MCQ Quiz (e.g. OS CPU Scheduling, DBMS SQL Joins, C++ Polymorphism)..." required value="{{ topic if topic else '' }}" />
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+          <span style="font-size: 12px; color: #94a3b8;">🎯 Tests core concepts with instant grading & explanations</span>
+          <button type="submit" class="btn-cyber-primary" id="submitBtn" style="background: linear-gradient(135deg, #10b981, #3b82f6);">
+            <i data-feather="zap" style="width: 16px; height: 16px;"></i> Generate Cyber Quiz
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary" id="submitBtn">
-        <i data-feather="zap"></i> Generate Quiz
-      </button>
-      
-      <div id="loadingIndicator" class="loading-state" style="display: none;">
-        <div class="spinner"></div>
-        <p>Crafting your quiz...</p>
+
+      <!-- Quick Topic Preset Chips -->
+      <div style="margin-top: 16px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+          ⚡ Popular B.Tech Quiz Topics:
+        </span>
+        <div class="prompt-chips-container">
+          <div class="prompt-chip" onclick="fillTopic('Operating Systems CPU Scheduling: FCFS, SJF, SRTF & Round-Robin')">
+            ⚡ OS CPU Scheduling
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('DBMS SQL Joins, Group By, Subqueries & Aggregations')">
+            🎯 DBMS SQL Joins
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('C++ Inheritance, Virtual Functions & Pure Virtual Classes')">
+            🚀 C++ Polymorphism
+          </div>
+          <div class="prompt-chip" onclick="fillTopic('Computer Networks IPv4 Subnetting, CIDR & Masking')">
+            ⚙️ IPv4 CIDR Subnetting
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
+        <div class="spinner" style="border-top-color: #10b981; width: 36px; height: 36px;"></div>
+        <p style="color: #34d399; font-weight: 700; margin-left: 12px;">Crafting 5-Question Cyber Quiz with answers & explanations...</p>
       </div>
     </form>
 
@@ -94,6 +124,12 @@
 
 {% block extra_js %}
 <script>
+  function fillTopic(text) {
+    const input = document.getElementById('topicInput');
+    input.value = text;
+    input.focus();
+  }
+
   function showLoading() {
     document.getElementById('submitBtn').style.display = 'none';
     const loadInd = document.getElementById('loadingIndicator');
