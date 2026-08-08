@@ -155,10 +155,11 @@ def is_logged_in():
 
 # 
 
-def generate_fallback_one_night_kit(subject):
-    """Generates high-converting 1-Night Exam Survival Kit for college exams (RTU Kota/AKTU/VTU)."""
+def generate_fallback_one_night_kit(subject, target_mode='distinction'):
+    """Generates high-converting 1-Night Exam Survival Kit with 3x Precision for college exams (RTU Kota/AKTU/VTU)."""
     sub_lower = subject.lower()
     sub_title = subject.strip().title()
+    is_pass_min = (target_mode == 'pass_minimum')
 
     # Default Unit Cheat Sheets
     unit_cheat_sheets = [
@@ -201,13 +202,27 @@ def generate_fallback_one_night_kit(subject):
     for sec in paper.get("sections", []):
         for q in sec.get("questions", []):
             if len(top_10_pyqs) < 10:
+                u_name = q.get("unit", f"Unit {(len(top_10_pyqs)%5)+1}")
+                diagram_hint = f"✏️ Mandatory Exam Diagram: {sub_title} Component Interaction / State Machine Diagram for {u_name}"
+                if "virtual" in str(q).lower() or "oops" in sub_lower:
+                    diagram_hint = "✏️ Mandatory Exam Diagram: VTABLE Pointer & Object Memory Allocation Diagram"
+                elif "deadlock" in str(q).lower() or "banker" in str(q).lower():
+                    diagram_hint = "✏️ Mandatory Exam Diagram: Resource Allocation Graph (RAG) & Safe Execution State"
+                elif "gantt" in str(q).lower() or "scheduling" in str(q).lower():
+                    diagram_hint = "✏️ Mandatory Exam Diagram: Round-Robin / SRTF Time Execution Gantt Chart"
+                elif "dbms" in sub_lower or "normal" in str(q).lower():
+                    diagram_hint = "✏️ Mandatory Exam Diagram: E-R Entity-Relationship Diagram & Functional Dependency Tree"
+                elif "netw" in sub_lower or "osi" in str(q).lower():
+                    diagram_hint = "✏️ Mandatory Exam Diagram: OSI 7-Layer Encapsulation PDU Packet Stack"
+
                 top_10_pyqs.append({
                     "q_num": f"Must-Do PYQ #{len(top_10_pyqs)+1}",
-                    "unit": q.get("unit", f"Unit {(len(top_10_pyqs)%5)+1}"),
+                    "unit": u_name,
                     "pyq_source": q.get("pyq_source", "RTU Kota 2018, 2020, 2022, 2023 - 95% Repeat Rate"),
                     "question": q.get("question"),
                     "model_answer": q.get("model_answer"),
-                    "marking_scheme": q.get("marking_scheme")
+                    "marking_scheme": q.get("marking_scheme"),
+                    "diagram_blueprint": diagram_hint
                 })
 
     audio_text = f"Welcome to the 1-Night Survival Kit for {sub_title}. Here are the core highlights: First, focus heavily on Unit 1 and Unit 3 high-weightage numericals and diagrams. Second, master Peterson's algorithm, Banker's safety checks, and 3NF BCNF decompositions. Study the top 10 solved PYQs provided in your kit to guarantee maximum marks in your RTU exam tomorrow!"
@@ -653,6 +668,7 @@ def one_night_mode():
 
     if request.method == 'POST':
         subject = request.form.get('subject', '').strip()
+        target_mode = request.form.get('target_mode', 'distinction').strip()
 
         if not subject:
             return render_template('one_night_mode.html', error='Please enter a subject name!')
@@ -699,11 +715,11 @@ Structure:
             try:
                 kit_data = json.loads(raw_json)
                 if not isinstance(kit_data, dict) or "top_10_pyqs" not in kit_data:
-                    kit_data = generate_fallback_one_night_kit(subject)
+                    kit_data = generate_fallback_one_night_kit(subject, target_mode)
             except Exception:
-                kit_data = generate_fallback_one_night_kit(subject)
+                kit_data = generate_fallback_one_night_kit(subject, target_mode)
         else:
-            kit_data = generate_fallback_one_night_kit(subject)
+            kit_data = generate_fallback_one_night_kit(subject, target_mode)
 
     return render_template('one_night_mode.html', kit_data=kit_data, subject=subject, error=error)
 
@@ -726,6 +742,7 @@ def exam_predictor():
 
     if request.method == 'POST':
         subject = request.form.get('subject', '').strip()
+        target_mode = request.form.get('target_mode', 'distinction').strip()
         university = request.form.get('university', 'RTU Kota (B.Tech)').strip()
         exam_type = request.form.get('exam_type', 'University End-Sem Exam').strip()
         branch = request.form.get('branch', 'B.Tech CSE').strip()
