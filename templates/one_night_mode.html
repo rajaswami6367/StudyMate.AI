@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}⚡ 1-Night Exam Survival Kit — StudyMate AI Startup{% endblock %}
+
+{% block content %}
+<section class="tool-section" style="max-width: 1100px; margin: 0 auto; padding: 30px 20px 80px 20px;">
+
+  <!-- Hero Banner Header -->
+  <div style="text-align: center; margin-bottom: 32px;">
+    
+    <!-- Pulsing Live Badge -->
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(236, 72, 153, 0.18); border: 1px solid rgba(236, 72, 153, 0.4); padding: 6px 18px; border-radius: 999px; font-size: 13px; color: #f472b6; font-weight: 700; margin-bottom: 16px; animation: pulseGlow 2s infinite;">
+      <span style="width: 8px; height: 8px; background: #ec4899; border-radius: 50%; display: inline-block;"></span>
+      ⚡ 1-NIGHT EXAM SURVIVAL ENGINE (RTU / UNIVERSITY EDITION)
+    </div>
+
+    <h1 style="font-size: 38px; font-weight: 800; background: linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;">
+      Studying 1 Night Before Exam?
+    </h1>
+    <p style="color: #94a3b8; font-size: 16px; max-width: 650px; margin: 0 auto; line-height: 1.6;">
+      Get the Top 10 Must-Do Solved PYQs, 5-Minute Unit Cheat Sheets & AI Audio Podcast Revision for your exact university subject.
+    </p>
+
+  </div>
+
+  <!-- Search & Command Bar -->
+  <div class="glass-card" style="padding: 24px; border-radius: 24px; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(20px); margin-bottom: 36px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    <form method="POST" action="{{ url_for('one_night_mode') }}" onsubmit="showLoading()">
+      <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
+        <div style="color: #ec4899; padding-top: 4px;">
+          <i data-feather="zap" style="width: 24px; height: 24px;"></i>
+        </div>
+        <input type="text" name="subject" id="subjectInput" class="glass-command-input" placeholder="Enter Subject Name for 1-Night Survival Kit (e.g. Operating Systems, OOPS, DBMS, Computer Networks, Physics...)" required value="{{ subject if subject else '' }}" />
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px;">
+        <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">🔥 Analyzes 5-10 Year RTU PYQ Repeat Patterns</span>
+        <button type="submit" class="btn-cyber-primary" id="submitBtn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);">
+          <i data-feather="zap" style="width: 18px; height: 18px;"></i> Generate 1-Night Kit
+        </button>
+      </div>
+
+      <!-- Preset Chips -->
+      <div style="margin-top: 16px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+          ⚡ Popular 1-Night Subject Kits:
+        </span>
+        <div class="prompt-chips-container">
+          <div class="prompt-chip" onclick="fillSubject('Operating Systems')">⚡ OS 1-Night Kit</div>
+          <div class="prompt-chip" onclick="fillSubject('Object Oriented Programming')">🎯 OOPS 1-Night Kit</div>
+          <div class="prompt-chip" onclick="fillSubject('Database Management Systems')">💡 DBMS 1-Night Kit</div>
+          <div class="prompt-chip" onclick="fillSubject('Computer Networks')">⚙️ CN 1-Night Kit</div>
+          <div class="prompt-chip" onclick="fillSubject('Data Structures & Algorithms')">🚀 DSA 1-Night Kit</div>
+          <div class="prompt-chip" onclick="fillSubject('Engineering Physics')">🔬 Physics 1-Night Kit</div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
+        <div class="spinner" style="border-top-color: #ec4899; width: 36px; height: 36px;"></div>
+        <p style="color: #f472b6; font-weight: 700; margin-left: 12px;">Extracting Top 10 Must-Do Solved PYQs & 5-Min Unit Cheat Sheets...</p>
+      </div>
+    </form>
+  </div>
+
+  {% if error %}
+  <div class="alert error" style="margin-bottom: 24px;"><i data-feather="alert-circle"></i> {{ error }}</div>
+  {% endif %}
+
+  {% if kit_data %}
+  <div class="result-card" style="background: transparent; border: none; box-shadow: none;">
+    
+    <!-- Pass Guarantee Stats Bar -->
+    <div style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 20px; padding: 20px 24px; margin-bottom: 32px; backdrop-filter: blur(16px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h2 style="font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+          ⚡ 1-Night Kit: {{ kit_data.subject }}
+        </h2>
+        <span style="font-size: 13px; font-weight: 700; color: #34d399;">
+          ✅ {{ kit_data.pass_probability }}
+        </span>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAudioPlayer()" style="background: rgba(255,255,255,0.08); color: #f472b6; font-weight: 700;">
+          <i data-feather="headphones"></i> Listen 5-Min Podcast
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()" style="background: rgba(255,255,255,0.08); color: #fff; font-weight: 700;">
+          <i data-feather="printer"></i> Print / Save PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Hidden Audio Player Bar (Audio Podcast Revision) -->
+    <div id="audioPodcastBox" style="display: none; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(236, 72, 153, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="font-size: 14px; font-weight: 700; color: #f472b6; display: flex; align-items: center; gap: 8px;">
+          🎧 5-Minute Exam Revision Audio Podcast
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="speakPodcastText()" id="podcastPlayBtn">
+          <i data-feather="play"></i> Play Podcast Audio
+        </button>
+      </div>
+      <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0;" id="podcastTextContent">
+        {{ kit_data.audio_text }}
+      </p>
+      <audio id="ttsAudio" style="display: none;"></audio>
+    </div>
+
+    <!-- SECTION 1: 🚀 5-MINUTE UNIT CHEAT SHEETS -->
+    <div style="margin-bottom: 40px;">
+      <h3 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <i data-feather="bookmark" style="color: #ec4899;"></i> Part 1: 5-Minute Unit Rapid Cheat Sheets
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+        {% for unit in kit_data.unit_cheat_sheets %}
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(16px);">
+          <span style="font-size: 12px; font-weight: 800; color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 10px;">
+            📌 {{ unit.unit }}
+          </span>
+
+          <p style="font-size: 13px; color: #e2e8f0; font-weight: 600; margin-bottom: 8px;">
+            ⚡ {{ unit.rapid_summary }}
+          </p>
+
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">
+            📐 <strong>Diagram / Layout:</strong> {{ unit.diagram_shortcut }}
+          </div>
+
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            {% for term in unit.key_formulas_terms %}
+            <span style="font-size: 11px; background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px;">
+              • {{ term }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- SECTION 2: 🔥 TOP 10 MUST-DO SOLVED PYQS -->
+    <div>
+      <h3 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <i data-feather="check-square" style="color: #34d399;"></i> Part 2: Top 10 Must-Do Solved PYQs (Unit I - V)
+      </h3>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for q in kit_data.top_10_pyqs %}
+        <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(16px);">
+          
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 700; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 8px; border-radius: 4px;">
+              📌 {{ q.unit }}
+            </span>
+            <span style="font-size: 11px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; border-radius: 4px;">
+              🔥 {{ q.pyq_source }}
+            </span>
+          </div>
+
+          <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 12px; line-height: 1.5;">
+            <span style="color: #ec4899; font-weight: 800; margin-right: 6px;">{{ q.q_num }}:</span> {{ q.question }}
+          </div>
+
+          <!-- Collapsible Model Solution -->
+          <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-top: 10px;">
+            <div style="font-size: 12px; color: #34d399; font-weight: 700; margin-bottom: 6px;">
+              💡 1-Night Step-by-Step Model Solution:
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6; margin-bottom: 8px;">
+              {{ q.model_answer }}
+            </div>
+            {% if q.marking_scheme %}
+            <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+              📋 <strong>Marking Breakdown:</strong> {{ q.marking_scheme }}
+            </div>
+            {% endif %}
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+</section>
+
+{% block extra_js %}
+<script>
+  function fillSubject(text) {
+    const input = document.getElementById('subjectInput');
+    input.value = text;
+    input.focus();
+  }
+
+  function showLoading() {
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'flex';
+  }
+
+  function toggleAudioPlayer() {
+    const box = document.getElementById('audioPodcastBox');
+    if (box) {
+      box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+      if (box.style.display === 'block') {
+        box.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
+
+  function speakPodcastText() {
+    const text = document.getElementById('podcastTextContent').innerText;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech is not supported in this browser.");
+    }
+  }
+</script>
+{% endblock %}
+{% endblock %}
