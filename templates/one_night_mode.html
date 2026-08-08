@@ -26,6 +26,49 @@
   <!-- Search & Command Bar -->
   <div class="glass-card" style="padding: 24px; border-radius: 24px; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(20px); margin-bottom: 36px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
     <form method="POST" action="{{ url_for('one_night_mode') }}" onsubmit="showLoading()">
+      
+      <!-- Academic Profile Selector (Branch, Year & Semester 1-8) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+        
+        <!-- Branch -->
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Branch / Stream:</label>
+          <select name="branch" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;">
+            <option value="B.Tech CSE" {% if branch == 'B.Tech CSE' %}selected{% endif %}>B.Tech CSE (Computer Science)</option>
+            <option value="B.Tech IT / AI-ML" {% if branch == 'B.Tech IT / AI-ML' %}selected{% endif %}>B.Tech IT / AI-ML / Data Science</option>
+            <option value="B.Tech ECE / Electrical" {% if branch == 'B.Tech ECE / Electrical' %}selected{% endif %}>B.Tech ECE / Electrical</option>
+            <option value="B.Tech Mechanical / Civil" {% if branch == 'B.Tech Mechanical / Civil' %}selected{% endif %}>B.Tech Mechanical / Civil</option>
+          </select>
+        </div>
+
+        <!-- Academic Year -->
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Academic Year:</label>
+          <select name="year" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;">
+            <option value="1st Year" {% if year == '1st Year' %}selected{% endif %}>1st Year (Freshman)</option>
+            <option value="2nd Year" {% if year == '2nd Year' or not year %}selected{% endif %}>2nd Year (Sophomore)</option>
+            <option value="3rd Year" {% if year == '3rd Year' %}selected{% endif %}>3rd Year (Junior)</option>
+            <option value="4th Year" {% if year == '4th Year' %}selected{% endif %}>4th Year (Senior)</option>
+          </select>
+        </div>
+
+        <!-- Semester 1 to 8 -->
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Semester (Sem 1 - 8):</label>
+          <select name="sem" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #ec4899; font-weight: 800; font-size: 13px; outline: none;">
+            <option value="Semester 1" {% if sem == 'Semester 1' %}selected{% endif %}>Semester 1 (1st Sem)</option>
+            <option value="Semester 2" {% if sem == 'Semester 2' %}selected{% endif %}>Semester 2 (2nd Sem)</option>
+            <option value="Semester 3" {% if sem == 'Semester 3' or not sem %}selected{% endif %}>Semester 3 (3rd Sem)</option>
+            <option value="Semester 4" {% if sem == 'Semester 4' %}selected{% endif %}>Semester 4 (4th Sem)</option>
+            <option value="Semester 5" {% if sem == 'Semester 5' %}selected{% endif %}>Semester 5 (5th Sem)</option>
+            <option value="Semester 6" {% if sem == 'Semester 6' %}selected{% endif %}>Semester 6 (6th Sem)</option>
+            <option value="Semester 7" {% if sem == 'Semester 7' %}selected{% endif %}>Semester 7 (7th Sem)</option>
+            <option value="Semester 8" {% if sem == 'Semester 8' %}selected{% endif %}>Semester 8 (8th Sem)</option>
+          </select>
+        </div>
+
+      </div>
+
       <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
         <div style="color: #ec4899; padding-top: 4px;">
           <i data-feather="zap" style="width: 24px; height: 24px;"></i>

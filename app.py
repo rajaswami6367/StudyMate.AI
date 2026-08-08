@@ -666,9 +666,16 @@ def one_night_mode():
     subject = ""
     error = ""
 
+    branch = "B.Tech CSE"
+    year = "2nd Year"
+    sem = "Semester 3"
+
     if request.method == 'POST':
         subject = request.form.get('subject', '').strip()
         target_mode = request.form.get('target_mode', 'distinction').strip()
+        branch = request.form.get('branch', 'B.Tech CSE').strip()
+        year = request.form.get('year', '2nd Year').strip()
+        sem = request.form.get('sem', 'Semester 3').strip()
 
         if not subject:
             return render_template('one_night_mode.html', error='Please enter a subject name!')
@@ -721,7 +728,7 @@ Structure:
         else:
             kit_data = generate_fallback_one_night_kit(subject, target_mode)
 
-    return render_template('one_night_mode.html', kit_data=kit_data, subject=subject, error=error)
+    return render_template('one_night_mode.html', kit_data=kit_data, subject=subject, branch=branch, year=year, sem=sem, error=error)
 
 
 #  AI EXAM PAPER PREDICTOR & QUESTION PAPER GENERATOR 
@@ -740,9 +747,16 @@ def exam_predictor():
     branch = "B.Tech CSE"
     error = ""
 
+    branch = "B.Tech CSE"
+    year = "2nd Year"
+    sem = "Semester 3"
+
     if request.method == 'POST':
         subject = request.form.get('subject', '').strip()
         target_mode = request.form.get('target_mode', 'distinction').strip()
+        branch = request.form.get('branch', 'B.Tech CSE').strip()
+        year = request.form.get('year', '2nd Year').strip()
+        sem = request.form.get('sem', 'Semester 3').strip()
         university = request.form.get('university', 'RTU Kota (B.Tech)').strip()
         exam_type = request.form.get('exam_type', 'University End-Sem Exam').strip()
         branch = request.form.get('branch', 'B.Tech CSE').strip()
