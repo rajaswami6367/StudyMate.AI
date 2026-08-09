@@ -31,45 +31,45 @@
       </div>
     </div>
 
-    <!-- 2. COMPACT METRICS GRID WITH VIBRANT CORNER LIGHTING -->
+    <!-- 2. COMPACT METRICS GRID WITH INLINE VIBRANT CORNER LIGHTING -->
     <div class="metrics-grid">
-      <!-- 1. Saved Notes (BLUE LIGHTING) -->
-      <div class="metric-card blue-light">
-        <div class="metric-icon bright-blue"><i data-feather="file-text"></i></div>
+      <!-- 1. Saved Notes (ELECTRIC BLUE LIGHTING) -->
+      <div class="metric-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #3b82f6 !important; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.45), inset 0 0 20px rgba(59, 130, 246, 0.25) !important;">
+        <div class="metric-icon" style="background: rgba(59, 130, 246, 0.35); color: #60a5fa; border: 1.5px solid #60a5fa; box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);"><i data-feather="file-text"></i></div>
         <div>
-          <div class="metric-number" style="color: #60a5fa;">{{ stats.notes if stats.notes else 12 }}</div>
-          <div class="metric-label">Saved Notes</div>
-          <div class="metric-trend" style="color: #93c5fd;">↑ 3 this week</div>
+          <div class="metric-number" style="color: #60a5fa; font-weight: 800;">{{ stats.notes if stats.notes else 12 }}</div>
+          <div class="metric-label" style="color: #e0f2fe; font-weight: 700;">Saved Notes</div>
+          <div class="metric-trend" style="color: #93c5fd; font-weight: 700;">↑ 3 this week</div>
         </div>
       </div>
 
-      <!-- 2. Doubts Solved (RED/PINK LIGHTING) -->
-      <div class="metric-card red-light">
-        <div class="metric-icon bright-red"><i data-feather="message-circle"></i></div>
+      <!-- 2. Doubts Solved (NEON RED/PINK LIGHTING) -->
+      <div class="metric-card" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #ec4899 !important; box-shadow: 0 10px 30px rgba(236, 72, 153, 0.45), inset 0 0 20px rgba(236, 72, 153, 0.25) !important;">
+        <div class="metric-icon" style="background: rgba(236, 72, 153, 0.35); color: #f472b6; border: 1.5px solid #f472b6; box-shadow: 0 0 15px rgba(236, 72, 153, 0.8);"><i data-feather="message-circle"></i></div>
         <div>
-          <div class="metric-number" style="color: #f472b6;">{{ stats.doubt if stats.doubt else 27 }}</div>
-          <div class="metric-label">Doubts Solved</div>
-          <div class="metric-trend" style="color: #fbcfe8;">↑ 8 this week</div>
+          <div class="metric-number" style="color: #f472b6; font-weight: 800;">{{ stats.doubt if stats.doubt else 27 }}</div>
+          <div class="metric-label" style="color: #fce7f3; font-weight: 700;">Doubts Solved</div>
+          <div class="metric-trend" style="color: #fbcfe8; font-weight: 700;">↑ 8 this week</div>
         </div>
       </div>
 
-      <!-- 3. Quizzes Taken (GREEN LIGHTING) -->
-      <div class="metric-card green-light">
-        <div class="metric-icon bright-green"><i data-feather="check-circle"></i></div>
+      <!-- 3. Quizzes Taken (EMERALD GREEN LIGHTING) -->
+      <div class="metric-card" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #10b981 !important; box-shadow: 0 10px 30px rgba(52, 211, 153, 0.45), inset 0 0 20px rgba(52, 211, 153, 0.25) !important;">
+        <div class="metric-icon" style="background: rgba(52, 211, 153, 0.35); color: #34d399; border: 1.5px solid #34d399; box-shadow: 0 0 15px rgba(52, 211, 153, 0.8);"><i data-feather="check-circle"></i></div>
         <div>
-          <div class="metric-number" style="color: #34d399;">{{ stats.quiz if stats.quiz else 15 }}</div>
-          <div class="metric-label">Quizzes Taken</div>
-          <div class="metric-trend" style="color: #a7f3d0;">↑ 5 this week</div>
+          <div class="metric-number" style="color: #34d399; font-weight: 800;">{{ stats.quiz if stats.quiz else 15 }}</div>
+          <div class="metric-label" style="color: #ecfdf5; font-weight: 700;">Quizzes Taken</div>
+          <div class="metric-trend" style="color: #a7f3d0; font-weight: 700;">↑ 5 this week</div>
         </div>
       </div>
 
-      <!-- 4. Revision Cards (YELLOW/GOLD LIGHTING) -->
-      <div class="metric-card yellow-light">
-        <div class="metric-icon bright-yellow"><i data-feather="layers"></i></div>
+      <!-- 4. Revision Cards (AMBER GOLD LIGHTING) -->
+      <div class="metric-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #f59e0b !important; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.45), inset 0 0 20px rgba(251, 191, 36, 0.25) !important;">
+        <div class="metric-icon" style="background: rgba(251, 191, 36, 0.35); color: #fbbf24; border: 1.5px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);"><i data-feather="layers"></i></div>
         <div>
-          <div class="metric-number" style="color: #fbbf24;">{{ stats.flashcard if stats.flashcard else 18 }}</div>
-          <div class="metric-label">Revision Cards</div>
-          <div class="metric-trend" style="color: #fef08a;">↑ 7 this week</div>
+          <div class="metric-number" style="color: #fbbf24; font-weight: 800;">{{ stats.flashcard if stats.flashcard else 18 }}</div>
+          <div class="metric-label" style="color: #fefce8; font-weight: 700;">Revision Cards</div>
+          <div class="metric-trend" style="color: #fef08a; font-weight: 700;">↑ 7 this week</div>
         </div>
       </div>
     </div>
@@ -82,7 +82,7 @@
         </h2>
       </div>
 
-      <!-- FEATURED TOOLS ROW WITH REAL 3D NEON ASSETS -->
+      <!-- FEATURED TOOLS ROW WITH MINDBLOWING SHARP NEON SVGS -->
       <div class="featured-tools-grid">
         
         <!-- Featured Tool 1: 1-Night Mode -->
@@ -99,9 +99,35 @@
             </a>
           </div>
 
-          <!-- Real 3D Stopwatch Asset -->
-          <div class="tool-3d-img-container">
-            <img src="{{ url_for('static', filename='images/stopwatch_3d.jpg') }}" alt="1-Night Mode" class="tool-3d-img pink-glow" />
+          <!-- Mind-Blowing Sharp SVG -->
+          <div style="flex-shrink: 0; margin-left: 12px;">
+            <svg width="110" height="110" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 18px rgba(255, 0, 128, 0.8));">
+  <!-- Outer Neon Glow Ring -->
+  <circle cx="60" cy="60" r="50" stroke="url(#pinkGlowGrad)" stroke-width="4" stroke-dasharray="6 4"/>
+  <circle cx="60" cy="60" r="42" fill="url(#pinkFillGrad)" stroke="#ff007f" stroke-width="2.5"/>
+  <!-- Stopwatch Knobs -->
+  <rect x="53" y="8" width="14" height="8" rx="3" fill="#ff007f" stroke="#ffffff" stroke-width="1.5"/>
+  <rect x="78" y="16" width="10" height="6" rx="2" fill="#ff007f" transform="rotate(30 78 16)"/>
+  <!-- Dial Tick Marks -->
+  <line x1="60" y1="23" x2="60" y2="29" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="91" x2="60" y2="97" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="23" y1="60" x2="29" y2="60" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="91" y1="60" x2="97" y2="60" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+  <!-- Bright 3D Lightning Bolt -->
+  <path d="M64 36L46 62H59L55 84L74 56H60L64 36Z" fill="#ffffff" stroke="#ff007f" stroke-width="1.5" style="filter: drop-shadow(0 0 12px #ffffff);"/>
+  <defs>
+    <radialGradient id="pinkFillGrad" cx="60" cy="60" r="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff007f" stop-opacity="0.4"/>
+      <stop offset="0.7" stop-color="#7928ca" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </radialGradient>
+    <linearGradient id="pinkGlowGrad" x1="0" y1="0" x2="120" y2="120">
+      <stop stop-color="#ff007f"/>
+      <stop offset="0.5" stop-color="#7928ca"/>
+      <stop offset="1" stop-color="#00dfd8"/>
+    </linearGradient>
+  </defs>
+</svg>
           </div>
         </div>
 
@@ -118,9 +144,30 @@
             </a>
           </div>
 
-          <!-- Real 3D Predictor Asset -->
-          <div class="tool-3d-img-container">
-            <img src="{{ url_for('static', filename='images/predictor_3d.jpg') }}" alt="Exam Predictor" class="tool-3d-img purple-glow" />
+          <!-- Mind-Blowing Sharp SVG -->
+          <div style="flex-shrink: 0; margin-left: 12px;">
+            <svg width="110" height="110" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 18px rgba(0, 112, 243, 0.8));">
+  <!-- Outer Neon Glow Ring -->
+  <circle cx="60" cy="60" r="50" stroke="url(#blueGrad)" stroke-width="4" stroke-dasharray="8 4"/>
+  <!-- Document Sheet -->
+  <rect x="34" y="26" width="42" height="56" rx="6" fill="url(#docFill)" stroke="#0070f3" stroke-width="2.5"/>
+  <line x1="42" y1="38" x2="64" y2="38" stroke="#00dfd8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="42" y1="48" x2="58" y2="48" stroke="#00dfd8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="42" y1="58" x2="52" y2="58" stroke="#00dfd8" stroke-width="3" stroke-linecap="round"/>
+  <!-- Glowing Magnifying Lens -->
+  <circle cx="68" cy="68" r="18" fill="rgba(0, 223, 216, 0.3)" stroke="#7928ca" stroke-width="3.5" style="filter: drop-shadow(0 0 10px #7928ca);"/>
+  <line x1="81" y1="81" x2="94" y2="94" stroke="#7928ca" stroke-width="5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="docFill" x1="34" y1="26" x2="76" y2="82">
+      <stop stop-color="#0070f3" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0" y1="0" x2="120" y2="120">
+      <stop stop-color="#0070f3"/>
+      <stop offset="1" stop-color="#00dfd8"/>
+    </linearGradient>
+  </defs>
+</svg>
           </div>
         </div>
 
@@ -137,21 +184,54 @@
             </a>
           </div>
 
-          <!-- Real 3D Notes Asset -->
-          <div class="tool-3d-img-container">
-            <img src="{{ url_for('static', filename='images/notes_3d.jpg') }}" alt="AI Notes" class="tool-3d-img indigo-glow" />
+          <!-- Mind-Blowing Sharp SVG -->
+          <div style="flex-shrink: 0; margin-left: 12px;">
+            <svg width="110" height="110" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 18px rgba(121, 40, 202, 0.8));">
+  <!-- Outer Neon Glow Ring -->
+  <circle cx="60" cy="60" r="50" stroke="url(#purpleGrad)" stroke-width="4" stroke-dasharray="6 4"/>
+  <!-- Note Sheet -->
+  <rect x="32" y="24" width="56" height="68" rx="8" fill="url(#notesFill)" stroke="#7928ca" stroke-width="2.5"/>
+  <line x1="42" y1="40" x2="78" y2="40" stroke="#f472b6" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="42" y1="52" x2="72" y2="52" stroke="#f472b6" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="42" y1="64" x2="64" y2="64" stroke="#f472b6" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Sparkle Pin -->
+  <circle cx="76" cy="74" r="10" fill="#ff007f" style="filter: drop-shadow(0 0 10px #ff007f);"/>
+  <path d="M76 68L78 74L84 76L78 78L76 84L74 78L68 76L74 74Z" fill="#ffffff"/>
+  <defs>
+    <linearGradient id="notesFill" x1="32" y1="24" x2="88" y2="92">
+      <stop stop-color="#7928ca" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="120" y2="120">
+      <stop stop-color="#7928ca"/>
+      <stop offset="1" stop-color="#ff007f"/>
+    </linearGradient>
+  </defs>
+</svg>
           </div>
         </div>
 
       </div>
 
-      <!-- SECONDARY TOOLS GRID WITH REAL 3D ASSET BOXES -->
+      <!-- SECONDARY TOOLS GRID WITH SHARP 3D NEON DISCS -->
       <div class="secondary-tools-grid">
         
         <!-- Tool 1: Doubt Solver -->
-        <div class="tool-grid-card cyan-card">
-          <div class="secondary-3d-img-box cyan">
-            <img src="{{ url_for('static', filename='images/doubt_3d.jpg') }}" alt="Doubt Solver" />
+        <div class="tool-grid-card cyan-card" style="border: 1.5px solid rgba(0, 223, 216, 0.4); box-shadow: 0 10px 25px rgba(0, 223, 216, 0.25);">
+          <div style="margin-bottom: 12px;">
+            <svg width="60" height="60" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 14px rgba(0, 223, 216, 0.8));">
+  <circle cx="35" cy="35" r="30" fill="url(#cyanDisc)" stroke="#00dfd8" stroke-width="2"/>
+  <path d="M22 25C22 22.2 24.2 20 27 20H43C45.8 20 48 22.2 48 25V37C48 39.8 45.8 42 43 42H33L25 48V42C23.3 42 22 40.7 22 39V25Z" fill="#0b1020" stroke="#00dfd8" stroke-width="2"/>
+  <circle cx="30" cy="31" r="2.5" fill="#00dfd8"/>
+  <circle cx="35" cy="31" r="2.5" fill="#00dfd8"/>
+  <circle cx="40" cy="31" r="2.5" fill="#00dfd8"/>
+  <defs>
+    <radialGradient id="cyanDisc" cx="35" cy="35" r="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00dfd8" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+</svg>
           </div>
           <div>
             <h4 class="tool-card-title">AI Doubt Solver</h4>
@@ -164,9 +244,18 @@
         </div>
 
         <!-- Tool 2: Quiz Generator -->
-        <div class="tool-grid-card green-card">
-          <div class="secondary-3d-img-box green">
-            <img src="{{ url_for('static', filename='images/quiz_3d.jpg') }}" alt="Quiz Generator" />
+        <div class="tool-grid-card green-card" style="border: 1.5px solid rgba(16, 185, 129, 0.4); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);">
+          <div style="margin-bottom: 12px;">
+            <svg width="60" height="60" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.8));">
+  <circle cx="35" cy="35" r="30" fill="url(#greenDisc)" stroke="#10b981" stroke-width="2"/>
+  <path d="M30 27C30 24.2 32.2 22 35 22C37.8 22 40 24.2 40 27C40 29.2 38.5 30.5 37 31.8C35.5 33 34.5 34.5 34.5 37V38M35 44H35.03" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+  <defs>
+    <radialGradient id="greenDisc" cx="35" cy="35" r="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+</svg>
           </div>
           <div>
             <h4 class="tool-card-title">Quiz Generator</h4>
@@ -179,9 +268,20 @@
         </div>
 
         <!-- Tool 3: Flashcards -->
-        <div class="tool-grid-card orange-card">
-          <div class="secondary-3d-img-box orange">
-            <img src="{{ url_for('static', filename='images/flashcard_3d.jpg') }}" alt="Flashcards" />
+        <div class="tool-grid-card orange-card" style="border: 1.5px solid rgba(245, 158, 11, 0.4); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.25);">
+          <div style="margin-bottom: 12px;">
+            <svg width="60" height="60" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.8));">
+  <circle cx="35" cy="35" r="30" fill="url(#goldDisc)" stroke="#f59e0b" stroke-width="2"/>
+  <path d="M35 20L52 28L35 36L18 28L35 20Z" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+  <path d="M18 34L35 42L52 34" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+  <path d="M18 42L35 50L52 42" stroke="#d97706" stroke-width="3.5" stroke-linecap="round"/>
+  <defs>
+    <radialGradient id="goldDisc" cx="35" cy="35" r="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f59e0b" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+</svg>
           </div>
           <div>
             <h4 class="tool-card-title">Flashcards</h4>
@@ -194,9 +294,20 @@
         </div>
 
         <!-- Tool 4: Roadmap & Mind Map -->
-        <div class="tool-grid-card purple-card">
-          <div class="secondary-3d-img-box purple">
-            <img src="{{ url_for('static', filename='images/roadmap_3d.jpg') }}" alt="Roadmap" />
+        <div class="tool-grid-card purple-card" style="border: 1.5px solid rgba(139, 92, 246, 0.4); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);">
+          <div style="margin-bottom: 12px;">
+            <svg width="60" height="60" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.8));">
+  <circle cx="35" cy="35" r="30" fill="url(#purpleDisc)" stroke="#8b5cf6" stroke-width="2"/>
+  <path d="M20 22L30 17L40 22L50 17V47L40 52L30 47L20 52V22Z" fill="rgba(139, 92, 246, 0.3)" stroke="#c084fc" stroke-width="2"/>
+  <circle cx="30" cy="32" r="3.5" fill="#00dfd8"/>
+  <circle cx="40" cy="39" r="3.5" fill="#ff007f"/>
+  <defs>
+    <radialGradient id="purpleDisc" cx="35" cy="35" r="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8b5cf6" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
+    </radialGradient>
+  </defs>
+</svg>
           </div>
           <div>
             <h4 class="tool-card-title">Roadmap & Mind Map</h4>
