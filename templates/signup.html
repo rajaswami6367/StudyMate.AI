@@ -1,24 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up — StudyMate AI{% endblock %}
+{% block title %}Sign Up — StudyMate AI Workspace{% endblock %}
 
 {% block content %}
 <section class="auth-section">
   <div class="auth-container">
-    <!-- Animated background blobs -->
-    <div class="hero-bg">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2" style="right: 10%; bottom: 10%; left: auto; top: auto;"></div>
-    </div>
-
+    
     <div class="auth-card">
       <div class="auth-header">
-        <span class="logo-icon">⚡</span>
+        <div class="logo-icon">⚡</div>
         <h2>Create an Account</h2>
-        <p>Start your journey to studying smarter today.</p>
+        <p>Start your journey to studying 3x faster with AI.</p>
       </div>
 
-      <!-- Display error messages if any -->
+      <!-- Error message -->
       {% if error %}
       <div class="auth-alert error">
         <i data-feather="alert-circle"></i>
@@ -51,8 +46,9 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block">
-          Sign Up <i data-feather="arrow-right"></i>
+        <button type="submit" class="btn-auth-submit">
+          <span>Create Account</span>
+          <i data-feather="arrow-right" style="width: 16px; height: 16px;"></i>
         </button>
       </form>
 
@@ -60,6 +56,7 @@
         <p>Already have an account? <a href="{{ url_for('login') }}">Log in here</a>.</p>
       </div>
     </div>
+
   </div>
 </section>
 {% endblock %}
