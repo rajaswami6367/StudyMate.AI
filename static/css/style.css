@@ -939,3 +939,123 @@ img { max-width: 100%; display: block; }
   .metric-card { padding: 12px; }
   .metric-number { font-size: 18px; }
 }
+
+
+/* ── 7. GLOWING AI TOOL GRAPHIC BADGES (MATCHING REFERENCE UI) ── */
+.featured-tool-card {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.featured-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  z-index: 2;
+}
+
+.card-glowing-graphic {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.card-glowing-graphic.pink-glow {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.35), rgba(236, 72, 153, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(236, 72, 153, 0.25);
+}
+
+.card-glowing-graphic.purple-glow {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35), rgba(139, 92, 246, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
+}
+
+.card-glowing-graphic.indigo-glow {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.35), rgba(99, 102, 241, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.25);
+}
+
+.card-glowing-graphic.cyan-glow {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.35), rgba(34, 211, 238, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.25);
+}
+
+.card-glowing-graphic.green-glow {
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.35), rgba(52, 211, 153, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(52, 211, 153, 0.25);
+}
+
+.card-glowing-graphic.orange-glow {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.35), rgba(245, 158, 11, 0.05) 70%);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
+}
+
+.glowing-ring {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: rgba(11, 16, 32, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.glowing-ring i {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.glowing-ring.pink i { color: #f472b6; filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.8)); }
+.glowing-ring.purple i { color: #c084fc; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.8)); }
+.glowing-ring.indigo i { color: #818cf8; filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8)); }
+.glowing-ring.cyan i { color: #22d3ee; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)); }
+.glowing-ring.green i { color: #34d399; filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.8)); }
+.glowing-ring.orange i { color: #fbbf24; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); }
+
+/* Secondary Tool Grid Icon Badges */
+.tool-grid-card {
+  position: relative;
+}
+
+.tool-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tool-badge-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tool-badge-circle.cyan { background: radial-gradient(circle, rgba(34, 211, 238, 0.25), rgba(11, 16, 32, 0.8)); color: #22d3ee; }
+.tool-badge-circle.green { background: radial-gradient(circle, rgba(52, 211, 153, 0.25), rgba(11, 16, 32, 0.8)); color: #34d399; }
+.tool-badge-circle.orange { background: radial-gradient(circle, rgba(245, 158, 11, 0.25), rgba(11, 16, 32, 0.8)); color: #fbbf24; }
+.tool-badge-circle.purple { background: radial-gradient(circle, rgba(139, 92, 246, 0.25), rgba(11, 16, 32, 0.8)); color: #c084fc; }
+
+@media (max-width: 600px) {
+  .featured-tool-card { flex-direction: column; align-items: flex-start; }
+  .card-glowing-graphic { display: none; }
+}

@@ -25,7 +25,7 @@
         </a>
       </div>
 
-      <!-- Hero AI Student Illustration Avatar Box -->
+      <!-- Hero AI Student Avatar Box -->
       <div class="hero-illustration">
         <div class="hero-avatar-box">
           <span class="avatar-sparkles">✨</span>
@@ -96,55 +96,88 @@
         </h2>
       </div>
 
-      <!-- FEATURED TOOLS ROW -->
+      <!-- FEATURED TOOLS ROW WITH NEON GLOW GRAPHIC BADGES -->
       <div class="featured-tools-grid">
         
         <!-- Featured Tool 1: 1-Night Mode -->
         <div class="featured-tool-card pink-accent">
-          <span class="featured-badge pink">⭐ Featured</span>
-          <div>
-            <h3 class="featured-tool-title">1-Night Exam Survival Kit</h3>
-            <p class="featured-tool-desc">Top 10 Must-Do PYQs + 5-Minute Unit Cheat Sheets + Audio Revision for 1-Night Exam Prep.</p>
+          <div class="featured-card-body">
+            <span class="featured-badge pink">⭐ Featured</span>
+            <div>
+              <h3 class="featured-tool-title">1-Night Exam Survival Kit</h3>
+              <p class="featured-tool-desc">Top 10 Must-Do PYQs + 5-Min Cheat Sheets + Audio Revision for 1-Night Prep.</p>
+            </div>
+            <a href="{{ url_for('one_night_mode') }}" class="btn-tool-action pink">
+              <span>Explore</span>
+              <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+            </a>
           </div>
-          <a href="{{ url_for('one_night_mode') }}" class="btn-tool-action pink">
-            <span>Explore</span>
-            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
-          </a>
+
+          <!-- Glowing Graphic Icon Badge -->
+          <div class="card-glowing-graphic pink-glow">
+            <div class="glowing-ring pink">
+              <i data-feather="clock"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Featured Tool 2: Exam Predictor -->
         <div class="featured-tool-card purple-accent">
-          <h3 class="featured-tool-title">AI Exam Paper Predictor</h3>
-          <p class="featured-tool-desc">Predict RTU B.Tech CSE papers using 5-10 years PYQ analysis and pattern recognition.</p>
-          <a href="{{ url_for('exam_predictor') }}" class="btn-tool-action purple">
-            <span>Predict Paper</span>
-            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
-          </a>
+          <div class="featured-card-body">
+            <div>
+              <h3 class="featured-tool-title">AI Exam Paper Predictor</h3>
+              <p class="featured-tool-desc">Predict RTU B.Tech CSE papers using 5-10 years PYQ analysis.</p>
+            </div>
+            <a href="{{ url_for('exam_predictor') }}" class="btn-tool-action purple">
+              <span>Predict Paper</span>
+              <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+            </a>
+          </div>
+
+          <!-- Glowing Graphic Icon Badge -->
+          <div class="card-glowing-graphic purple-glow">
+            <div class="glowing-ring purple">
+              <i data-feather="file-text"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Featured Tool 3: AI Notes Generator -->
         <div class="featured-tool-card indigo-accent">
-          <h3 class="featured-tool-title">AI Notes Generator</h3>
-          <p class="featured-tool-desc">Generate beautiful, high-quality revision notes with formulas & tables in seconds.</p>
-          <a href="{{ url_for('ai_notes') }}" class="btn-tool-action indigo">
-            <span>Generate Notes</span>
-            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
-          </a>
+          <div class="featured-card-body">
+            <div>
+              <h3 class="featured-tool-title">AI Notes Generator</h3>
+              <p class="featured-tool-desc">Generate beautiful, high-quality revision notes in seconds.</p>
+            </div>
+            <a href="{{ url_for('ai_notes') }}" class="btn-tool-action indigo">
+              <span>Generate Notes</span>
+              <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+            </a>
+          </div>
+
+          <!-- Glowing Graphic Icon Badge -->
+          <div class="card-glowing-graphic indigo-glow">
+            <div class="glowing-ring indigo">
+              <i data-feather="edit-3"></i>
+            </div>
+          </div>
         </div>
 
       </div>
 
-      <!-- OTHER STUDY TOOLS GRID -->
+      <!-- OTHER STUDY TOOLS GRID WITH GLOWING BADGES -->
       <div class="secondary-tools-grid">
         
         <!-- Tool 1: Doubt Solver -->
         <div class="tool-grid-card">
-          <div class="tool-card-icon" style="background: rgba(34, 211, 238, 0.15); color: var(--cyan);">
-            <i data-feather="message-square"></i>
+          <div class="tool-header-row">
+            <div class="tool-badge-circle cyan">
+              <i data-feather="message-circle"></i>
+            </div>
           </div>
           <div>
             <h4 class="tool-card-title">AI Doubt Solver</h4>
-            <p class="tool-card-desc">Get instant, accurate answers to your academic doubts with voice narration.</p>
+            <p class="tool-card-desc">Get instant, accurate answers with voice narration.</p>
           </div>
           <a href="{{ url_for('doubt_solver') }}" class="btn-ghost-sm">
             <span>Ask Doubt</span>
@@ -154,12 +187,14 @@
 
         <!-- Tool 2: Quiz Generator -->
         <div class="tool-grid-card">
-          <div class="tool-card-icon" style="background: rgba(52, 211, 153, 0.15); color: var(--success);">
-            <i data-feather="help-circle"></i>
+          <div class="tool-header-row">
+            <div class="tool-badge-circle green">
+              <i data-feather="help-circle"></i>
+            </div>
           </div>
           <div>
             <h4 class="tool-card-title">Quiz Generator</h4>
-            <p class="tool-card-desc">Test your knowledge with AI-powered MCQ quizzes and score ratings.</p>
+            <p class="tool-card-desc">Test your knowledge with AI-powered quizzes.</p>
           </div>
           <a href="{{ url_for('quiz') }}" class="btn-ghost-sm" style="color: var(--success);">
             <span>Start Quiz</span>
@@ -169,12 +204,14 @@
 
         <!-- Tool 3: Flashcards -->
         <div class="tool-grid-card">
-          <div class="tool-card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">
-            <i data-feather="layers"></i>
+          <div class="tool-header-row">
+            <div class="tool-badge-circle orange">
+              <i data-feather="layers"></i>
+            </div>
           </div>
           <div>
             <h4 class="tool-card-title">Flashcards</h4>
-            <p class="tool-card-desc">Smart 3D flip flashcards with active recall and spaced repetition practice.</p>
+            <p class="tool-card-desc">Smart 3D flip cards with active recall practice.</p>
           </div>
           <a href="{{ url_for('flashcards') }}" class="btn-ghost-sm" style="color: var(--warning);">
             <span>Create Cards</span>
@@ -184,12 +221,14 @@
 
         <!-- Tool 4: Roadmap & Mind Map -->
         <div class="tool-grid-card">
-          <div class="tool-card-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-light);">
-            <i data-feather="map-pin"></i>
+          <div class="tool-header-row">
+            <div class="tool-badge-circle purple">
+              <i data-feather="map"></i>
+            </div>
           </div>
           <div>
             <h4 class="tool-card-title">Roadmap & Mind Map</h4>
-            <p class="tool-card-desc">Visualize your learning journey step-by-step with interactive node trees.</p>
+            <p class="tool-card-desc">Visualize your learning journey step-by-step.</p>
           </div>
           <a href="{{ url_for('ai_roadmap') }}" class="btn-ghost-sm">
             <span>Explore</span>
