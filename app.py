@@ -36,6 +36,14 @@ load_dotenv()
 #  STEP 2: Create Flask App 
 app = Flask(__name__)
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+
 # Secret key is used to encrypt session cookies (login sessions)
 # It's now loaded from .env  much safer!
 app.secret_key = os.environ.get('SECRET_KEY', 'fallback_dev_key_change_this')
