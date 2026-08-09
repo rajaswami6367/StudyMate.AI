@@ -1,396 +1,45 @@
 {% extends "base.html" %}
-
-{% block title %}Doubt Solver — StudyMate AI{% endblock %}
-
+{% block title %}AI Doubt Solver — StudyMate AI{% endblock %}
 {% block content %}
-<section class="tool-section">
-  <div class="tool-header">
-    <div class="tool-icon blue"><i data-feather="message-circle"></i></div>
-    <h2>AI Doubt Solver</h2>
-    <p>Type your question below, and our AI will explain it simply.</p>
+<div style="max-width: 900px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
+      <i data-feather="arrow-left" style="width: 14px;"></i>
+      <span>Back to Dashboard</span>
+    </a>
+    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+      AI DOUBT SOLVER
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Ask any academic question and get instant step-by-step solutions with voice narration.
+    </p>
   </div>
 
-  <div class="tool-container">
-    {% if error %}
-    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
-    {% endif %}
-
+  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
     <form method="POST" action="{{ url_for('doubt_solver') }}" onsubmit="showLoading()">
-      <div class="glass-command-bar">
-        <div style="display: flex; gap: 12px; align-items: flex-start;">
-          <div style="color: #ec4899; padding-top: 4px;">
-            <i data-feather="sparkles" style="width: 22px; height: 22px;"></i>
-          </div>
-          <textarea name="question" id="questionInput" class="glass-command-input" rows="3" placeholder="Ask any academic doubt, RTU PYQ formula, code logic, or concept (e.g. Explain Peterson's Solution for Process Synchronization)..." required>{{ question if question else '' }}</textarea>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button type="button" class="btn btn-ghost btn-sm" id="micBtn" onclick="toggleSpeech()" style="border-radius: 999px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ec4899;" title="Speak Question">
-              <i data-feather="mic" style="width: 15px; height: 15px;"></i> Voice Input
-            </button>
-            <span style="font-size: 11px; color: #94a3b8;">Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #fff;">Enter</kbd> to submit</span>
-          </div>
-
-          <button type="submit" class="btn-cyber-primary" id="submitBtn">
-            <i data-feather="send" style="width: 16px; height: 16px;"></i> Ask AI Assistant
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Prompt Suggestion Chips -->
-      <div style="margin-top: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
-          ⚡ Popular Academic Doubts:
-        </span>
-        <div class="prompt-chips-container">
-          <div class="prompt-chip" onclick="fillPrompt('Explain Peterson's Solution for Process Synchronization with shared variables turn and flag[2].')">
-            ⚡ Peterson's Algorithm
-          </div>
-          <div class="prompt-chip" onclick="fillPrompt('Solve 10-Mark RTU PYQ: Banker's Algorithm for Deadlock Avoidance with step-by-step Need matrix calculation.')">
-            🎯 Banker's Algorithm PYQ
-          </div>
-          <div class="prompt-chip" onclick="fillPrompt('Differentiate 3NF and BCNF with a relational database example and functional dependency losslessness.')">
-            💡 3NF vs BCNF
-          </div>
-          <div class="prompt-chip" onclick="fillPrompt('Write complete C++ program demonstrating Virtual Functions, VTABLE, and Virtual Destructors.')">
-            🚀 C++ Virtual Functions
-          </div>
-          <div class="prompt-chip" onclick="fillPrompt('Explain TCP 3-Way Handshake mechanism for connection establishment with sequence numbers.')">
-            ⚙️ TCP 3-Way Handshake
-          </div>
-        </div>
-      </div>
-      
-      <!-- Loading indicator (hidden by default) -->
-      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
-        <div class="spinner" style="border-top-color: #ec4899; width: 36px; height: 36px;"></div>
-        <p style="color: #ec4899; font-weight: 700; margin-left: 12px;">AI Assistant is analyzing concepts & drafting detailed explanation...</p>
+      <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+        <input type="text" name="question" value="{{ question }}" placeholder="Type your doubt or question here..." required style="flex: 1; padding: 14px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
+        <button type="submit" class="btn-primary-gradient">
+          <i data-feather="send" style="width: 14px;"></i>
+          <span>Ask AI</span>
+        </button>
       </div>
     </form>
-
-    {% if answer %}
-    <div class="result-card mt-4">
-      <div class="result-header">
-        <h3><i data-feather="zap"></i> Answer</h3>
-        <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;">
-          <!-- Male/Female Selector -->
-          <div class="voice-selector" style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2px 6px;">
-            <button type="button" class="voice-btn" id="voiceFemale" onclick="selectVoiceGender('female')" title="Female Voice" style="background: none; border: none; color: var(--primary-light); cursor: pointer; padding: 4px; display: flex; align-items: center;">
-              <i data-feather="user" style="width: 14px; height: 14px;"></i>
-              <span style="font-size: 11px; margin-left: 2px; font-weight: 600;">Female</span>
-            </button>
-            <span style="color: var(--border); font-size: 12px;">|</span>
-            <button type="button" class="voice-btn" id="voiceMale" onclick="selectVoiceGender('male')" title="Male Voice" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center;">
-              <i data-feather="user-check" style="width: 14px; height: 14px;"></i>
-              <span style="font-size: 11px; margin-left: 2px; font-weight: 600;">Male</span>
-            </button>
-          </div>
-          <!-- Listen Button -->
-          <button type="button" class="btn btn-ghost btn-sm" id="speakBtn" onclick="toggleSpeakAnswer()">
-            <i data-feather="volume-2" style="width: 14px; height: 14px; margin-right: 5px;"></i> Listen
-          </button>
-          <!-- Save Button -->
-          <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('doubt', '{{ question | escape }}', document.querySelector('.markdown-content').textContent)">
-            <i data-feather="folder-plus"></i> Save to Library
-          </button>
-        </div>
-      </div>
-      <div class="result-body">
-        <div class="markdown-content" style="opacity: 0;">{{ answer }}</div>
-      </div>
-    </div>
-    {% endif %}
-    <audio id="ttsAudio" style="display: none;"></audio>
   </div>
-</section>
 
-{% block extra_js %}
-<script>
-  function fillPrompt(text) {
-    const input = document.getElementById('questionInput');
-    input.value = text;
-    input.focus();
-  }
+  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
+    <div style="width: 44px; height: 44px; border: 3px solid rgba(34, 211, 238, 0.2); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
+    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Analyzing Doubt & Solving...</h3>
+  </div>
 
-  function showLoading() {
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('loadingIndicator').style.display = 'flex';
-  }
-
-  // ── SPEECH-TO-TEXT (VOICE INPUT) ──────────────────────────
-  let recognition;
-  let isListening = false;
-
-  function toggleSpeech() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      showToast("Speech recognition is not supported in this browser. Please use Chrome.", "error");
-      return;
-    }
-
-    const micBtn = document.getElementById('micBtn');
-    const input = document.getElementById('questionInput');
-
-    if (!isListening) {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-IN'; // Indian accent (accepts English and Hindi words easily)
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        isListening = true;
-        micBtn.style.background = 'rgba(239, 68, 68, 0.15)';
-        micBtn.style.color = '#ef4444';
-        micBtn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-        micBtn.innerHTML = `<i data-feather="mic-off" style="width: 16px; height: 16px;"></i>`;
-        feather.replace();
-        showToast('Listening... Speak now!', 'info');
-      };
-
-      recognition.onerror = (e) => {
-        console.error(e);
-        showToast('Voice error. Try again!', 'error');
-        stopListening();
-      };
-
-      recognition.onend = () => {
-        stopListening();
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = (input.value ? input.value + " " : "") + transcript;
-      };
-
-      recognition.start();
-    } else {
-      recognition.stop();
-      stopListening();
-    }
-  }
-
-  function stopListening() {
-    isListening = false;
-    const micBtn = document.getElementById('micBtn');
-    if (micBtn) {
-      micBtn.style.background = '';
-      micBtn.style.color = '';
-      micBtn.style.borderColor = '';
-      micBtn.innerHTML = `<i data-feather="mic" style="width: 16px; height: 16px;"></i>`;
-      feather.replace();
-    }
-  }
-
-  // ── TEXT-TO-SPEECH (NEURAL MP3 STREAMING WITH LOCAL FALLBACK) ──
-  let selectedGender = 'female'; // Default narrator
-  let isSpeaking = false;
-  let isUsingFallback = false;
-  let speechUtterance; // For fallback local TTS
-  const audioPlayer = document.getElementById('ttsAudio');
-
-  // Make sure system voices list is loaded for fallback
-  if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
-  }
-
-  function selectVoiceGender(gender) {
-    selectedGender = gender;
-    const femaleBtn = document.getElementById('voiceFemale');
-    const maleBtn = document.getElementById('voiceMale');
-    
-    if (gender === 'female') {
-      femaleBtn.style.color = 'var(--primary-light)';
-      maleBtn.style.color = 'var(--text-muted)';
-    } else {
-      maleBtn.style.color = 'var(--primary-light)';
-      femaleBtn.style.color = 'var(--text-muted)';
-    }
-    
-    // If speaking, restart narration with new voice
-    if (isSpeaking) {
-      stopSpeaking();
-      toggleSpeakAnswer();
-    }
-  }
-
-  function toggleSpeakAnswer() {
-    const speakBtn = document.getElementById('speakBtn');
-    
-    if (!isSpeaking) {
-      const rawAnswerText = document.querySelector('.markdown-content').innerText;
-      
-      // Clean up code blocks, markdown punctuation, and emojis for natural flow
-      let cleanText = rawAnswerText
-        .replace(/```[\s\S]*?```/g, ' [Code block omitted] ') 
-        .replace(/`([^`]+)`/g, '$1') 
-        .replace(/[\#\*\_~]/g, '') 
-        .replace(/[✅💡📚📝🎯⚡🧠🛠️🤖🚀🏆🎉🌟]/gu, '') 
-        .replace(/\s+/g, ' ') 
-        .trim();
-
-      // Show inline spinner while fetching neural voice MP3 from Flask backend
-      speakBtn.innerHTML = `<span class="spinner-sm" style="display:inline-block; width:12px; height:12px; border:2px solid var(--text-muted); border-top-color:var(--primary-light); border-radius:50%; animation:spin 1s linear infinite; margin-right:6px; vertical-align:middle;"></span> Fetching...`;
-      speakBtn.style.pointerEvents = 'none';
-
-      // Load dynamic /speak endpoint (Edge-TTS backend)
-      const speakUrl = `/speak?gender=${selectedGender}&text=${encodeURIComponent(cleanText)}`;
-      audioPlayer.src = speakUrl;
-      isUsingFallback = false;
-      
-      audioPlayer.oncanplaythrough = () => {
-        if (isUsingFallback) return; // Prevent double play if fallback already triggered
-        audioPlayer.play()
-          .then(() => {
-            isSpeaking = true;
-            speakBtn.style.pointerEvents = 'auto';
-            speakBtn.innerHTML = `<i data-feather="square" style="width: 14px; height: 14px; margin-right: 5px;"></i> Stop`;
-            speakBtn.style.background = 'rgba(124, 58, 237, 0.15)';
-            speakBtn.style.color = 'var(--primary-light)';
-            feather.replace();
-          })
-          .catch((err) => {
-            console.error("Audio play failed, falling back to local speech:", err);
-            isUsingFallback = true;
-            fallbackToLocalSpeech(cleanText);
-          });
-      };
-
-      audioPlayer.onerror = (e) => {
-        console.warn("Audio load error (falls back to local client voices if backend TTS fails):", e);
-        isUsingFallback = true;
-        fallbackToLocalSpeech(cleanText);
-      };
-
-      audioPlayer.onended = () => {
-        resetSpeaker();
-      };
-
-    } else {
-      stopSpeaking();
-    }
-  }
-
-  function fallbackToLocalSpeech(text) {
-    if (!window.speechSynthesis) {
-      showToast("Speech synthesis is not supported on this browser.", "error");
-      resetSpeaker();
-      return;
-    }
-
-    // Stop HTML5 audio player if active
-    if (audioPlayer) {
-      audioPlayer.pause();
-    }
-
-    const introText = "StudyMate A.I. mein aapka swagat hai. ";
-    const fullText = introText + text;
-
-    speechUtterance = new SpeechSynthesisUtterance(fullText);
-
-    // Get available voices
-    const voices = window.speechSynthesis.getVoices();
-    const hasHindi = /[\u0900-\u097F]/.test(text);
-
-    // Force US/UK voices for English to avoid regional Indian accents
-    let langVoices = voices.filter(v => {
-      const lang = v.lang.toLowerCase();
-      if (hasHindi) {
-        return lang.includes('hi');
-      } else {
-        return lang.includes('en-us') || lang.includes('en-gb') || lang === 'en';
-      }
-    });
-
-    if (langVoices.length === 0) {
-      langVoices = voices.filter(v => v.lang.toLowerCase().includes(hasHindi ? 'hi' : 'en'));
-    }
-
-    const femaleKeywords = ['zira', 'samantha', 'kalpana', 'swara', 'neerja', 'aria', 'hazel', 'sabina', 'karen', 'female', 'woman', 'sfg', 'hie', 'elena', 'haruka', 'susan'];
-    const maleKeywords = ['david', 'ravi', 'hemant', 'guy', 'madhur', 'male', 'man', 'iom', 'iob', 'hid', 'mark', 'george', 'stefan'];
-
-    let candidates = [];
-    if (selectedGender === 'female') {
-      candidates = langVoices.filter(v => {
-        const name = v.name.toLowerCase();
-        return femaleKeywords.some(k => name.includes(k)) && !maleKeywords.some(k => name.includes(k));
-      });
-    } else {
-      candidates = langVoices.filter(v => {
-        const name = v.name.toLowerCase();
-        return maleKeywords.some(k => name.includes(k)) && !femaleKeywords.some(k => name.includes(k));
-      });
-    }
-
-    const chosenVoice = candidates[0] || langVoices[0];
-    if (chosenVoice) {
-      speechUtterance.voice = chosenVoice;
-      speechUtterance.lang = chosenVoice.lang;
-    }
-
-    speechUtterance.rate = 0.90;
-    speechUtterance.pitch = (selectedGender === 'female') ? 1.02 : 0.95;
-
-    const speakBtn = document.getElementById('speakBtn');
-    
-    speechUtterance.onstart = () => {
-      isSpeaking = true;
-      speakBtn.style.pointerEvents = 'auto';
-      speakBtn.innerHTML = `<i data-feather="square" style="width: 14px; height: 14px; margin-right: 5px;"></i> Stop`;
-      speakBtn.style.background = 'rgba(124, 58, 237, 0.15)';
-      speakBtn.style.color = 'var(--primary-light)';
-      feather.replace();
-    };
-
-    speechUtterance.onend = () => {
-      resetSpeaker();
-    };
-
-    speechUtterance.onerror = () => {
-      resetSpeaker();
-    };
-
-    window.speechSynthesis.speak(speechUtterance);
-  }
-
-  function stopSpeaking() {
-    if (audioPlayer) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
-    }
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-    resetSpeaker();
-  }
-
-  function resetSpeaker() {
-    isSpeaking = false;
-    const speakBtn = document.getElementById('speakBtn');
-    if (speakBtn) {
-      speakBtn.style.pointerEvents = 'auto';
-      speakBtn.innerHTML = `<i data-feather="volume-2" style="width: 14px; height: 14px; margin-right: 5px;"></i> Listen`;
-      speakBtn.style.background = '';
-      speakBtn.style.color = '';
-      feather.replace();
-    }
-  }
-
-  // Cancel speaking immediately if user exits or navigates away
-  window.addEventListener('beforeunload', () => {
-    if (audioPlayer) {
-      audioPlayer.pause();
-    }
-  });
-</script>
-
-<style>
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>
-{% endblock %}
+  {% if answer %}
+  <div class="glass-card" style="padding: 28px; border-radius: 20px;">
+    <h3 style="font-size: 16px; font-weight: 800; color: var(--cyan); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <i data-feather="check-circle" style="width: 18px;"></i> Solution Explanation
+    </h3>
+    <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-primary); line-height: 1.6;">{{ answer }}</div>
+  </div>
+  {% endif %}
+</div>
+<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
 {% endblock %}

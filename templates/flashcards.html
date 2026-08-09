@@ -1,146 +1,50 @@
 {% extends "base.html" %}
-
-{% block title %}3D Interactive Flashcards — StudyMate AI{% endblock %}
-
+{% block title %}3D Flashcards — StudyMate AI{% endblock %}
 {% block content %}
-<section class="tool-section">
-  <div class="tool-header" style="text-align: center; margin-bottom: 28px;">
-    <div class="tool-icon orange" style="margin: 0 auto 12px auto;"><i data-feather="layers"></i></div>
-    <h2 style="font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">3D Interactive Flashcards</h2>
-    <p style="color: #94a3b8; font-size: 15px;">Generate 3D flip cards to master key definitions, formulas, and concepts fast.</p>
+<div style="max-width: 850px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
+      <i data-feather="arrow-left" style="width: 14px;"></i>
+      <span>Back to Dashboard</span>
+    </a>
+    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+      3D REVISION FLASHCARDS
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Master key formulas and definitions using active recall and 3D card flips.
+    </p>
   </div>
 
-  <div class="tool-container">
-    {% if error %}
-    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
-    {% endif %}
-
+  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
     <form method="POST" action="{{ url_for('flashcards') }}" onsubmit="showLoading()">
-      <div class="glass-command-bar">
-        <div style="display: flex; gap: 12px; align-items: flex-start;">
-          <div style="color: #f59e0b; padding-top: 4px;">
-            <i data-feather="box" style="width: 22px; height: 22px;"></i>
-          </div>
-          <input type="text" name="topic" id="topicInput" class="glass-command-input" placeholder="Enter topic for Flashcard Deck (e.g. Operating System Virtual Memory, DBMS SQL Functions)..." required value="{{ topic if topic else '' }}" />
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-          <span style="font-size: 12px; color: #94a3b8;">🃏 Generates 10 3D Interactive Flip Cards</span>
-          <button type="submit" class="btn-cyber-primary" id="submitBtn" style="background: linear-gradient(135deg, #f59e0b, #ec4899);">
-            <i data-feather="layers" style="width: 16px; height: 16px;"></i> Create Flashcard Deck
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Topic Preset Chips -->
-      <div style="margin-top: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
-          ⚡ Popular Flashcard Decks:
-        </span>
-        <div class="prompt-chips-container">
-          <div class="prompt-chip" onclick="fillTopic('Operating Systems: Process States, Semaphores & Paging')">
-            ⚡ OS Core Concepts
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('DBMS: SQL Joins, ACID Properties & Indexing')">
-            🎯 DBMS Terms & SQL
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('C++ OOP Vocabulary: Virtual VTABLE, Inheritance & Friend Functions')">
-            🚀 C++ OOP Terminology
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('Computer Networks: OSI Layers, Protocols & Subnetting')">
-            ⚙️ Network Protocols & Ports
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading indicator -->
-      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
-        <div class="spinner" style="border-top-color: #f59e0b; width: 36px; height: 36px;"></div>
-        <p style="color: #fbbf24; font-weight: 700; margin-left: 12px;">Building 3D Flashcard Deck...</p>
+      <div style="display: flex; gap: 12px;">
+        <input type="text" name="topic" value="{{ topic }}" placeholder="Enter topic for Flashcards (e.g. OOPS Concepts, Physics Formulas...)" required style="flex: 1; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
+        <button type="submit" class="btn-primary-gradient" style="background: linear-gradient(135deg, var(--warning), var(--pink));">
+          <i data-feather="layers" style="width: 14px;"></i>
+          <span>Create Cards</span>
+        </button>
       </div>
     </form>
-
-    {% if flashcards_data %}
-    <div class="result-card mt-4" style="background: transparent; border: none; box-shadow: none;">
-      
-      <!-- Action Bar & Progress Counter -->
-      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 14px 20px; backdrop-filter: blur(16px); margin-bottom: 24px;">
-        <div style="font-size: 14px; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
-          <i data-feather="layers"></i> Deck: {{ topic }} 
-          <span style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;">
-            10 Cards
-          </span>
-        </div>
-
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('flashcard', '{{ topic | escape }}', document.getElementById('rawFlashcardData').value)">
-            <i data-feather="folder-plus"></i> Save Deck
-          </button>
-        </div>
-      </div>
-
-      <textarea id="rawFlashcardData" style="display: none;">{% for card in flashcards_data %}Q: {{ card.question }}
-A: {{ card.answer }}
-{% endfor %}</textarea>
-
-      <!-- 3D Interactive Deck Container -->
-      <div class="flashcards-grid">
-        {% for card in flashcards_data %}
-        <div class="perspective-container">
-          <div class="flip-card-inner" onclick="this.classList.toggle('is-flipped')">
-            
-            <!-- Front of Card (Question) -->
-            <div class="flip-card-front">
-              <span style="position: absolute; top: 16px; left: 20px; font-size: 12px; font-weight: 800; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 10px; border-radius: 999px;">
-                Question #{{ loop.index }}
-              </span>
-              
-              <div style="font-size: 18px; font-weight: 700; color: #ffffff; line-height: 1.6; max-width: 90%;">
-                {{ card.question }}
-              </div>
-              
-              <div style="position: absolute; bottom: 16px; font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                <i data-feather="rotate-cw" style="width: 13px;"></i> Tap or Click Card to Flip Answer
-              </div>
-            </div>
-
-            <!-- Back of Card (Answer) -->
-            <div class="flip-card-back">
-              <span style="position: absolute; top: 16px; left: 20px; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 10px; border-radius: 999px;">
-                Answer #{{ loop.index }}
-              </span>
-
-              <div style="font-size: 16px; font-weight: 600; color: #e2e8f0; line-height: 1.6; max-width: 90%;">
-                {{ card.answer }}
-              </div>
-
-              <div style="position: absolute; bottom: 16px; font-size: 12px; color: #a78bfa; display: flex; align-items: center; gap: 6px;">
-                <i data-feather="rotate-ccw" style="width: 13px;"></i> Tap to Flip Back
-              </div>
-            </div>
-
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-
-    </div>
-    {% endif %}
   </div>
-</section>
 
-{% block extra_js %}
-<script>
-  function fillTopic(text) {
-    const input = document.getElementById('topicInput');
-    input.value = text;
-    input.focus();
-  }
+  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
+    <div style="width: 44px; height: 44px; border: 3px solid rgba(245, 158, 11, 0.2); border-top-color: var(--warning); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
+    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Flashcards Deck...</h3>
+  </div>
 
-  function showLoading() {
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('loadingIndicator').style.display = 'flex';
-  }
-</script>
-{% endblock %}
+  {% if flashcards_data %}
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    {% for card in flashcards_data %}
+      <div class="glass-card" style="padding: 24px; border-radius: 18px; background: rgba(15, 23, 42, 0.8);">
+        <div style="font-size: 12px; font-weight: 800; color: var(--warning); margin-bottom: 4px;">QUESTION #{{ loop.index }}:</div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 12px;">{{ card.question }}</h4>
+        <div style="background: rgba(0,0,0,0.4); padding: 12px 16px; border-radius: 10px; border-left: 3px solid var(--warning); font-size: 13px; color: var(--text-secondary);">
+          <strong style="color: var(--cyan);">ANSWER:</strong> {{ card.answer }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
 {% endblock %}

@@ -1,103 +1,60 @@
 {% extends "base.html" %}
-
-{% block title %}AI Notes Studio — StudyMate AI{% endblock %}
-
+{% block title %}AI Notes Generator — StudyMate AI{% endblock %}
 {% block content %}
-<section class="tool-section">
-  <div class="tool-header" style="text-align: center; margin-bottom: 28px;">
-    <div class="tool-icon purple" style="margin: 0 auto 12px auto;"><i data-feather="file-text"></i></div>
-    <h2 style="font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #c084fc, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Notes Studio</h2>
-    <p style="color: #94a3b8; font-size: 15px;">Generate structured, Notion-style visual study notes on any topic instantly.</p>
+<div style="max-width: 1050px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
+      <i data-feather="arrow-left" style="width: 14px;"></i>
+      <span>Back to Dashboard</span>
+    </a>
+    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+      AI NOTES GENERATOR
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Generate highly-visual revision sheets with formulas, comparison tables & key concept callouts.
+    </p>
   </div>
 
-  <div class="tool-container">
-    {% if error %}
-    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
-    {% endif %}
-
-    <form method="POST" action="{{ url_for('ai_notes') }}" onsubmit="showLoading()">
-      <div class="glass-command-bar">
-        <div style="display: flex; gap: 12px; align-items: flex-start;">
-          <div style="color: #c084fc; padding-top: 4px;">
-            <i data-feather="book-open" style="width: 22px; height: 22px;"></i>
-          </div>
-          <textarea name="topic" id="topicInput" class="glass-command-input" rows="3" placeholder="Enter topic for detailed study notes (e.g. DBMS Normalization 1NF to BCNF, Operating System Deadlocks, OSI 7 Layers)..." required>{{ topic if topic else '' }}</textarea>
+  <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
+    <!-- Controls Panel -->
+    <div class="glass-card" style="padding: 24px; border-radius: 20px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">Note Settings</h3>
+      <form method="POST" action="{{ url_for('ai_notes') }}" onsubmit="showLoading()">
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Topic / Subject:</label>
+          <input type="text" name="topic" value="{{ topic }}" placeholder="e.g. Operating System Deadlocks, BST..." required style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;" />
         </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-          <span style="font-size: 12px; color: #94a3b8;">🚀 Generates Markdown Tables, Formulas & Code Snippets</span>
-          <button type="submit" class="btn-cyber-primary" id="submitBtn">
-            <i data-feather="cpu" style="width: 16px; height: 16px;"></i> Generate Study Notes
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Topic Preset Chips -->
-      <div style="margin-top: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
-          ⚡ Popular B.Tech & Exam Topics:
-        </span>
-        <div class="prompt-chips-container">
-          <div class="prompt-chip" onclick="fillTopic('DBMS Normalization (1NF, 2NF, 3NF, BCNF) with dependencies and breakdown tables')">
-            🚀 DBMS Normalization
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('Operating System Deadlocks: 4 Conditions, Banker's Algorithm & Resource Allocation Graph')">
-            ⚡ OS Deadlocks & Banker's
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('Computer Networks 7 Layers OSI Reference Model with functions and PDU formats')">
-            💡 OSI 7-Layer Architecture
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('C++ Object Oriented Programming: Virtual Functions, VTABLE, Polymorphism & Inheritance')">
-            ⚙️ C++ OOPS & VTABLE
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('Engineering Physics: Laser Action, Einstein's A and B Coefficients & Optical Pumping')">
-            🔬 Laser Action & Coefficients
-          </div>
-        </div>
-      </div>
-      
-      <!-- Loading indicator -->
-      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
-        <div class="spinner" style="border-top-color: #a855f7; width: 36px; height: 36px;"></div>
-        <p style="color: #c084fc; font-weight: 700; margin-left: 12px;">AI Studio is organizing subtopics, comparison tables & formulas...</p>
-      </div>
-    </form>
-
-    {% if notes %}
-    <div class="result-card mt-4" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 24px; backdrop-filter: blur(16px);">
-      <div class="result-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; margin-bottom: 20px;">
-        <h3 style="color: #fff; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-          <i data-feather="book-open" style="color: #c084fc;"></i> Study Notes: {{ topic }}
-        </h3>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('notes', '{{ topic | escape }}', document.querySelector('.markdown-content').textContent)">
-            <i data-feather="folder-plus"></i> Save to Library
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="window.print()">
-            <i data-feather="printer"></i> Print Notes
-          </button>
-        </div>
-      </div>
-      <div class="result-body">
-        <div class="markdown-content" style="opacity: 0; font-size: 15px; line-height: 1.7; color: #e2e8f0;">{{ notes }}</div>
-      </div>
+        <button type="submit" class="btn-primary-gradient" style="width: 100%; justify-content: center;">
+          <i data-feather="edit-3" style="width: 14px;"></i>
+          <span>Generate Notes</span>
+        </button>
+      </form>
     </div>
-    {% endif %}
+
+    <!-- Output Preview Panel -->
+    <div>
+      <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
+        <div style="width: 44px; height: 44px; border: 3px solid rgba(139, 92, 246, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
+        <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Notes for "{{ topic }}"...</h3>
+      </div>
+
+      {% if notes %}
+      <div class="glass-card" style="padding: 28px; border-radius: 20px; line-height: 1.6; color: var(--text-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h2 style="font-size: 20px; font-weight: 800; color: #fff;">{{ topic }} — Revision Notes</h2>
+          <button onclick="window.print()" class="btn-tool-action purple">Print / PDF</button>
+        </div>
+        <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-secondary);">{{ notes }}</div>
+      </div>
+      {% else %}
+      <div class="glass-card" style="padding: 48px; border-radius: 20px; text-align: center; color: var(--text-muted);">
+        <i data-feather="file-text" style="width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.5;"></i>
+        <h3 style="color: #fff; font-size: 16px; margin-bottom: 4px;">No Notes Generated Yet</h3>
+        <p style="font-size: 13px;">Enter a topic on the left to generate your first AI revision sheet.</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
-</section>
-
-{% block extra_js %}
-<script>
-  function fillTopic(text) {
-    const input = document.getElementById('topicInput');
-    input.value = text;
-    input.focus();
-  }
-
-  function showLoading() {
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('loadingIndicator').style.display = 'flex';
-  }
-</script>
-{% endblock %}
+</div>
+<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
 {% endblock %}

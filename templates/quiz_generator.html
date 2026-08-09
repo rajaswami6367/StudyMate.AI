@@ -1,215 +1,43 @@
 {% extends "base.html" %}
-
 {% block title %}Quiz Generator — StudyMate AI{% endblock %}
-
 {% block content %}
-<section class="tool-section">
-  <div class="tool-header">
-    <div class="tool-icon green"><i data-feather="check-circle"></i></div>
-    <h2>AI Quiz Generator</h2>
-    <p>Generate a 5-question MCQ quiz on any topic to test your knowledge.</p>
+<div style="max-width: 850px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
+      <i data-feather="arrow-left" style="width: 14px;"></i>
+      <span>Back to Dashboard</span>
+    </a>
+    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+      QUIZ GENERATOR
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Test your syllabus knowledge with interactive MCQ quizzes.
+    </p>
   </div>
 
-  <div class="tool-container">
-    {% if error %}
-    <div class="alert error"><i data-feather="alert-circle"></i> {{ error }}</div>
-    {% endif %}
-
+  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
     <form method="POST" action="{{ url_for('quiz') }}" onsubmit="showLoading()">
-      <div class="glass-command-bar">
-        <div style="display: flex; gap: 12px; align-items: flex-start;">
-          <div style="color: #10b981; padding-top: 4px;">
-            <i data-feather="check-circle" style="width: 22px; height: 22px;"></i>
-          </div>
-          <input type="text" name="topic" id="topicInput" class="glass-command-input" placeholder="Enter topic for 5-Question MCQ Quiz (e.g. OS CPU Scheduling, DBMS SQL Joins, C++ Polymorphism)..." required value="{{ topic if topic else '' }}" />
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-          <span style="font-size: 12px; color: #94a3b8;">🎯 Tests core concepts with instant grading & explanations</span>
-          <button type="submit" class="btn-cyber-primary" id="submitBtn" style="background: linear-gradient(135deg, #10b981, #3b82f6);">
-            <i data-feather="zap" style="width: 16px; height: 16px;"></i> Generate Cyber Quiz
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Topic Preset Chips -->
-      <div style="margin-top: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
-          ⚡ Popular B.Tech Quiz Topics:
-        </span>
-        <div class="prompt-chips-container">
-          <div class="prompt-chip" onclick="fillTopic('Operating Systems CPU Scheduling: FCFS, SJF, SRTF & Round-Robin')">
-            ⚡ OS CPU Scheduling
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('DBMS SQL Joins, Group By, Subqueries & Aggregations')">
-            🎯 DBMS SQL Joins
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('C++ Inheritance, Virtual Functions & Pure Virtual Classes')">
-            🚀 C++ Polymorphism
-          </div>
-          <div class="prompt-chip" onclick="fillTopic('Computer Networks IPv4 Subnetting, CIDR & Masking')">
-            ⚙️ IPv4 CIDR Subnetting
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading indicator -->
-      <div id="loadingIndicator" class="loading-state" style="display: none; justify-content: center; align-items: center; padding: 24px; text-align: center;">
-        <div class="spinner" style="border-top-color: #10b981; width: 36px; height: 36px;"></div>
-        <p style="color: #34d399; font-weight: 700; margin-left: 12px;">Crafting 5-Question Cyber Quiz with answers & explanations...</p>
+      <div style="display: flex; gap: 12px;">
+        <input type="text" name="topic" value="{{ topic }}" placeholder="Enter quiz topic (e.g. Operating Systems, OOPS, Chemistry...)" required style="flex: 1; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
+        <button type="submit" class="btn-primary-gradient" style="background: linear-gradient(135deg, var(--success), var(--cyan));">
+          <i data-feather="play" style="width: 14px;"></i>
+          <span>Start Quiz</span>
+        </button>
       </div>
     </form>
-
-    {% if quiz_data %}
-    <!-- Score Summary Box (hidden initially) -->
-    <div class="score-summary-card mt-4" id="scoreCard" style="display: none;">
-      <div class="score-radial">
-        <span class="score-number" id="scoreNum">0</span>
-        <span class="score-total">/ 5</span>
-      </div>
-      <div class="score-feedback">
-        <h3 id="feedbackText">Well Done!</h3>
-        <p>Keep studying and generating quizzes to master the topic.</p>
-      </div>
-    </div>
-
-    <!-- Hidden textarea to store raw JSON for database saving -->
-    <textarea id="rawQuizJson" style="display: none;">{{ raw_quiz_json }}</textarea>
-
-    <!-- Quiz Wrapper -->
-    <div class="quiz-portal mt-4">
-      <div class="result-header" style="margin-bottom: var(--space-lg);">
-        <h3><i data-feather="award"></i> Quiz: {{ topic }}</h3>
-        <button class="btn btn-ghost btn-sm" id="saveBtn" onclick="saveToLibrary('quiz', '{{ topic | escape }}', document.getElementById('rawQuizJson').value)">
-          <i data-feather="folder-plus"></i> Save to Library
-        </button>
-      </div>
-
-      <form id="mcqForm" class="quiz-questions-form">
-        {% for q in quiz_data %}
-        {% set q_index = loop.index0 %}
-        <div class="question-block" id="qBlock_{{ loop.index }}" data-correct="{{ q.correct }}">
-          <h4 class="question-title">
-            <span class="q-number">{{ loop.index }}.</span> {{ q.question }}
-          </h4>
-          
-          <div class="options-list">
-            {% for key, val in q.options.items() %}
-            <label class="option-item" id="label_{{ q_index }}_{{ key }}">
-              <input type="radio" name="question_{{ q_index }}" value="{{ key }}" required>
-              <span class="option-letter">{{ key }}</span>
-              <span class="option-text">{{ val }}</span>
-              <i data-feather="check" class="opt-feedback-icon correct-icon" style="display: none;"></i>
-              <i data-feather="x" class="opt-feedback-icon incorrect-icon" style="display: none;"></i>
-            </label>
-            {% endfor %}
-          </div>
-
-          <!-- Explanation box (hidden initially) -->
-          <div class="explanation-box" id="explain_{{ loop.index }}" style="display: none;">
-            <h5><i data-feather="info" style="width: 14px; height: 14px;"></i> Explanation</h5>
-            <p>{{ q.explanation }}</p>
-          </div>
-        </div>
-        {% endfor %}
-
-        <button type="button" class="btn btn-primary btn-block mt-4" id="gradeBtn" onclick="gradeQuiz()">
-          <i data-feather="check-square"></i> Submit Quiz
-        </button>
-      </form>
-    </div>
-    {% endif %}
   </div>
-</section>
 
-{% block extra_js %}
-<script>
-  function fillTopic(text) {
-    const input = document.getElementById('topicInput');
-    input.value = text;
-    input.focus();
-  }
+  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
+    <div style="width: 44px; height: 44px; border: 3px solid rgba(52, 211, 153, 0.2); border-top-color: var(--success); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
+    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Quiz Questions...</h3>
+  </div>
 
-  function showLoading() {
-    document.getElementById('submitBtn').style.display = 'none';
-    const loadInd = document.getElementById('loadingIndicator');
-    if (loadInd) loadInd.style.display = 'flex';
-  }
-
-  function gradeQuiz() {
-    const form = document.getElementById('mcqForm');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    let score = 0;
-    const totalQuestions = 5;
-
-    // Loop through questions
-    for (let i = 1; i <= totalQuestions; i++) {
-      const block = document.getElementById(`qBlock_${i}`);
-      const correctOption = block.getAttribute('data-correct');
-      const qIndex = i - 1;
-      
-      // Get selected radio input
-      const selectedInput = document.querySelector(`input[name="question_${qIndex}"]:checked`);
-      const selectedValue = selectedInput ? selectedInput.value : null;
-
-      // Select explanation box
-      const explainBox = document.getElementById(`explain_${i}`);
-      if (explainBox) explainBox.style.display = 'block';
-
-      // Loop through all options for this question to highlight them
-      ['A', 'B', 'C', 'D'].forEach(opt => {
-        const optionLabel = document.getElementById(`label_${qIndex}_${opt}`);
-        const radioInput = optionLabel.querySelector('input');
-        
-        // Disable inputs so user cannot change answer after submit
-        radioInput.disabled = true;
-
-        const correctIcon = optionLabel.querySelector('.correct-icon');
-        const incorrectIcon = optionLabel.querySelector('.incorrect-icon');
-
-        if (opt === correctOption) {
-          // Highlight correct answer in green
-          optionLabel.classList.add('correct');
-          if (correctIcon) correctIcon.style.display = 'block';
-        }
-        
-        if (opt === selectedValue && opt !== correctOption) {
-          // Highlight user's incorrect answer in red
-          optionLabel.classList.add('incorrect');
-          if (incorrectIcon) incorrectIcon.style.display = 'block';
-        }
-      });
-
-      if (selectedValue === correctOption) {
-        score++;
-      }
-    }
-
-    // Refresh feather icons for feedback icons
-    feather.replace();
-
-    // Display final score
-    document.getElementById('scoreNum').innerText = score;
-    document.getElementById('scoreCard').style.display = 'flex';
-    document.getElementById('gradeBtn').style.display = 'none';
-
-    // Set feedback text based on score
-    const feedText = document.getElementById('feedbackText');
-    if (score === 5) {
-      feedText.innerText = "🎉 Perfect Score!";
-    } else if (score >= 3) {
-      feedText.innerText = "👍 Great Job!";
-    } else {
-      feedText.innerText = "📚 Keep Learning!";
-    }
-
-    // Scroll to top of the page smoothly to see the score
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-</script>
-{% endblock %}
+  {% if quiz_data %}
+  <div class="glass-card" style="padding: 28px; border-radius: 20px;">
+    <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 20px;">Quiz: {{ topic }}</h2>
+    <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-primary); line-height: 1.6;">{{ quiz_data }}</div>
+  </div>
+  {% endif %}
+</div>
+<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
 {% endblock %}

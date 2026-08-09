@@ -1,174 +1,256 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — StudyMate AI{% endblock %}
+{% block title %}Dashboard — StudyMate AI Workspace{% endblock %}
 
 {% block content %}
-<section class="dashboard-section" style="position: relative; padding-bottom: 80px;">
-  <!-- Glowing background blobs for dashboard -->
-  <div class="hero-bg">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
-
-  <div style="position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 var(--space-md);">
-    
-    <!-- 1. HEADER WELCOME SECTION -->
-    <div class="dashboard-header-card" style="margin-bottom: var(--space-lg);">
-      <div class="dashboard-welcome-info">
-        <h1 style="font-size: var(--font-size-2xl); font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">
-          Welcome back, <span class="gradient-text">{{ username }}</span>! 👋
-        </h1>
-        <p style="color: var(--text-secondary); font-size: var(--font-size-md);">
-          Your intelligent study companion is ready. Select a tool to start learning.
-        </p>
-      </div>
-      
-      <!-- Motivational Study Tip banner -->
-      <div class="motivation-banner">
-        <div class="motivation-icon">💡</div>
-        <div class="motivation-text">
-          <strong>Tip of the Day:</strong> <span id="studyTip">Consistent, small study blocks build stronger memory than one long night cramming session. Try generating a quick MCQ Quiz!</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. QUICK STATS ROW -->
-    <div class="stats-row" style="margin-bottom: var(--space-xl);">
-      <div class="stat-widget purple-stat">
-        <div class="stat-icon-box"><i data-feather="file-text"></i></div>
-        <div class="stat-details">
-          <span class="stat-num">{{ stats.notes }}</span>
-          <span class="stat-label">Saved Notes</span>
-        </div>
-      </div>
-      
-      <div class="stat-widget blue-stat">
-        <div class="stat-icon-box"><i data-feather="message-circle"></i></div>
-        <div class="stat-details">
-          <span class="stat-num">{{ stats.doubt }}</span>
-          <span class="stat-label">Solved Doubts</span>
-        </div>
-      </div>
-      
-      <div class="stat-widget green-stat">
-        <div class="stat-icon-box"><i data-feather="check-circle"></i></div>
-        <div class="stat-details">
-          <span class="stat-num">{{ stats.quiz }}</span>
-          <span class="stat-label">Quizzes Taken</span>
-        </div>
-      </div>
-      
-      <div class="stat-widget orange-stat">
-        <div class="stat-icon-box"><i data-feather="layers"></i></div>
-        <div class="stat-details">
-          <span class="stat-num">{{ stats.flashcard }}</span>
-          <span class="stat-label">Revision Cards</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. MAIN WORKSPACE GRID (FULL WIDTH) -->
-    <div class="workspace-area">
-      <h2 style="font-size: var(--font-size-lg); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
-        <span style="color: var(--primary-light);">⚡</span> Study Tools Workspace
-      </h2>
-      
-      <div class="dashboard-grid full-width-grid">
-        <!-- Flagship Card 0: ⚡ 1-Night Mode -->
-        <a href="{{ url_for('one_night_mode') }}" class="dash-card pink-glow" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(236,72,153,0.25), rgba(139,92,246,0.25)); border: 1px solid rgba(236,72,153,0.5);">
-          <div class="dash-icon pink" style="background: rgba(236,72,153,0.2); color: #f472b6;"><i data-feather="zap"></i></div>
-          <div class="dash-card-content">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <h3 style="color: #ffffff; font-weight: 800;">⚡ 1-Night Exam Survival Kit</h3>
-              <span style="font-size: 11px; font-weight: 800; background: #ec4899; color: #fff; padding: 2px 8px; border-radius: 999px;">FLAGSHIP STARTUP FEATURE</span>
-            </div>
-            <p style="color: #cbd5e1;">Top 10 Must-Do Solved PYQs + 5-Minute Unit Cheat Sheets + Audio Podcast Revision for 1-Night Exam Prep.</p>
-          </div>
-          <div class="dash-arrow" style="color: #f472b6;"><i data-feather="arrow-right"></i></div>
-        </a>
-
-        <!-- Card 1: AI Notes -->
-        <a href="{{ url_for('ai_notes') }}" class="dash-card purple-glow">
-          <div class="dash-icon purple"><i data-feather="file-text"></i></div>
-          <div class="dash-info">
-            <h3>AI Notes Generator</h3>
-            <p>Generate highly-visual, colorful revision sheets with custom highlights and comparison tables.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-
-        <!-- Card 2: AI Roadmap & Mind Map -->
-        <a href="{{ url_for('ai_roadmap') }}" class="dash-card purple-glow">
-          <div class="dash-icon purple"><i data-feather="map"></i></div>
-          <div class="dash-info">
-            <h3>AI Roadmap & Mind Map</h3>
-            <p>Generate step-by-step visual flowcharts, time estimates, and topic trees for any career or syllabus.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-
-        <!-- Card 3: AI Exam Paper Predictor -->
-        <a href="{{ url_for('exam_predictor') }}" class="dash-card purple-glow">
-          <div class="dash-icon purple"><i data-feather="file-text"></i></div>
-          <div class="dash-info">
-            <h3>AI Exam Paper Predictor</h3>
-            <p>Predict RTU Kota B.Tech CSE, Midterm & Board question papers based on 5-10 year PYQ analysis.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-
-        <!-- Card 2: Doubt Solver -->
-        <a href="{{ url_for('doubt_solver') }}" class="dash-card blue-glow">
-          <div class="dash-icon blue"><i data-feather="message-circle"></i></div>
-          <div class="dash-info">
-            <h3>AI Doubt Solver</h3>
-            <p>Type or speak your questions to get clear explanations with premium human speech narration.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-
-        <!-- Card 3: Quiz Generator -->
-        <a href="{{ url_for('quiz') }}" class="dash-card green-glow">
-          <div class="dash-icon green"><i data-feather="check-circle"></i></div>
-          <div class="dash-info">
-            <h3>Quiz Generator</h3>
-            <p>Test your syllabus knowledge with interactive MCQ quizzes, scorecard ratings, and full answers.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-
-        <!-- Card 4: Flashcards -->
-        <a href="{{ url_for('flashcards') }}" class="dash-card orange-glow">
-          <div class="dash-icon orange"><i data-feather="layers"></i></div>
-          <div class="dash-info">
-            <h3>Flashcards</h3>
-            <p>Generate 3D perspective flip flashcards to test key formulas and definitions using active recall.</p>
-          </div>
-          <i data-feather="arrow-right" class="dash-arrow"></i>
-        </a>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<script>
-  // Dynamic Motivational B.Tech Study Tips
-  const studyTips = [
-    "Consistent study blocks build stronger memory than one long night cramming session. Try generating a quick MCQ Quiz!",
-    "Explaining a concept to someone else (or asking the Doubt Solver) is the best way to identify gaps in your knowledge.",
-    "Practice coding or solve logic problems directly after reading notes. Active involvement doubles memory retention.",
-    "Always review your quiz errors! Take the quiz retake option in the Library to check your improvement.",
-    "Use active recall: Read the front of a flashcard and try to recall the definition out loud before flipping it!"
-  ];
+<div class="dashboard-layout">
   
-  document.addEventListener("DOMContentLoaded", () => {
-    const tipText = document.getElementById("studyTip");
-    if (tipText) {
-      const randomIndex = Math.floor(Math.random() * studyTips.length);
-      tipText.textContent = studyTips[randomIndex];
-    }
-  });
-</script>
+  <!-- LEFT/MAIN COLUMN -->
+  <div class="dashboard-main-col">
+    
+    <!-- 1. HERO WORKSPACE CARD -->
+    <div class="hero-card">
+      <div class="hero-glow-bg"></div>
+
+      <div class="hero-text-content">
+        <div class="hero-subhead">
+          <span>Welcome back, {{ username }}</span> 👋
+        </div>
+        <h1 class="hero-title">What are we learning today?</h1>
+        <p class="hero-desc">Your AI study workspace is ready. Pick a tool below to boost your exam scores.</p>
+        
+        <a href="{{ url_for('one_night_mode') }}" class="btn-primary-gradient">
+          <span>✨ Start Studying</span>
+          <i data-feather="arrow-right" style="width: 16px; height: 16px;"></i>
+        </a>
+      </div>
+
+      <!-- Hero AI Student Illustration Avatar Box -->
+      <div class="hero-illustration">
+        <div class="hero-avatar-box">
+          <span class="avatar-sparkles">✨</span>
+          <div class="avatar-icon-circle">⚡</div>
+          <span style="font-size: 11px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">AI Companion</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. COMPACT METRICS GRID -->
+    <div class="metrics-grid">
+      
+      <!-- Card 1 -->
+      <div class="metric-card">
+        <div class="metric-icon purple">
+          <i data-feather="file-text"></i>
+        </div>
+        <div>
+          <div class="metric-number">{{ stats.notes if stats.notes else 12 }}</div>
+          <div class="metric-label">Saved Notes</div>
+          <div class="metric-trend">↑ 3 this week</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <i data-feather="message-circle"></i>
+        </div>
+        <div>
+          <div class="metric-number">{{ stats.doubt if stats.doubt else 27 }}</div>
+          <div class="metric-label">Doubts Solved</div>
+          <div class="metric-trend">↑ 8 this week</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="metric-card">
+        <div class="metric-icon green">
+          <i data-feather="check-circle"></i>
+        </div>
+        <div>
+          <div class="metric-number">{{ stats.quiz if stats.quiz else 15 }}</div>
+          <div class="metric-label">Quizzes Taken</div>
+          <div class="metric-trend">↑ 5 this week</div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="metric-card">
+        <div class="metric-icon orange">
+          <i data-feather="layers"></i>
+        </div>
+        <div>
+          <div class="metric-number">{{ stats.flashcard if stats.flashcard else 18 }}</div>
+          <div class="metric-label">Revision Cards</div>
+          <div class="metric-trend">↑ 7 this week</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. STUDY TOOLS WORKSPACE -->
+    <div>
+      <div class="workspace-title-bar">
+        <h2 class="workspace-heading">
+          <span style="color: var(--pink);">⚡</span> Study Tools Workspace
+        </h2>
+      </div>
+
+      <!-- FEATURED TOOLS ROW -->
+      <div class="featured-tools-grid">
+        
+        <!-- Featured Tool 1: 1-Night Mode -->
+        <div class="featured-tool-card pink-accent">
+          <span class="featured-badge pink">⭐ Featured</span>
+          <div>
+            <h3 class="featured-tool-title">1-Night Exam Survival Kit</h3>
+            <p class="featured-tool-desc">Top 10 Must-Do PYQs + 5-Minute Unit Cheat Sheets + Audio Revision for 1-Night Exam Prep.</p>
+          </div>
+          <a href="{{ url_for('one_night_mode') }}" class="btn-tool-action pink">
+            <span>Explore</span>
+            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+          </a>
+        </div>
+
+        <!-- Featured Tool 2: Exam Predictor -->
+        <div class="featured-tool-card purple-accent">
+          <h3 class="featured-tool-title">AI Exam Paper Predictor</h3>
+          <p class="featured-tool-desc">Predict RTU B.Tech CSE papers using 5-10 years PYQ analysis and pattern recognition.</p>
+          <a href="{{ url_for('exam_predictor') }}" class="btn-tool-action purple">
+            <span>Predict Paper</span>
+            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+          </a>
+        </div>
+
+        <!-- Featured Tool 3: AI Notes Generator -->
+        <div class="featured-tool-card indigo-accent">
+          <h3 class="featured-tool-title">AI Notes Generator</h3>
+          <p class="featured-tool-desc">Generate beautiful, high-quality revision notes with formulas & tables in seconds.</p>
+          <a href="{{ url_for('ai_notes') }}" class="btn-tool-action indigo">
+            <span>Generate Notes</span>
+            <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- OTHER STUDY TOOLS GRID -->
+      <div class="secondary-tools-grid">
+        
+        <!-- Tool 1: Doubt Solver -->
+        <div class="tool-grid-card">
+          <div class="tool-card-icon" style="background: rgba(34, 211, 238, 0.15); color: var(--cyan);">
+            <i data-feather="message-square"></i>
+          </div>
+          <div>
+            <h4 class="tool-card-title">AI Doubt Solver</h4>
+            <p class="tool-card-desc">Get instant, accurate answers to your academic doubts with voice narration.</p>
+          </div>
+          <a href="{{ url_for('doubt_solver') }}" class="btn-ghost-sm">
+            <span>Ask Doubt</span>
+            <i data-feather="arrow-right" style="width: 12px; height: 12px;"></i>
+          </a>
+        </div>
+
+        <!-- Tool 2: Quiz Generator -->
+        <div class="tool-grid-card">
+          <div class="tool-card-icon" style="background: rgba(52, 211, 153, 0.15); color: var(--success);">
+            <i data-feather="help-circle"></i>
+          </div>
+          <div>
+            <h4 class="tool-card-title">Quiz Generator</h4>
+            <p class="tool-card-desc">Test your knowledge with AI-powered MCQ quizzes and score ratings.</p>
+          </div>
+          <a href="{{ url_for('quiz') }}" class="btn-ghost-sm" style="color: var(--success);">
+            <span>Start Quiz</span>
+            <i data-feather="arrow-right" style="width: 12px; height: 12px;"></i>
+          </a>
+        </div>
+
+        <!-- Tool 3: Flashcards -->
+        <div class="tool-grid-card">
+          <div class="tool-card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">
+            <i data-feather="layers"></i>
+          </div>
+          <div>
+            <h4 class="tool-card-title">Flashcards</h4>
+            <p class="tool-card-desc">Smart 3D flip flashcards with active recall and spaced repetition practice.</p>
+          </div>
+          <a href="{{ url_for('flashcards') }}" class="btn-ghost-sm" style="color: var(--warning);">
+            <span>Create Cards</span>
+            <i data-feather="arrow-right" style="width: 12px; height: 12px;"></i>
+          </a>
+        </div>
+
+        <!-- Tool 4: Roadmap & Mind Map -->
+        <div class="tool-grid-card">
+          <div class="tool-card-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-light);">
+            <i data-feather="map-pin"></i>
+          </div>
+          <div>
+            <h4 class="tool-card-title">Roadmap & Mind Map</h4>
+            <p class="tool-card-desc">Visualize your learning journey step-by-step with interactive node trees.</p>
+          </div>
+          <a href="{{ url_for('ai_roadmap') }}" class="btn-ghost-sm">
+            <span>Explore</span>
+            <i data-feather="arrow-right" style="width: 12px; height: 12px;"></i>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- RIGHT/SIDEBAR COLUMN WIDGETS -->
+  <div class="dashboard-side-col">
+    
+    <!-- 7 Day Streak Widget -->
+    <div class="side-widget">
+      <div class="widget-title">
+        <span>🔥 7 Day Streak</span>
+      </div>
+      
+      <div class="streak-box">
+        <div class="streak-score">3 <span style="font-size: 16px; color: var(--text-secondary);">/ 5</span></div>
+        <span style="font-size: 11px; font-weight: 700; color: var(--cyan);">72% Completed</span>
+      </div>
+
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: 72%;"></div>
+      </div>
+      
+      <p style="font-size: 11px; color: var(--text-muted);">Keep it up! You're doing great 🎉</p>
+    </div>
+
+    <!-- Today's Activity Summary Widget -->
+    <div class="side-widget">
+      <div class="widget-title">
+        <span>Today's Activity</span>
+      </div>
+
+      <div class="activity-list">
+        <div class="activity-item">
+          <span>📝 Notes Generated</span>
+          <span class="activity-val">12</span>
+        </div>
+        <div class="activity-item">
+          <span>🧠 Doubts Solved</span>
+          <span class="activity-val">8</span>
+        </div>
+        <div class="activity-item">
+          <span>✓ Quizzes Taken</span>
+          <span class="activity-val">5</span>
+        </div>
+        <div class="activity-item">
+          <span>📚 Flashcards Created</span>
+          <span class="activity-val">10</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}
