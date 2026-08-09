@@ -1,209 +1,583 @@
 {% extends "base.html" %}
 
-{% block title %}⚡ 1-Night Exam Survival Kit — StudyMate AI{% endblock %}
+{% block title %}⚡ 1-Night Exam Command Center — StudyMate AI{% endblock %}
 
 {% block content %}
-<div style="max-width: 1050px; margin: 0 auto;">
+<div class="command-center-wrapper">
 
-  <!-- Back Link & Header -->
-  <div style="margin-bottom: 24px;">
-    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
-      <i data-feather="arrow-left" style="width: 14px;"></i>
-      <span>Back to Dashboard</span>
-    </a>
-    
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-      <div>
-        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); padding: 4px 12px; border-radius: 999px; font-size: 12px; color: #f472b6; font-weight: 700; margin-bottom: 8px;">
-          <i data-feather="zap" style="width: 14px;"></i> 1-Night Exam Command Center
-        </div>
-        <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-          ⚡ 1-NIGHT EXAM SURVIVAL KIT
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 14px;">
-          Top 10 Must-Do Solved PYQs + 5-Minute Unit Rapid Cheat Sheets + AI Audio Podcast Revision for 1-Night Exam Prep.
-        </p>
-      </div>
-
-      <div style="display: flex; gap: 10px;">
-        <button type="button" onclick="window.print()" class="btn-tool-action pink">
-          <i data-feather="printer" style="width: 14px;"></i> Print / Save PDF
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Command Input Form -->
-  <div class="glass-card" style="padding: 28px; border-radius: 24px; margin-bottom: 32px; border: 1px solid rgba(236, 72, 153, 0.3);">
-    <form method="POST" action="{{ url_for('one_night_mode') }}" onsubmit="showLoading()">
-      
-      <!-- Academic Profile Selector (Branch, Year & Semester 1-8) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
-        
-        <!-- Branch -->
-        <div>
-          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Branch / Stream:</label>
-          <select name="branch" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;">
-            <option value="B.Tech CSE" {% if branch == 'B.Tech CSE' or not branch %}selected{% endif %}>B.Tech CSE (Computer Science)</option>
-            <option value="B.Tech IT / AI-ML" {% if branch == 'B.Tech IT / AI-ML' %}selected{% endif %}>B.Tech IT / AI-ML</option>
-            <option value="B.Tech ECE / Electrical" {% if branch == 'B.Tech ECE / Electrical' %}selected{% endif %}>B.Tech ECE / Electrical</option>
-            <option value="B.Tech Mechanical / Civil" {% if branch == 'B.Tech Mechanical / Civil' %}selected{% endif %}>B.Tech Mechanical / Civil</option>
-          </select>
-        </div>
-
-        <!-- Academic Year -->
-        <div>
-          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Academic Year:</label>
-          <select name="year" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;">
-            <option value="1st Year" {% if year == '1st Year' %}selected{% endif %}>1st Year (Freshman)</option>
-            <option value="2nd Year" {% if year == '2nd Year' or not year %}selected{% endif %}>2nd Year (Sophomore)</option>
-            <option value="3rd Year" {% if year == '3rd Year' %}selected{% endif %}>3rd Year (Junior)</option>
-            <option value="4th Year" {% if year == '4th Year' %}selected{% endif %}>4th Year (Senior)</option>
-          </select>
-        </div>
-
-        <!-- Semester 1 to 8 -->
-        <div>
-          <label style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px;">Semester (Sem 1 - 8):</label>
-          <select name="sem" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.15); color: #ec4899; font-weight: 800; font-size: 13px; outline: none;">
-            <option value="Semester 1" {% if sem == 'Semester 1' %}selected{% endif %}>Semester 1 (1st Sem)</option>
-            <option value="Semester 2" {% if sem == 'Semester 2' %}selected{% endif %}>Semester 2 (2nd Sem)</option>
-            <option value="Semester 3" {% if sem == 'Semester 3' or not sem %}selected{% endif %}>Semester 3 (3rd Sem)</option>
-            <option value="Semester 4" {% if sem == 'Semester 4' %}selected{% endif %}>Semester 4 (4th Sem)</option>
-            <option value="Semester 5" {% if sem == 'Semester 5' %}selected{% endif %}>Semester 5 (5th Sem)</option>
-            <option value="Semester 6" {% if sem == 'Semester 6' %}selected{% endif %}>Semester 6 (6th Sem)</option>
-            <option value="Semester 7" {% if sem == 'Semester 7' %}selected{% endif %}>Semester 7 (7th Sem)</option>
-            <option value="Semester 8" {% if sem == 'Semester 8' %}selected{% endif %}>Semester 8 (8th Sem)</option>
-          </select>
-        </div>
-
-      </div>
-
-      <!-- Target Grade Mode Selector -->
-      <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">🎯 Target Exam Goal:</span>
-        <label style="font-size: 13px; color: #34d399; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-          <input type="radio" name="target_mode" value="pass_minimum" checked> ⚡ Pass-Guarantee Minimum (28-35 Marks)
-        </label>
-        <label style="font-size: 13px; color: #c084fc; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-          <input type="radio" name="target_mode" value="distinction"> 🏆 Distinction / Topper Mode (60-70 Marks)
-        </label>
-      </div>
-
-      <!-- Subject Input & Action -->
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <input type="text" name="subject" value="{{ subject }}" placeholder="Enter Subject Name for 1-Night Kit (e.g. Operating Systems, Discrete Mathematics, OOPS, DBMS...)" required style="flex: 1; min-width: 280px; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
-        <button type="submit" class="btn-primary-gradient" style="background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);">
-          <i data-feather="zap" style="width: 16px;"></i>
-          <span>Generate 1-Night Kit</span>
-        </button>
-      </div>
-
-    </form>
-  </div>
-
-  <!-- Loading State -->
-  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
-    <div style="width: 44px; height: 44px; border: 3px solid rgba(236, 72, 153, 0.2); border-top-color: #ec4899; border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
-    <h3 style="color: #fff; font-weight: 700; font-size: 18px;">Generating 1-Night Exam Survival Kit...</h3>
-    <p style="color: var(--text-secondary); font-size: 13px;">Extracting Top 10 Must-Do Solved PYQs, Unit Cheat Sheets & Audio Podcast for <strong>"{{ subject }}"</strong>.</p>
-  </div>
-
-  <!-- Output Result Cards -->
-  {% if kit_data %}
-  <div style="margin-bottom: 32px;">
-    
-    <!-- Pass Guarantee Banner -->
-    <div class="glass-card" style="padding: 20px 24px; border-radius: 20px; background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(236, 72, 153, 0.4); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-      <div>
-        <span style="font-size: 11px; font-weight: 800; background: #ec4899; color: #fff; padding: 2px 8px; border-radius: 999px; text-transform: uppercase;">1-NIGHT PASS GUARANTEE ENGINE</span>
-        <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 4px;">{{ kit_data.subject }} — 1-Night Survival Kit</h3>
-      </div>
-      <div style="font-size: 14px; font-weight: 700; color: #34d399; background: rgba(52, 211, 153, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(52, 211, 153, 0.3);">
-        🔥 98.5% Pass Rate (5-10 Year RTU PYQ Analysis)
-      </div>
+  <!-- ============================================================ -->
+  <!-- 1. ONBOARDING QUICK START FLOW (IF NO SURVIVAL PLAN GENERATED) -->
+  <!-- ============================================================ -->
+  {% if not kit_data %}
+  <section class="onboarding-card-glass">
+    <div class="onboarding-header text-center">
+      <div class="brand-badge-glow">⚡ 1-NIGHT EXAM COMMAND CENTER</div>
+      <h1 class="onboarding-title">Let's build your AI Survival Plan</h1>
+      <p class="onboarding-subtitle">Your exam is tomorrow. Pick your subject, available time, and preparation level to generate a minute-by-minute battle plan.</p>
     </div>
 
-    <!-- Audio Podcast Player Widget -->
-    {% if kit_data.audio_text %}
-    <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 24px; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(34, 211, 238, 0.3);">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <h3 style="font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
-          <span style="color: var(--cyan);">🎧</span> 5-Minute AI Audio Revision Podcast
-        </h3>
-        <button type="button" onclick="playAudioSummary()" id="audioBtn" class="btn-tool-action indigo">
-          <i data-feather="play" style="width: 14px;"></i> Listen to Audio Revision
-        </button>
-      </div>
-      <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 12px;" id="audioSummaryText">
-        {{ kit_data.audio_text }}
-      </p>
+    {% if error %}
+    <div class="auth-alert error mb-4">
+      <i data-feather="alert-circle"></i>
+      <span>{{ error }}</span>
     </div>
     {% endif %}
 
-    <!-- Top 10 Must-Do Solved PYQs -->
-    {% if kit_data.top_10_pyqs %}
-    <div class="glass-card" style="padding: 28px; border-radius: 20px; margin-bottom: 24px;">
-      <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-        <span style="color: #ec4899;">🔥</span> Top 10 Must-Do Solved PYQs (RTU Repeat Probability)
-      </h3>
+    <form method="POST" action="{{ url_for('one_night_mode') }}" class="onboarding-wizard">
+      
+      <!-- STEP 1: Academic & Subject Selection -->
+      <div class="wizard-step">
+        <label class="wizard-step-label"><span class="step-num">1</span> Select University, Academic Profile & Subject</label>
+        
+        <div class="grid-3-col gap-12 mb-16">
+          <div>
+            <label class="sub-label">University</label>
+            <select name="university" class="form-select-dark">
+              <option value="RTU Kota (B.Tech)">RTU Kota (B.Tech)</option>
+              <option value="AKTU Lucknow">AKTU Lucknow</option>
+              <option value="VTU Belagavi">VTU Belagavi</option>
+              <option value="RGPV Bhopal">RGPV Bhopal</option>
+              <option value="Anna University">Anna University</option>
+              <option value="General University">Other University</option>
+            </select>
+          </div>
+          <div>
+            <label class="sub-label">Branch</label>
+            <select name="branch" class="form-select-dark">
+              <option value="B.Tech CSE">B.Tech CSE / IT</option>
+              <option value="B.Tech ECE">B.Tech ECE</option>
+              <option value="B.Tech EE">B.Tech EE / EEE</option>
+              <option value="B.Tech ME">B.Tech Mechanical</option>
+              <option value="B.Tech Civil">B.Tech Civil</option>
+            </select>
+          </div>
+          <div>
+            <label class="sub-label">Semester</label>
+            <select name="sem" class="form-select-dark">
+              <option value="Semester 3">3rd Semester</option>
+              <option value="Semester 1">1st Semester</option>
+              <option value="Semester 2">2nd Semester</option>
+              <option value="Semester 4">4th Semester</option>
+              <option value="Semester 5">5th Semester</option>
+              <option value="Semester 6">6th Semester</option>
+              <option value="Semester 7">7th Semester</option>
+              <option value="Semester 8">8th Semester</option>
+            </select>
+          </div>
+        </div>
 
-      <div style="display: flex; flex-direction: column; gap: 18px;">
-        {% for q in kit_data.top_10_pyqs %}
-          <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-              <span style="font-size: 12px; font-weight: 800; color: #ec4899; background: rgba(236, 72, 153, 0.15); padding: 3px 10px; border-radius: 6px;">
-                {{ q.q_num }}
-              </span>
-              <span style="font-size: 11px; color: var(--warning); font-weight: 700;">
-                🔥 {{ q.pyq_source }}
-              </span>
+        <div>
+          <label class="sub-label">Subject Name</label>
+          <select name="subject" class="form-select-dark select-highlight">
+            <option value="Data Structures & Algorithms">Data Structures & Algorithms (DSA)</option>
+            <option value="Database Management System">Database Management System (DBMS)</option>
+            <option value="Operating Systems">Operating Systems (OS)</option>
+            <option value="Computer Networks">Computer Networks (CN)</option>
+            <option value="Engineering Mathematics">Engineering Mathematics</option>
+            <option value="Basic Electrical Engineering">Basic Electrical Engineering (BEE)</option>
+            <option value="Object Oriented Programming">Object Oriented Programming (OOPS)</option>
+            <option value="Software Engineering">Software Engineering</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- STEP 2: Available Study Time -->
+      <div class="wizard-step">
+        <label class="wizard-step-label"><span class="step-num">2</span> How much study time do you have remaining?</label>
+        <div class="option-pills-grid">
+          <label class="pill-radio"><input type="radio" name="available_hours" value="2"> <span>🚨 2 Hours (Emergency)</span></label>
+          <label class="pill-radio"><input type="radio" name="available_hours" value="4"> <span>⚡ 4 Hours</span></label>
+          <label class="pill-radio"><input type="radio" name="available_hours" value="6"> <span>🌙 6 Hours</span></label>
+          <label class="pill-radio"><input type="radio" name="available_hours" value="8" checked> <span>🔥 8 Hours (Recommended)</span></label>
+          <label class="pill-radio"><input type="radio" name="available_hours" value="10"> <span>🚀 10+ Hours</span></label>
+        </div>
+      </div>
+
+      <!-- STEP 3: Preparation Level -->
+      <div class="wizard-step">
+        <label class="wizard-step-label"><span class="step-num">3</span> What is your current preparation level?</label>
+        <div class="option-pills-grid">
+          <label class="pill-radio"><input type="radio" name="prep_level" value="zero"> <span>🚨 Starting from Zero (0%)</span></label>
+          <label class="pill-radio"><input type="radio" name="prep_level" value="low"> <span>🟡 Low (25%)</span></label>
+          <label class="pill-radio"><input type="radio" name="prep_level" value="average" checked> <span>⚡ Average (50%)</span></label>
+          <label class="pill-radio"><input type="radio" name="prep_level" value="good"> <span>🟢 Good (75%)</span></label>
+          <label class="pill-radio"><input type="radio" name="prep_level" value="ready"> <span>🏆 Almost Ready (90%)</span></label>
+        </div>
+      </div>
+
+      <!-- STEP 4: Target Goal -->
+      <div class="wizard-step">
+        <label class="wizard-step-label"><span class="step-num">4</span> What is your target marks goal?</label>
+        <div class="option-pills-grid">
+          <label class="pill-radio"><input type="radio" name="target_mode" value="pass_minimum"> <span>🛡️ Pass Minimum (28-35 Marks)</span></label>
+          <label class="pill-radio"><input type="radio" name="target_mode" value="target_60"> <span>⚡ 60+ Marks</span></label>
+          <label class="pill-radio"><input type="radio" name="target_mode" value="target_75" checked> <span>🔥 75+ Marks (Distinction)</span></label>
+          <label class="pill-radio"><input type="radio" name="target_mode" value="target_90"> <span>👑 90+ Marks (Topper Strategy)</span></label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-generate-survival">
+        <span>🚀 Generate My Survival Plan</span>
+        <i data-feather="arrow-right"></i>
+      </button>
+    </form>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 2. AI EXAM COMMAND CENTER WORKSPACE (WHEN PLAN GENERATED)   -->
+  <!-- ============================================================ -->
+  {% else %}
+  
+  <!-- COMMAND CENTER HEADER BAR -->
+  <header class="cc-header-bar">
+    <div class="cc-header-meta">
+      <span class="cc-subject-badge">⚡ {{ kit_data.subject }}</span>
+      <span class="cc-profile-tag">{{ kit_data.university }} • {{ kit_data.branch }} • {{ kit_data.sem }}</span>
+    </div>
+
+    <div class="cc-header-stats">
+      <!-- Live Countdown Clock -->
+      <div class="cc-stat-box">
+        <span class="cc-stat-label">Exam Countdown</span>
+        <span class="cc-stat-val text-cyan" id="ccCountdownClock">⏱ {{ kit_data.available_hours }}h 00m remaining</span>
+      </div>
+
+      <!-- Exam Readiness Bar -->
+      <div class="cc-stat-box">
+        <span class="cc-stat-label">Exam Readiness</span>
+        <div class="cc-readiness-flex">
+          <span class="cc-stat-val text-green" id="readinessScoreVal">{{ kit_data.prep_pct }}%</span>
+          <div class="cc-progress-track">
+            <div class="cc-progress-fill" id="readinessProgressBar" style="width: {{ kit_data.prep_pct }}%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🎯 NEXT BEST ACTION HERO CARD -->
+  <section class="next-action-hero-card" style="background: radial-gradient(circle at 5% 5%, rgba(236, 72, 153, 0.3), transparent 45%), radial-gradient(circle at 95% 95%, rgba(34, 211, 238, 0.3), transparent 45%), linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 32, 0.98)) !important; border: 1.5px solid rgba(139, 92, 246, 0.6) !important; box-shadow: 0 15px 45px rgba(139, 92, 246, 0.35) !important;">
+    <div class="next-action-badge">🎯 NEXT BEST ACTION</div>
+    <h2 class="next-action-title">🔥 {{ kit_data.next_best_action.title }}</h2>
+    <p class="next-action-reason">{{ kit_data.next_best_action.priority_reason }}</p>
+    
+    <div class="next-action-meta">
+      <span>⏱ Estimated Time: <strong>{{ kit_data.next_best_action.allocated_mins }} Mins</strong></span>
+      <span>📍 {{ kit_data.next_best_action.unit }}</span>
+    </div>
+
+    <button onclick="startSessionModal('{{ kit_data.next_best_action.title }}', {{ kit_data.next_best_action.allocated_mins }}, '{{ kit_data.next_best_action.unit }}')" class="btn-start-session-hero">
+      <span>🚀 Start Session Now</span>
+      <i data-feather="play"></i>
+    </button>
+  </section>
+
+  <!-- QUICK ACTION TOOLS BAR -->
+  <section class="quick-tools-bar">
+    <button onclick="toggleQuickToolModal('cheatSheetModal')" class="quick-tool-btn">
+      <i data-feather="zap" class="text-yellow"></i> 5-Min Cheat Sheet
+    </button>
+    <button onclick="toggleQuickToolModal('final60Modal')" class="quick-tool-btn">
+      <i data-feather="clock" class="text-pink"></i> Final 60 Min
+    </button>
+    <button onclick="toggleQuickToolModal('final15Modal')" class="quick-tool-btn">
+      <i data-feather="alert-triangle" class="text-red"></i> Final 15 Min
+    </button>
+    <button onclick="toggleQuickToolModal('morningModal')" class="quick-tool-btn">
+      <i data-feather="sun" class="text-amber"></i> Exam Morning
+    </button>
+    <button onclick="toggleQuickToolModal('audioModal')" class="quick-tool-btn">
+      <i data-feather="headphones" class="text-cyan"></i> 🎧 Audio Podcast
+    </button>
+    <button onclick="toggleQuickToolModal('feedbackModal')" class="quick-tool-btn">
+      <i data-feather="check-circle" class="text-green"></i> Exam Feedback
+    </button>
+  </section>
+
+  <!-- 2-COLUMN DASHBOARD GRID -->
+  <div class="cc-grid-layout">
+    
+    <!-- LEFT COL: TONIGHT'S TIMELINE -->
+    <div class="cc-col-left">
+      <div class="section-card-glass">
+        <h3 class="section-card-title"><i data-feather="list" class="text-purple"></i> Tonight's Survival Plan Timeline</h3>
+        
+        <div class="timeline-list">
+          {% for item in kit_data.timeline %}
+            {% if item.is_break %}
+            <div class="timeline-item break-item">
+              <div class="timeline-time">{{ item.time_range }}</div>
+              <div class="timeline-content">
+                <h4>{{ item.title }}</h4>
+                <p>☕ Take a short rest, drink water, stretch your legs.</p>
+              </div>
             </div>
+            {% else %}
+            <div class="timeline-item" id="timelineItem{{ loop.index }}">
+              <div class="timeline-time">{{ item.time_range }}</div>
+              <div class="timeline-content">
+                <div class="timeline-item-header">
+                  <span class="priority-tag">{{ item.priority }}</span>
+                  <span class="unit-tag">{{ item.unit }}</span>
+                </div>
+                <h4 class="topic-title">{{ item.title }}</h4>
+                <p class="pyq-freq">Appeared in {{ item.pyq_freq }} PYQs ({{ item.recency }})</p>
 
-            <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px;">
-              {{ q.question }}
-            </h4>
-
-            {% if q.diagram_blueprint %}
-            <div style="font-size: 12px; font-weight: 700; color: #fbbf24; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px;">
-              {{ q.diagram_blueprint }}
+                <div class="timeline-actions">
+                  <button onclick="startSessionModal('{{ item.title }}', {{ item.allocated_mins }}, '{{ item.unit }}')" class="btn-session-sm">
+                    <i data-feather="play"></i> Start Session ({{ item.allocated_mins }}m)
+                  </button>
+                  <label class="complete-checkbox">
+                    <input type="checkbox" onchange="toggleTopicComplete(this, 'timelineItem{{ loop.index }}')">
+                    <span>Mark Complete</span>
+                  </label>
+                </div>
+              </div>
             </div>
             {% endif %}
-
-            <div style="background: rgba(15, 23, 42, 0.8); padding: 14px; border-radius: 12px; border-left: 3px solid #ec4899; margin-top: 10px;">
-              <div style="font-size: 12px; font-weight: 700; color: var(--cyan); margin-bottom: 4px;">MODEL ANSWER:</div>
-              <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-                {{ q.model_answer }}
-              </div>
-              <div style="font-size: 11px; color: var(--success); font-weight: 700; margin-top: 6px;">
-                Marking Scheme: {{ q.marking_scheme }}
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
     </div>
-    {% endif %}
+
+    <!-- RIGHT COL: TOP 10 MUST-DO PYQS -->
+    <div class="cc-col-right">
+      <div class="section-card-glass">
+        <h3 class="section-card-title"><i data-feather="award" class="text-yellow"></i> Top 10 Must-Do Solved PYQs</h3>
+        
+        <div class="pyq-list-accordion">
+          {% for pyq in kit_data.top_10_pyqs %}
+          <details class="pyq-accordion-item">
+            <summary class="pyq-summary">
+              <span class="pyq-num-badge">{{ pyq.q_num }}</span>
+              <span class="pyq-title-text">{{ pyq.question[:65] }}...</span>
+              <span class="pyq-marks-tag">{{ pyq.expected_marks }}</span>
+            </summary>
+            
+            <div class="pyq-details-body">
+              <p class="pyq-meta-source"><strong>Source:</strong> {{ pyq.pyq_source }}</p>
+              <div class="pyq-question-box"><strong>Question:</strong> {{ pyq.question }}</div>
+              
+              <div class="pyq-answer-box">
+                <div class="ans-label">✨ Model Exam Answer:</div>
+                <div class="ans-text">{{ pyq.model_answer | replace('
+', '<br>') | safe }}</div>
+              </div>
+
+              {% if pyq.diagram_blueprint %}
+              <div class="pyq-diagram-hint">{{ pyq.diagram_blueprint }}</div>
+              {% endif %}
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
 
   </div>
+
   {% endif %}
 
 </div>
 
-<script>
-  function showLoading() {
-    document.getElementById('loadingState').style.display = 'block';
-  }
+<!-- ============================================================ -->
+<!-- 3. INTERACTIVE ACTIVE STUDY SESSION MODAL & TIMER           -->
+<!-- ============================================================ -->
+<div class="session-modal-overlay" id="sessionModal">
+  <div class="session-modal-container">
+    <button onclick="closeSessionModal()" class="session-modal-close">&times;</button>
+    
+    <div class="session-modal-header text-center">
+      <span class="session-unit-badge" id="sessionModalUnit">Unit I</span>
+      <h2 class="session-topic-title" id="sessionModalTitle">CPU Scheduling Algorithms</h2>
+      
+      <!-- Active Timer Display -->
+      <div class="active-timer-display">
+        <span class="timer-digits" id="sessionTimerDigits">35:00</span>
+        <div class="timer-controls-row">
+          <button onclick="toggleTimerPause()" class="btn-timer-ctrl" id="btnPauseTimer"><i data-feather="pause"></i> Pause</button>
+          <button onclick="extendTimer(10)" class="btn-timer-ctrl"><i data-feather="plus"></i> +10 Min</button>
+          <button onclick="completeSessionEarly()" class="btn-timer-ctrl text-green"><i data-feather="check"></i> Complete</button>
+        </div>
+      </div>
+    </div>
 
-  function playAudioSummary() {
-    const text = document.getElementById('audioSummaryText').innerText;
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      speechSynthesis.speak(utterance);
-    } else {
-      alert("Audio speech synthesis is supported in your browser!");
+    <!-- AI TEACHER MODE TOOLBAR -->
+    <div class="ai-teacher-toolbar">
+      <span class="ai-toolbar-label">💡 AI Teacher Assistance:</span>
+      <div class="ai-toolbar-btns">
+        <button onclick="askAITeacher('explain_simply')" class="btn-ai-tool"><i data-feather="zap"></i> Explain Simply</button>
+        <button onclick="askAITeacher('exam_answer')" class="btn-ai-tool"><i data-feather="file-text"></i> Exam Answer</button>
+        <button onclick="askAITeacher('show_formula')" class="btn-ai-tool"><i data-feather="code"></i> Show Formula / Code</button>
+        <button onclick="askAITeacher('give_pyq')" class="btn-ai-tool"><i data-feather="help-circle"></i> Give PYQs</button>
+      </div>
+    </div>
+
+    <!-- AI TEACHER EXPLANATION DISPLAY BOX -->
+    <div class="ai-teacher-output-box" id="aiTeacherOutput" style="display: none;">
+      <div class="output-loading" id="aiOutputLoading">Generating AI explanation...</div>
+      <div class="output-content" id="aiOutputContent"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. QUICK TOOL MODALS (CHEAT SHEET, FINAL 60, AUDIO, ETC)   -->
+<!-- ============================================================ -->
+
+<!-- 5-MIN CHEAT SHEET MODAL -->
+<div class="quick-modal-overlay" id="cheatSheetModal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('cheatSheetModal')" class="quick-modal-close">&times;</button>
+    <h2>⚡ 5-Minute Unit Cheat Sheet</h2>
+    <div class="quick-modal-body">
+      {% if kit_data %}
+        {% for cs in kit_data.unit_cheat_sheets %}
+        <div class="cs-unit-card">
+          <h4>{{ cs.unit }} — {{ cs.title }}</h4>
+          <p><strong>Rapid Summary:</strong> {{ cs.rapid_summary }}</p>
+          <p><strong>Key Terms:</strong> {{ cs.key_formulas_terms | join(', ') }}</p>
+          <p><strong>Diagram Blueprint:</strong> {{ cs.diagram_shortcut }}</p>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- FINAL 60 MIN MODAL -->
+<div class="quick-modal-overlay" id="final60Modal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('final60Modal')" class="quick-modal-close">&times;</button>
+    <h2>⏱ Final 60-Minute Exam Blueprint</h2>
+    <div class="quick-modal-body">
+      <ul class="blueprint-list">
+        <li><strong>15 Min:</strong> 🔥 Most Important Formulas & Key Definitions</li>
+        <li><strong>15 Min:</strong> 🔥 Top 5 High-Probability PYQs Scanning</li>
+        <li><strong>15 Min:</strong> ✏️ Mandatory Diagram & State Machine Review</li>
+        <li><strong>10 Min:</strong> ⚠️ Common Exam Mistakes & Penalty Warnings</li>
+        <li><strong>5 Min:</strong> 🧠 Eyes-Closed Mental Recall & Deep Breath</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL 15 MIN MODAL -->
+<div class="quick-modal-overlay" id="final15Modal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('final15Modal')" class="quick-modal-close">&times;</button>
+    <h2>🚨 Final 15-Minute Emergency Scan</h2>
+    <div class="quick-modal-body text-center">
+      <h3 class="text-pink">Stop Studying New Topics Now!</h3>
+      <p>Only scan key definitions, formulas, and state diagrams. Keep your mind calm and focused.</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM MORNING MODAL -->
+<div class="quick-modal-overlay" id="morningModal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('morningModal')" class="quick-modal-close">&times;</button>
+    <h2>☀️ Exam Morning Revision Strategy</h2>
+    <div class="quick-modal-body">
+      <ul>
+        <li>20-minute rapid review of Unit 1 & Unit 3 formula cheat sheets.</li>
+        <li>10-minute scan of top 10 solved PYQ diagrams.</li>
+        <li>Avoid heavy calculations or trying to learn new concepts.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO PODCAST MODAL -->
+<div class="quick-modal-overlay" id="audioModal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('audioModal')" class="quick-modal-close">&times;</button>
+    <h2>🎧 Audio Podcast Revision</h2>
+    <div class="quick-modal-body text-center">
+      <p class="mb-16">Listen to your 5-minute AI-generated audio summary while relaxing or traveling.</p>
+      
+      <div class="audio-controls-box">
+        <button onclick="playAudioSummary()" class="btn-audio-play" id="btnPlayAudio"><i data-feather="play"></i> Play Audio</button>
+        
+        <div class="speed-selector">
+          <span>Speed:</span>
+          <button onclick="setAudioSpeed(1.0)" class="btn-speed active">1x</button>
+          <button onclick="setAudioSpeed(1.25)" class="btn-speed">1.25x</button>
+          <button onclick="setAudioSpeed(1.5)" class="btn-speed">1.5x</button>
+          <button onclick="setAudioSpeed(2.0)" class="btn-speed">2x</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM FEEDBACK MODAL -->
+<div class="quick-modal-overlay" id="feedbackModal">
+  <div class="quick-modal-card">
+    <button onclick="toggleQuickToolModal('feedbackModal')" class="quick-modal-close">&times;</button>
+    <h2>📝 Next-Day Exam Feedback Loop</h2>
+    <div class="quick-modal-body">
+      <p>How did your exam go? Submit questions that appeared to help train our prediction engine!</p>
+      
+      <div class="mb-12">
+        <label class="sub-label">Exam Difficulty</label>
+        <select id="feedbackRating" class="form-select-dark">
+          <option value="Easy">Easy (High Predictions Matched)</option>
+          <option value="Normal" selected>Normal</option>
+          <option value="Difficult">Difficult</option>
+        </select>
+      </div>
+
+      <div class="mb-16">
+        <label class="sub-label">Which questions appeared in the paper?</label>
+        <textarea id="feedbackQuestions" class="form-textarea-dark" rows="3" placeholder="Paste or type questions here..."></textarea>
+      </div>
+
+      <button onclick="submitExamFeedback()" class="btn-primary-gradient w-100">Submit Feedback</button>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC FOR TIMERS & MODALS -->
+<script>
+let currentTimer = null;
+let timerSeconds = 0;
+let isTimerPaused = false;
+let currentSessionTopic = '';
+let currentAudioUtterance = null;
+let audioSpeed = 1.0;
+
+function startSessionModal(topicTitle, minutes, unit) {
+  currentSessionTopic = topicTitle;
+  document.getElementById('sessionModalTitle').innerText = topicTitle;
+  document.getElementById('sessionModalUnit').innerText = unit;
+  document.getElementById('aiTeacherOutput').style.display = 'none';
+  
+  timerSeconds = minutes * 60;
+  updateTimerDigitsDisplay();
+  
+  if (currentTimer) clearInterval(currentTimer);
+  isTimerPaused = false;
+  document.getElementById('btnPauseTimer').innerHTML = '<i data-feather="pause"></i> Pause';
+  
+  currentTimer = setInterval(() => {
+    if (!isTimerPaused && timerSeconds > 0) {
+      timerSeconds--;
+      updateTimerDigitsDisplay();
     }
+  }, 1000);
+
+  document.getElementById('sessionModal').style.display = 'flex';
+  feather.replace();
+}
+
+function updateTimerDigitsDisplay() {
+  let m = Math.floor(timerSeconds / 60);
+  let s = timerSeconds % 60;
+  document.getElementById('sessionTimerDigits').innerText = 
+    (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+}
+
+function toggleTimerPause() {
+  isTimerPaused = !isTimerPaused;
+  document.getElementById('btnPauseTimer').innerHTML = isTimerPaused ? '<i data-feather="play"></i> Resume' : '<i data-feather="pause"></i> Pause';
+  feather.replace();
+}
+
+function extendTimer(extraMins) {
+  timerSeconds += extraMins * 60;
+  updateTimerDigitsDisplay();
+}
+
+function completeSessionEarly() {
+  if (currentTimer) clearInterval(currentTimer);
+  alert('Great job! Session completed early. Updating your exam readiness!');
+  closeSessionModal();
+}
+
+function closeSessionModal() {
+  if (currentTimer) clearInterval(currentTimer);
+  document.getElementById('sessionModal').style.display = 'none';
+}
+
+function askAITeacher(actionType) {
+  document.getElementById('aiTeacherOutput').style.display = 'block';
+  document.getElementById('aiOutputLoading').style.display = 'block';
+  document.getElementById('aiOutputContent').innerText = '';
+
+  fetch('/api/ai-teacher-explain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic: currentSessionTopic, action: actionType })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('aiOutputLoading').style.display = 'none';
+    document.getElementById('aiOutputContent').innerHTML = data.explanation.replace(/\n/g, '<br>');
+  })
+  .catch(err => {
+    document.getElementById('aiOutputLoading').style.display = 'none';
+    document.getElementById('aiOutputContent').innerText = 'Could not fetch explanation. Please try again.';
+  });
+}
+
+function toggleQuickToolModal(modalId) {
+  let modal = document.getElementById(modalId);
+  if (modal.style.display === 'flex') {
+    modal.style.display = 'none';
+  } else {
+    modal.style.display = 'flex';
   }
+}
+
+function toggleTopicComplete(checkbox, itemId) {
+  let item = document.getElementById(itemId);
+  if (checkbox.checked) {
+    item.style.opacity = '0.5';
+    item.style.textDecoration = 'line-through';
+  } else {
+    item.style.opacity = '1';
+    item.style.textDecoration = 'none';
+  }
+}
+
+function playAudioSummary() {
+  let audioText = "{{ kit_data.audio_text | default('Welcome to your 1-night survival kit revision podcast.') }}";
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    currentAudioUtterance = new SpeechSynthesisUtterance(audioText);
+    currentAudioUtterance.rate = audioSpeed;
+    window.speechSynthesis.speak(currentAudioUtterance);
+    document.getElementById('btnPlayAudio').innerHTML = '<i data-feather="volume-2"></i> Playing...';
+    feather.replace();
+  } else {
+    alert('Browser TTS not supported on this device.');
+  }
+}
+
+function setAudioSpeed(speed) {
+  audioSpeed = speed;
+  if (currentAudioUtterance) {
+    currentAudioUtterance.rate = speed;
+  }
+}
+
+function submitExamFeedback() {
+  let rating = document.getElementById('feedbackRating').value;
+  let questions = document.getElementById('feedbackQuestions').value;
+  
+  fetch('/api/exam-feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject: "{{ kit_data.subject | default('Subject') }}", rating: rating, questions: questions })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || 'Feedback submitted!');
+    toggleQuickToolModal('feedbackModal');
+  });
+}
 </script>
 {% endblock %}

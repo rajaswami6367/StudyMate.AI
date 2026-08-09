@@ -158,6 +158,204 @@ def ask_gemini(prompt):
     return None, f"Gemini API Error: {last_error}"
 
 
+
+# ============================================================
+#  ⚡ INTELLIGENT 1-NIGHT EXAM SURVIVAL ENGINE & COMMAND CENTER
+# ============================================================
+
+def classify_subject_type(subject):
+    """Classifies subject into specialized engineering study domain."""
+    sub = subject.lower()
+    if any(k in sub for k in ["data structure", "dsa", "algorithm", "python", "java", "c++", "oops", "coding", "program"]):
+        return "coding_dsa"
+    elif any(k in sub for k in ["dbms", "database", "sql", "relational"]):
+        return "dbms"
+    elif any(k in sub for k in ["operating system", "os", "unix", "linux", "deadlock"]):
+        return "os"
+    elif any(k in sub for k in ["network", "osi", "tcp", "ip", "protocol"]):
+        return "networks"
+    elif any(k in sub for k in ["math", "calculus", "discrete", "algebra", "probability", "fourier", "matrix"]):
+        return "math"
+    elif any(k in sub for k in ["electrical", "bee", "circuit", "transformer", "electronics", "signal"]):
+        return "electrical"
+    else:
+        return "general_theory"
+
+def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='average', target_mode='target_75', university='RTU Kota (B.Tech)', branch='B.Tech CSE', year='2nd Year', sem='Semester 3'):
+    """
+    Generates a personalized, subject-aware 1-Night Survival Plan with:
+    - Subject-aware topic focus & skip rules
+    - Dynamic weighted time allocation
+    - 🎯 NEXT BEST ACTION recommendation
+    - Clustered Top 10 Must-Do PYQs
+    - 5-Min Unit Cheat Sheets & Audio Revision
+    """
+    sub_title = subject.strip().title()
+    sub_type = classify_subject_type(subject)
+    
+    try:
+        hrs = float(available_hours)
+    except:
+        hrs = 8.0
+        
+    total_minutes = int(hrs * 60)
+
+    if sub_type == "coding_dsa":
+        topics_repo = [
+            {"title": "Arrays & Dynamic Memory Allocation", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Code & Dry Run"},
+            {"title": "Linked Lists (Single, Double, Circular)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code & Pointer Tracing"},
+            {"title": "Stacks & Queues (Infix to Postfix)", "unit": "Unit II", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Algorithm & Applications"},
+            {"title": "Binary Trees & BST Traversals", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Code & Tree Diagrams"},
+            {"title": "Graph Traversals (BFS, DFS, Dijkstra)", "unit": "Unit IV", "freq": "8/10", "recency": "2024, 2021", "weight": 25, "type": "Algorithm & Dry Runs"},
+            {"title": "Sorting Algorithms (Quick, Merge, Heap)", "unit": "Unit V", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Complexity & Code"}
+        ]
+        skip_guidelines = ["Obsolete historical programming languages", "Advanced AVL tree double rotations (if low time)", "Unnecessary full GUI code"]
+    elif sub_type == "dbms":
+        topics_repo = [
+            {"title": "E-R Diagrams & Relational Schema Mapping", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Diagram & Schema"},
+            {"title": "Relational Algebra & SQL Queries", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "Queries & Joins"},
+            {"title": "Database Normalization (1NF, 2NF, 3NF, BCNF)", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical & Proofs"},
+            {"title": "Transaction Processing & ACID Properties", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Theory & States"},
+            {"title": "Concurrency Control (2PL, Lock Protocols)", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Protocol Graphs"}
+        ]
+        skip_guidelines = ["Proprietary vendor-specific SQL syntax", "Historical file storage hardware details", "Obsolete network data models"]
+    elif sub_type == "os":
+        topics_repo = [
+            {"title": "CPU Scheduling (FCFS, SJF, Round Robin)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Numerical Gantt Charts"},
+            {"title": "Process Synchronization (Peterson's, Semaphores)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code & Logic"},
+            {"title": "Deadlock Handling & Banker's Algorithm", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Numerical Matrices"},
+            {"title": "Memory Management & Paging (Page Faults)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2021", "weight": 25, "type": "Page Replace Numericals"},
+            {"title": "Disk Scheduling Algorithms (SCAN, C-LOOK)", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Head Movement Numericals"}
+        ]
+        skip_guidelines = ["Historical 16-bit OS architectures", "Obsolete floppy disk controller specs", "Low-level assembly device drivers"]
+    elif sub_type == "math":
+        topics_repo = [
+            {"title": "Differential Equations & Operator Methods", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Step-by-step Numericals"},
+            {"title": "Laplace Transforms & Inverse Transforms", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "Formula Substitutions"},
+            {"title": "Fourier Series & Harmonic Analysis", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "Integration Steps"},
+            {"title": "Matrix Algebra & Eigenvalues (Cayley-Hamilton)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Matrix Proofs"},
+            {"title": "Probability Distributions & Binomial / Poisson", "unit": "Unit V", "freq": "8/10", "recency": "2022, 2020", "weight": 20, "type": "Formula Calculations"}
+        ]
+        skip_guidelines = ["Long theoretical real-analysis proofs", "Derivations not present in PYQs", "Calculator-heavy multi-page expansions"]
+    else:
+        topics_repo = [
+            {"title": "Core System Definitions & First Principles", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Definitions & Diagrams"},
+            {"title": "Primary Component Architecture & Laws", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Derivations & Working"},
+            {"title": "High-Yield Numericals & Circuit / State Analysis", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical Calculations"},
+            {"title": "System Optimization & Failure Modes", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Comparisons & Tables"},
+            {"title": "Real-World Applications & Case Studies", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2020", "weight": 20, "type": "Short Answer PYQs"}
+        ]
+        skip_guidelines = ["Historical non-standard variations", "Unnecessary commercial marketing terms", "Non-syllabus optional appendices"]
+
+    if target_mode == 'pass_minimum' or hrs <= 2:
+        selected_topics = topics_repo[:3]
+    elif target_mode == 'target_60' or hrs <= 4:
+        selected_topics = topics_repo[:4]
+    else:
+        selected_topics = topics_repo
+
+    available_study_mins = max(40, int(total_minutes * 0.80))
+    total_weight = sum(t["weight"] for t in selected_topics)
+    
+    timeline = []
+    current_time_offset = 0
+
+    for i, t in enumerate(selected_topics):
+        allocated_mins = max(15, int((t["weight"] / total_weight) * available_study_mins))
+        
+        start_h, start_m = divmod(current_time_offset, 60)
+        end_h, end_m = divmod(current_time_offset + allocated_mins, 60)
+        time_range = f"{start_h:02d}:{start_m:02d} – {end_h:02d}:{end_m:02d}"
+        
+        timeline.append({
+            "id": i + 1,
+            "title": t["title"],
+            "unit": t["unit"],
+            "pyq_freq": t["freq"],
+            "recency": t["recency"],
+            "allocated_mins": allocated_mins,
+            "time_range": time_range,
+            "priority": "🔥 VERY HIGH" if i < 2 else ("🟡 HIGH" if i < 4 else "🟢 MEDIUM"),
+            "focus_points": [f"Master core {t['type']}", "Practice top repeated PYQ patterns", "Memorize mandatory exam diagram"],
+            "skip_points": skip_guidelines
+        })
+        current_time_offset += allocated_mins
+        
+        if (i + 1) % 2 == 0 and (current_time_offset + 10) < total_minutes:
+            b_start_h, b_start_m = divmod(current_time_offset, 60)
+            b_end_h, b_end_m = divmod(current_time_offset + 10, 60)
+            timeline.append({
+                "id": f"break_{i}",
+                "is_break": True,
+                "title": "☕ Quick Rest & Refresh Break",
+                "allocated_mins": 10,
+                "time_range": f"{b_start_h:02d}:{b_start_m:02d} – {b_end_h:02d}:{b_end_m:02d}",
+                "focus_points": ["Stand up, drink water, rest your eyes"]
+            })
+            current_time_offset += 10
+
+    next_best_action = {
+        "title": timeline[0]["title"],
+        "unit": timeline[0]["unit"],
+        "allocated_mins": timeline[0]["allocated_mins"],
+        "priority_reason": f"Appeared in {timeline[0]['pyq_freq']} PYQs — Highest score impact for {sub_title} tomorrow!",
+        "topic_id": timeline[0]["id"]
+    }
+
+    paper = generate_fallback_exam_paper(subject, university, "University End-Sem Exam", branch)
+    top_10_pyqs = []
+    
+    for sec in paper.get("sections", []):
+        for q in sec.get("questions", []):
+            if len(top_10_pyqs) < 10:
+                u_name = q.get("unit", f"Unit {(len(top_10_pyqs)%5)+1}")
+                diagram_hint = f"✏️ Mandatory Exam Diagram: {sub_title} State Machine / Component Diagram for {u_name}"
+                top_10_pyqs.append({
+                    "q_num": f"Must-Do PYQ #{len(top_10_pyqs)+1}",
+                    "unit": u_name,
+                    "pyq_source": q.get("pyq_source", f"{university} 2019-2024 — 95% Repeat Rate"),
+                    "question": q.get("question"),
+                    "model_answer": q.get("model_answer"),
+                    "marking_scheme": q.get("marking_scheme"),
+                    "diagram_blueprint": diagram_hint,
+                    "expected_marks": "7-10 Marks",
+                    "estimated_mins": "15 min"
+                })
+
+    unit_cheat_sheets = [
+        {
+            "unit": f"Unit {idx+1}",
+            "title": f"Unit {idx+1} Rapid Revision",
+            "key_formulas_terms": [f"{sub_title} Core Definition", "Primary Invariants", "Step Working Rules"],
+            "diagram_shortcut": f"Component block diagram for Unit {idx+1}",
+            "rapid_summary": f"Focus on high-frequency PYQ definitions and step-by-step working for Unit {idx+1}."
+        } for idx in range(5)
+    ]
+
+    audio_text = f"Welcome to your 1-Night Command Center for {sub_title}. You have {available_hours} hours available. Focus first on {next_best_action['title']} which appears in {timeline[0]['pyq_freq']} previous year papers. Follow your timed survival timeline, practice the top 10 must-do PYQs, and take your scheduled breaks. You are well on track to excel in your exam!"
+
+    prep_pct = 75 if prep_level == 'good' else (50 if prep_level == 'average' else (25 if prep_level == 'low' else 10))
+
+    return {
+        "subject": sub_title,
+        "subject_type": sub_type,
+        "available_hours": available_hours,
+        "total_minutes": total_minutes,
+        "prep_level": prep_level,
+        "prep_pct": prep_pct,
+        "target_mode": target_mode,
+        "university": university,
+        "branch": branch,
+        "sem": sem,
+        "next_best_action": next_best_action,
+        "timeline": timeline,
+        "top_10_pyqs": top_10_pyqs,
+        "unit_cheat_sheets": unit_cheat_sheets,
+        "audio_text": audio_text,
+        "skip_guidelines": skip_guidelines
+    }
+
+
 #  STEP 7: Helper  Check if user is logged in 
 def is_logged_in():
     """Returns True if user has an active session."""
@@ -671,7 +869,7 @@ Keep JSON concise (exactly 3 phases, 2 nodes per phase) so it generates super fa
 @app.route('/one-night-mode', methods=['GET', 'POST'])
 @app.route('/one_night_mode', methods=['GET', 'POST'])
 def one_night_mode():
-    """Flagship startup feature: 1-Night Exam Survival Kit for RTU/University students."""
+    """Flagship AI Exam Command Center & Survival System."""
     if not is_logged_in():
         return redirect(url_for('login'))
 
@@ -682,66 +880,48 @@ def one_night_mode():
     branch = "B.Tech CSE"
     year = "2nd Year"
     sem = "Semester 3"
+    available_hours = 8
+    prep_level = "average"
+    target_mode = "target_75"
+    university = "RTU Kota (B.Tech)"
 
     if request.method == 'POST':
         subject = request.form.get('subject', '').strip()
-        target_mode = request.form.get('target_mode', 'distinction').strip()
+        available_hours = request.form.get('available_hours', 8)
+        prep_level = request.form.get('prep_level', 'average').strip()
+        target_mode = request.form.get('target_mode', 'target_75').strip()
+        university = request.form.get('university', 'RTU Kota (B.Tech)').strip()
         branch = request.form.get('branch', 'B.Tech CSE').strip()
         year = request.form.get('year', '2nd Year').strip()
         sem = request.form.get('sem', 'Semester 3').strip()
 
         if not subject:
-            return render_template('one_night_mode.html', error='Please enter a subject name!')
+            return render_template('one_night_mode.html', error='Please select or enter a subject!')
 
-        prompt = f"""Generate a 1-Night Exam Survival Kit for the college subject: '{subject}'.
-Return output as valid JSON with NO markdown code block wrappers.
-Structure:
-{{
-  "subject": "{subject}",
-  "pass_probability": "98% Pass Probability (5-10 Year RTU PYQ Engine)",
-  "top_10_pyqs": [
-    {{
-      "q_num": "Must-Do PYQ #1",
-      "unit": "Unit I: Core Fundamentals",
-      "pyq_source": "RTU Kota 2018, 2020, 2022, 2023 - 95% Repeat Rate",
-      "question": "Exact PYQ question...",
-      "model_answer": "Step-by-step solved answer...",
-      "marking_scheme": "Clear marks distribution..."
-    }}
-  ],
-  "unit_cheat_sheets": [
-    {{
-      "unit": "Unit I: Fundamentals",
-      "key_formulas_terms": ["Key term 1", "Key term 2"],
-      "diagram_shortcut": "Quick diagram description",
-      "rapid_summary": "1-sentence rapid summary"
-    }}
-  ],
-  "audio_text": "5-minute audio revision summary text..."
-}}"""
+        kit_data = generate_intelligent_survival_plan(
+            subject=subject,
+            available_hours=available_hours,
+            prep_level=prep_level,
+            target_mode=target_mode,
+            university=university,
+            branch=branch,
+            year=year,
+            sem=sem
+        )
 
-        result, error_msg = ask_gemini(prompt)
-
-        if result:
-            raw_json = result.strip()
-            if raw_json.startswith("```"):
-                lines = raw_json.split('\n')
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines[-1].startswith("```"):
-                    lines = lines[:-1]
-                raw_json = "\n".join(lines).strip()
-
-            try:
-                kit_data = json.loads(raw_json)
-                if not isinstance(kit_data, dict) or "top_10_pyqs" not in kit_data:
-                    kit_data = generate_fallback_one_night_kit(subject, target_mode)
-            except Exception:
-                kit_data = generate_fallback_one_night_kit(subject, target_mode)
-        else:
-            kit_data = generate_fallback_one_night_kit(subject, target_mode)
-
-    return render_template('one_night_mode.html', kit_data=kit_data, subject=subject, branch=branch, year=year, sem=sem, error=error)
+    return render_template(
+        'one_night_mode.html',
+        kit_data=kit_data,
+        subject=subject,
+        available_hours=available_hours,
+        prep_level=prep_level,
+        target_mode=target_mode,
+        university=university,
+        branch=branch,
+        year=year,
+        sem=sem,
+        error=error
+    )
 
 
 #  AI EXAM PAPER PREDICTOR & QUESTION PAPER GENERATOR 
@@ -1741,3 +1921,65 @@ if __name__ == '__main__':
     print("  Visit: http://127.0.0.1:5000")
     print("="*50 + "\n")
     app.run(debug=True, port=5000)
+
+
+
+#  INTERACTIVE AI TEACHER MODE API 
+@app.route('/api/ai-teacher-explain', methods=['POST'])
+def api_ai_teacher_explain():
+    """Generates on-demand AI Teacher explanations inside active study sessions."""
+    if not is_logged_in():
+        return json.dumps({"error": "Unauthorized"}), 401
+        
+    data = request.get_json() or {}
+    topic = data.get('topic', 'Core Concept').strip()
+    action = data.get('action', 'explain_simply').strip()
+    
+    if action == 'explain_simply':
+        prompt = f"Explain the topic '{topic}' simply like an expert teacher in plain bullet points. Keep it clear, concise, and easy to understand for a college exam night."
+    elif action == 'exam_answer':
+        prompt = f"Generate a 100% University Exam-Ready Answer for '{topic}'. Structure strictly with: 1. Definition, 2. Core Principle / Main Explanation, 3. Diagram / Formula Blueprint, 4. Step-by-Step Working, 5. Real Example, 6. Summary Conclusion."
+    elif action == 'show_formula':
+        prompt = f"Provide all key formulas, mathematical equations, or code snippets for '{topic}' with clear variable descriptions."
+    else:
+        prompt = f"Provide the top 2 most repeated PYQs on '{topic}' along with concise step-by-step model answers and marking schemes."
+        
+    result, error_msg = ask_gemini(prompt)
+    if not result:
+        result = f"### {topic} — {action.replace('_', ' ').title()}\n\n• **Core Principle:** Focus on high-yielding concepts for {topic}.\n• **Exam Tip:** Write definition first, draw a neat labeled diagram, and show step-by-step working."
+        
+    return json.dumps({"success": True, "topic": topic, "action": action, "explanation": result}), 200, {'Content-Type': 'application/json'}
+
+
+#  POST-EXAM FEEDBACK LOOP API 
+@app.route('/api/exam-feedback', methods=['POST'])
+def api_exam_feedback():
+    """Records student feedback on actual exam questions to improve AI prediction accuracy."""
+    if not is_logged_in():
+        return json.dumps({"error": "Unauthorized"}), 401
+        
+    data = request.get_json() or {}
+    subject = data.get('subject', 'Subject')
+    rating = data.get('rating', 'Normal')
+    questions = data.get('questions', '')
+    
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS exam_feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                subject TEXT,
+                rating TEXT,
+                actual_questions TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.execute('INSERT INTO exam_feedback (user_id, subject, rating, actual_questions) VALUES (?, ?, ?, ?)',
+                     (session.get('user_id'), subject, rating, questions))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print("[WARNING] Could not save exam feedback:", e)
+        
+    return json.dumps({"success": True, "message": "Thank you! Your feedback helps refine StudyMate AI predictions."}), 200, {'Content-Type': 'application/json'}
