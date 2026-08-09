@@ -299,13 +299,9 @@ def signup():
             user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
             conn.close()
             
-            # 1-TIME SIGNUP AUTO-LOGIN & PERMANENT SESSION
-            session.permanent = True
-            session['user_id']  = user['id']
-            session['username'] = user['username']
-            session['email']    = user['email']
-            flash('Welcome! Your account is created and permanently saved.', 'success')
-            return redirect(url_for('dashboard'))
+            # ACCOUNT PERMANENTLY SAVED IN DB -> REDIRECT TO EXPLICIT LOGIN
+            flash('Account created successfully! Please log in using your email & password.', 'success')
+            return redirect(url_for('login'))
 
         except sqlite3.IntegrityError:
             # IntegrityError happens when email already exists (UNIQUE constraint)
@@ -322,10 +318,8 @@ def signup():
 def login():
     """
     GET   Show the login form
-    POST  Check credentials and log user in
+    POST  Check credentials and log user in with email & password
     """
-    if is_logged_in():
-        return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
         email    = request.form.get('email', '').strip().lower()
