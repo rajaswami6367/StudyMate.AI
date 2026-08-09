@@ -47,6 +47,9 @@ def add_header(response):
 # Secret key is used to encrypt session cookies (login sessions)
 # It's now loaded from .env  much safer!
 app.secret_key = os.environ.get('SECRET_KEY', 'fallback_dev_key_change_this')
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(days=365) # 1-year permanent login
+
 
 #  STEP 3: Setup Google Gemini AI Client 
 # We read the API key from .env  NOT hardcoded!
@@ -293,9 +296,16 @@ def signup():
                 (username, email, hashed_password)
             )
             conn.commit()
+            user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
             conn.close()
-            flash('Account created successfully! Please login.', 'success')
-            return redirect(url_for('login'))
+            
+            # 1-TIME SIGNUP AUTO-LOGIN & PERMANENT SESSION
+            session.permanent = True
+            session['user_id']  = user['id']
+            session['username'] = user['username']
+            session['email']    = user['email']
+            flash('Welcome! Your account is created and permanently saved.', 'success')
+            return redirect(url_for('dashboard'))
 
         except sqlite3.IntegrityError:
             # IntegrityError happens when email already exists (UNIQUE constraint)
@@ -334,6 +344,7 @@ def login():
         # This is secure  we NEVER store plain passwords!
         if user and check_password_hash(user['password'], password):
             # Save user info in session (like a login token)
+            session.permanent = True # Stay logged in for 365 days
             session['user_id']  = user['id']
             session['username'] = user['username']
             session['email']    = user['email']
