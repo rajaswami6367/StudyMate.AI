@@ -58,7 +58,7 @@ def get_examiner_pyqs_for_subject(subject, university="RTU Kota (B.Tech)"):
     # -------------------------------------------------------------
     # 2. SOFTWARE ENGINEERING (SE)
     # -------------------------------------------------------------
-    elif any(k in sub for k in ["software engineering", "se", "sdlc", "agile", "testing"]):
+    elif any(k in sub for k in ["software engineering", "sdlc", "agile", "testing", "software development", "software process"]):
         questions = [
             # PART A (10 SHORT QUESTIONS - 2M EACH)
             {"q_num": "Part A #1", "part": "Part A (Compulsory - 2M)", "unit": "Unit I", "pyq_source": "RTU Kota 2021, 2023", "question": "Differentiate Waterfall Model and Agile Scrum Model.", "model_answer": "• Waterfall: Sequential, rigid phase gates.\n• Agile: Iterative, sprint-based, continuous delivery.", "expected_marks": "2 Marks", "repeat_pct": "99% Repeat", "examiner_reason": "Compulsory Part A SE question."},
@@ -432,117 +432,276 @@ def ask_gemini(prompt):
 #  ⚡ INTELLIGENT 1-NIGHT EXAM SURVIVAL ENGINE & COMMAND CENTER
 
 def classify_subject_type(subject):
-    """Classifies subject into specialized engineering study domain."""
+    """Classifies subject into specialized engineering study domain with strict priority ordering."""
     sub = subject.lower()
-    if any(k in sub for k in ["data structure", "dsa", "algorithm", "python", "java", "c++", "oops", "coding", "program"]):
+    # OOPS / OOP / C++ / Java (must come BEFORE coding_dsa to avoid mis-classification)
+    if any(k in sub for k in ["oops", "object oriented", "oop", "java programming", "c++ programming"]):
+        return "oops"
+    # Software Engineering (must come BEFORE general)
+    elif any(k in sub for k in ["software engineering", "sdlc", "agile", "software testing", "software development"]):
+        return "software_engineering"
+    # Computer Organization & Architecture
+    elif any(k in sub for k in ["computer organization", "computer architecture", "coa", "booth", "pipeline", "microprogrammed"]):
+        return "coa"
+    # Data Structures & Algorithms
+    elif any(k in sub for k in ["data structure", "dsa", "algorithm", "linked list", "binary tree", "sorting"]):
         return "coding_dsa"
-    elif any(k in sub for k in ["dbms", "database", "sql", "relational"]):
+    # DBMS
+    elif any(k in sub for k in ["dbms", "database", "sql", "relational", "normalization", "transaction"]):
         return "dbms"
-    elif any(k in sub for k in ["operating system", "os", "unix", "linux", "deadlock"]):
+    # Operating Systems
+    elif any(k in sub for k in ["operating system", " os ", "unix", "linux", "deadlock", "scheduling", "semaphore", "process"]):
         return "os"
-    elif any(k in sub for k in ["network", "osi", "tcp", "ip", "protocol"]):
+    # Computer Networks
+    elif any(k in sub for k in ["network", "osi", "tcp", "ip", "protocol", "routing", "ethernet", "data communication"]):
         return "networks"
-    elif any(k in sub for k in ["math", "calculus", "discrete", "algebra", "probability", "fourier", "matrix"]):
+    # Mathematics / Engineering Maths
+    elif any(k in sub for k in ["math", "calculus", "discrete", "algebra", "probability", "fourier", "laplace", "matrix", "engineering mathematics"]):
         return "math"
-    elif any(k in sub for k in ["electrical", "bee", "circuit", "transformer", "electronics", "signal"]):
+    # Basic Electrical / Electronics
+    elif any(k in sub for k in ["electrical", "bee", "circuit", "transformer", "electronics", "signal", "thevenin", "norton", "kcl", "kvl"]):
         return "electrical"
+    # Web Technologies
+    elif any(k in sub for k in ["web", "html", "css", "javascript", "php", "react", "node", "internet"]):
+        return "web"
+    # Compiler Design
+    elif any(k in sub for k in ["compiler", "lex", "yacc", "parsing", "grammar", "automata", "theory of computation", "toc"]):
+        return "compiler"
+    # Artificial Intelligence / Machine Learning
+    elif any(k in sub for k in ["artificial intelligence", "machine learning", "ai", "ml", "neural", "deep learning"]):
+        return "ai_ml"
+    # C Programming / C Language
+    elif any(k in sub for k in ["c programming", "c language", "programming in c", "ansi c"]):
+        return "c_programming"
     else:
         return "general_theory"
 
 def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='average', target_mode='target_75', university='RTU Kota (B.Tech)', branch='B.Tech CSE', year='2nd Year', sem='Semester 3'):
     """
     Generates a personalized, subject-aware 1-Night Survival Plan with:
-    - Subject-aware topic focus & skip rules
+    - 100% subject-specific topic focus & skip rules
     - Dynamic weighted time allocation
-    - 🎯 NEXT BEST ACTION recommendation
-    - Clustered Top 10 Must-Do PYQs
-    - 5-Min Unit Cheat Sheets & Audio Revision
+    - Next Best Action recommendation
+    - Top 22 Must-Do PYQs (RTU Blueprint: Part A/B/C)
+    - Unit Cheat Sheets
     """
     sub_id = slugify_subject(subject)
     sub_title = subject.strip().title()
     sub_type = classify_subject_type(subject)
-    
+
     try:
         hrs = float(available_hours)
     except:
         hrs = 8.0
-        
+
     total_minutes = int(hrs * 60)
+
+    # ─────────────────────────────────────────────────────────────────
+    # SUBJECT-SPECIFIC TOPICS REPO  (10 major subject types + fallback)
+    # ─────────────────────────────────────────────────────────────────
 
     if sub_type == "oops":
         topics_repo = [
-            {"title": "Encapsulation, Abstraction & Class Invariants", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Code & Class Design"},
-            {"title": "Virtual Functions, VTABLE & VPTR Mechanism", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "Polymorphism & Memory"},
-            {"title": "Multiple & Multilevel Inheritance (Diamond Problem)", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "UML & Virtual Base Class"},
-            {"title": "Operator Overloading & Friend Functions", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Syntax & Complex Code"},
-            {"title": "Exception Handling (try-catch-throw) & File I/O", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Binary Persistence & Streams"}
+            {"title": "4 Pillars of OOPS: Encapsulation, Abstraction, Inheritance, Polymorphism", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Theory + UML Class Diagrams"},
+            {"title": "Virtual Functions, VTABLE & VPTR — Runtime Polymorphism", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Code + Memory Layout Diagram"},
+            {"title": "Copy Constructor (Shallow vs Deep) & 'this' Pointer", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code + Pointer Trace"},
+            {"title": "Multiple & Multilevel Inheritance + Diamond Problem + Virtual Base Class", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "UML Diagram + Virtual Base Class Code"},
+            {"title": "Operator Overloading & Friend Functions (Complex Number / Matrix)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "C++ Operator Code"},
+            {"title": "Exception Handling (try-catch-throw) & File Stream I/O", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Binary Persistence Code"},
         ]
-        skip_guidelines = ["Historical non-standard C++ compilers", "Obsolete Turbo C graphics headers", "Deep template metaprogramming tricks"]
+        skip_guidelines = [
+            "Historical non-standard Turbo C++ compiler syntax",
+            "Deep C++ template metaprogramming tricks (not in RTU syllabus)",
+            "Boost library internals (not asked in RTU exam)",
+        ]
+
     elif sub_type == "software_engineering":
         topics_repo = [
-            {"title": "SDLC Process Models (Waterfall, Agile Scrum, Spiral)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Process Diagrams"},
-            {"title": "Software Requirements Specification (IEEE 830 SRS)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "SRS & Requirements"},
-            {"title": "Software Metrics & Function Point (FP) Analysis", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "UFP Numericals"},
-            {"title": "Software Testing (Black-Box, White-Box & BVA)", "unit": "Unit IV", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Test Case Design"},
-            {"title": "Software Maintenance & CMMI Maturity Levels", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2020", "weight": 20, "type": "CMMI Levels"}
+            {"title": "SDLC Process Models — Waterfall, Agile Scrum, Spiral (4-Quadrant)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Process Phase Diagrams"},
+            {"title": "Software Requirement Specification (SRS) — IEEE 830 Standard Structure", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "SRS Document + Use Case Diagram"},
+            {"title": "Software Design: Cohesion, Coupling & Module Architecture", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Theory + Table Comparison"},
+            {"title": "Software Testing: Black-Box, White-Box, BVA & Equivalence Partitioning", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Test Case Design Tables"},
+            {"title": "COCOMO Model + Function Point (FP) Analysis Numericals", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "FP Calculation Numericals"},
+            {"title": "DFD Level 0/1, ATM UML Sequence Diagram & UML Diagrams", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "UML Drawing"},
         ]
-        skip_guidelines = ["Historical 1970s software metrics", "Proprietary testing tool screenshots", "Non-syllabus marketing management jargon"]
+        skip_guidelines = [
+            "Historical 1970s software metrics (not in RTU PYQs)",
+            "Proprietary testing tool GUIs (Selenium internals)",
+            "Non-syllabus marketing management jargon",
+        ]
+
     elif sub_type == "coa":
         topics_repo = [
-            {"title": "Computer Arithmetic & Booth's Multiplication", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Signed Shift Numericals"},
-            {"title": "Instruction Set Architecture & Addressing Modes", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Register Transfers"},
-            {"title": "Hardwired vs Microprogrammed Control Unit", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "Microinstruction Design"},
-            {"title": "Cache Memory Mapping (Direct, Set-Associative)", "unit": "Unit IV", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Tag Offset Numericals"},
-            {"title": "Instruction Pipelining & Hazard Handling", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Speedup Calculations"}
+            {"title": "Booth's Multiplication Algorithm — Signed Binary Numericals", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Step-by-Step Shift Numericals"},
+            {"title": "Addressing Modes — Immediate, Direct, Indirect, Register, Indexed", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Table + Examples"},
+            {"title": "Hardwired vs Microprogrammed Control Unit Design", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "Block Diagrams + Comparison"},
+            {"title": "Cache Memory Mapping — Direct, Associative, Set-Associative (Tag-Offset)", "unit": "Unit IV", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Numerical Cache Miss/Hit Calculations"},
+            {"title": "Instruction Pipelining, Hazards & Speedup Calculation", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Speedup Formula Numericals"},
         ]
-        skip_guidelines = ["Obsolete vacuum tube computer architectures", "Proprietary mainframe assembly instructions", "Unused floating point formats"]
+        skip_guidelines = [
+            "Obsolete vacuum tube computer architectures",
+            "Proprietary mainframe assembly instruction sets",
+            "Unused floating point IEEE-754 edge cases",
+        ]
+
     elif sub_type == "coding_dsa":
         topics_repo = [
-            {"title": "Arrays & Dynamic Memory Allocation", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Code & Dry Run"},
-            {"title": "Linked Lists (Single, Double, Circular)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code & Pointer Tracing"},
-            {"title": "Stacks & Queues (Infix to Postfix)", "unit": "Unit II", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Algorithm & Applications"},
-            {"title": "Binary Trees & BST Traversals", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Code & Tree Diagrams"},
-            {"title": "Graph Traversals (BFS, DFS, Dijkstra)", "unit": "Unit IV", "freq": "8/10", "recency": "2024, 2021", "weight": 25, "type": "Algorithm & Dry Runs"},
-            {"title": "Sorting Algorithms (Quick, Merge, Heap)", "unit": "Unit V", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Complexity & Code"}
+            {"title": "Arrays, 2D Arrays & Dynamic Memory — Row/Column Major Address", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Code + Address Formula"},
+            {"title": "Linked Lists — Singly, Doubly, Circular (Reverse, Insert, Delete)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code + Pointer Trace Diagram"},
+            {"title": "Stacks & Queues — Postfix Evaluation, Circular Queue", "unit": "Unit II", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Algorithm + Stack Trace"},
+            {"title": "Binary Trees, BST, AVL — Traversals & LL/RR/LR/RL Rotations", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Tree Diagrams + Rotation Charts"},
+            {"title": "Graph Traversals — BFS, DFS, Dijkstra, Kruskal MST", "unit": "Unit IV", "freq": "8/10", "recency": "2024, 2021", "weight": 25, "type": "Graph Numericals + Gantt"},
+            {"title": "Sorting Algorithms — Quick Sort (Partition), Merge Sort, Heap Sort", "unit": "Unit V", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Complexity + Trace Numericals"},
         ]
-        skip_guidelines = ["Obsolete historical programming languages", "Advanced AVL tree double rotations (if low time)", "Unnecessary full GUI code"]
+        skip_guidelines = [
+            "Obsolete bubble sort unless explicitly asked",
+            "Red-Black Tree rotations (rarely asked in RTU)",
+            "Unnecessary full GUI code for programs",
+        ]
+
     elif sub_type == "dbms":
         topics_repo = [
-            {"title": "E-R Diagrams & Relational Schema Mapping", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Diagram & Schema"},
-            {"title": "Relational Algebra & SQL Queries", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "Queries & Joins"},
-            {"title": "Database Normalization (1NF, 2NF, 3NF, BCNF)", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical & Proofs"},
-            {"title": "Transaction Processing & ACID Properties", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Theory & States"},
-            {"title": "Concurrency Control (2PL, Lock Protocols)", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Protocol Graphs"}
+            {"title": "Entity-Relationship (E-R) Diagrams & Relational Schema Mapping", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "E-R Drawing + Schema"},
+            {"title": "Relational Algebra — Select, Project, Join, Division & SQL Queries", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "SQL Queries + Relational Ops"},
+            {"title": "Database Normalization — 1NF, 2NF, 3NF, BCNF (Step-by-Step)", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical Normalization Steps"},
+            {"title": "Transaction Processing — ACID Properties, Serializability, 2PL", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Theory + Protocol States"},
+            {"title": "Concurrency Control & Database Recovery (Log-Based, Checkpoint)", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2021", "weight": 20, "type": "Protocol Graphs + Examples"},
         ]
-        skip_guidelines = ["Proprietary vendor-specific SQL syntax", "Historical file storage hardware details", "Obsolete network data models"]
+        skip_guidelines = [
+            "Proprietary vendor-specific SQL syntax (MySQL vs Oracle differences)",
+            "Historical hierarchical/network database models",
+            "Obsolete file storage hardware details",
+        ]
+
     elif sub_type == "os":
         topics_repo = [
-            {"title": "CPU Scheduling (FCFS, SJF, Round Robin)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Numerical Gantt Charts"},
-            {"title": "Process Synchronization (Peterson's, Semaphores)", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code & Logic"},
-            {"title": "Deadlock Handling & Banker's Algorithm", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Numerical Matrices"},
-            {"title": "Memory Management & Paging (Page Faults)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2021", "weight": 25, "type": "Page Replace Numericals"},
-            {"title": "Disk Scheduling Algorithms (SCAN, C-LOOK)", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Head Movement Numericals"}
+            {"title": "CPU Scheduling — FCFS, SJF (Preemptive SRTF), Round Robin, Priority (Gantt Charts)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Numerical Gantt Chart Calculations"},
+            {"title": "Process Synchronization — Peterson's Solution, Semaphores, Mutex", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code + Critical Section Logic"},
+            {"title": "Deadlock — Detection, Prevention & Banker's Algorithm (Safety Check)", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Numerical Matrix Calculations"},
+            {"title": "Memory Management — Paging, Segmentation & Page Replacement (FIFO, LRU, Optimal)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2021", "weight": 25, "type": "Page Fault Numericals"},
+            {"title": "Disk Scheduling — FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Head Movement Numericals"},
         ]
-        skip_guidelines = ["Historical 16-bit OS architectures", "Obsolete floppy disk controller specs", "Low-level assembly device drivers"]
+        skip_guidelines = [
+            "Historical 16-bit DOS/Windows 3.1 architectures",
+            "Obsolete floppy disk controller low-level specs",
+            "Low-level device driver assembly code",
+        ]
+
+    elif sub_type == "networks":
+        topics_repo = [
+            {"title": "OSI 7-Layer Model — Functions, PDU Names & Protocols at Each Layer", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Layer Diagram + Function Table"},
+            {"title": "TCP/IP Model — Comparison with OSI, IP Addressing & Subnetting", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Subnetting Numericals"},
+            {"title": "Data Link Layer — Framing, Error Detection (CRC, Hamming) & CSMA/CD", "unit": "Unit III", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "CRC Numericals + Error Codes"},
+            {"title": "Routing Algorithms — Distance Vector, Link State (Dijkstra), OSPF, BGP", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Routing Table Calculations"},
+            {"title": "Transport Layer — TCP vs UDP, Flow Control, Congestion Control, 3-Way Handshake", "unit": "Unit V", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Protocol Diagram + State Machine"},
+        ]
+        skip_guidelines = [
+            "Obsolete Token Ring / FDDI LAN protocols",
+            "Legacy ATM cell structure (not in RTU PYQs)",
+            "Deep cryptography algorithm internals",
+        ]
+
     elif sub_type == "math":
         topics_repo = [
-            {"title": "Differential Equations & Operator Methods", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Step-by-step Numericals"},
-            {"title": "Laplace Transforms & Inverse Transforms", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2022", "weight": 30, "type": "Formula Substitutions"},
-            {"title": "Fourier Series & Harmonic Analysis", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "Integration Steps"},
-            {"title": "Matrix Algebra & Eigenvalues (Cayley-Hamilton)", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Matrix Proofs"},
-            {"title": "Probability Distributions & Binomial / Poisson", "unit": "Unit V", "freq": "8/10", "recency": "2022, 2020", "weight": 20, "type": "Formula Calculations"}
+            {"title": "Ordinary Differential Equations (ODE) — Order, Degree & Operator Method D", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Step-by-step Numerical Solutions"},
+            {"title": "Laplace Transforms & Inverse Laplace — Unit Step, Dirac Delta, Convolution", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Formula-based Substitutions"},
+            {"title": "Fourier Series — Euler Coefficients, Even/Odd Functions, Half-Range", "unit": "Unit III", "freq": "9/10", "recency": "2023, 2021", "weight": 25, "type": "Integration Steps"},
+            {"title": "Matrix Algebra — Eigenvalues, Eigenvectors & Cayley-Hamilton Theorem", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Matrix Numerical Proofs"},
+            {"title": "Probability — Binomial, Poisson, Normal Distribution & Bayes Theorem", "unit": "Unit V", "freq": "8/10", "recency": "2022, 2020", "weight": 20, "type": "Formula Calculation Steps"},
         ]
-        skip_guidelines = ["Long theoretical real-analysis proofs", "Derivations not present in PYQs", "Calculator-heavy multi-page expansions"]
-    else:
-        topics_repo = [
-            {"title": "Core System Definitions & First Principles", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Definitions & Diagrams"},
-            {"title": "Primary Component Architecture & Laws", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Derivations & Working"},
-            {"title": "High-Yield Numericals & Circuit / State Analysis", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical Calculations"},
-            {"title": "System Optimization & Failure Modes", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Comparisons & Tables"},
-            {"title": "Real-World Applications & Case Studies", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2020", "weight": 20, "type": "Short Answer PYQs"}
+        skip_guidelines = [
+            "Long theoretical real-analysis epsilon-delta proofs",
+            "Abstract topology theorems (not asked in RTU)",
+            "Calculator-heavy multi-page expansions without a formula base",
         ]
-        skip_guidelines = ["Historical non-standard variations", "Unnecessary commercial marketing terms", "Non-syllabus optional appendices"]
 
+    elif sub_type == "electrical":
+        topics_repo = [
+            {"title": "KCL & KVL — Mesh Analysis, Node Analysis, Superposition Theorem", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023, 2022", "weight": 30, "type": "Circuit Numerical Calculations"},
+            {"title": "Thevenin's & Norton's Theorem — Equivalent Circuit Reduction", "unit": "Unit II", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Step-by-Step Circuit Diagrams"},
+            {"title": "AC Circuits — RLC Series/Parallel, Power Factor & Resonance", "unit": "Unit III", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Phasor Diagram Numericals"},
+            {"title": "Transformer — EMF Equation, Efficiency, OC & SC Test Numericals", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Transformer Equivalent Circuit"},
+            {"title": "3-Phase Induction Motor — Slip, Torque & Speed-Torque Characteristics", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Motor Slip Numericals"},
+        ]
+        skip_guidelines = [
+            "High-voltage power systems (not in B.Tech first year scope)",
+            "Semiconductor fabrication process details",
+            "Obsolete vacuum tube circuit designs",
+        ]
+
+    elif sub_type == "web":
+        topics_repo = [
+            {"title": "HTML5 Semantic Tags — Forms, Tables, Multimedia & Accessibility", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Code Examples"},
+            {"title": "CSS3 — Box Model, Flexbox, Grid & Responsive Media Queries", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "CSS Code + Layout"},
+            {"title": "JavaScript — DOM Manipulation, Events, AJAX & ES6 Features", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "JS Code + DOM Diagrams"},
+            {"title": "PHP / Server-Side Scripting — Sessions, Cookies & MySQL Integration", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Server Code + SQL"},
+            {"title": "XML, JSON, REST APIs & Web Security (XSS, SQL Injection)", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2022", "weight": 20, "type": "Data Format + Security"},
+        ]
+        skip_guidelines = [
+            "Framework-specific boilerplate (React hooks internals)",
+            "Mobile-native app development (not web syllabus)",
+            "Server infrastructure deployment configs",
+        ]
+
+    elif sub_type == "compiler":
+        topics_repo = [
+            {"title": "Lexical Analysis — Tokens, Patterns & Finite Automata (DFA/NFA)", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "State Machine Diagrams"},
+            {"title": "Context-Free Grammars — CFG, Parse Trees & Derivations", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Grammar Rules + Trees"},
+            {"title": "Top-Down Parsing — LL(1) Grammar, FIRST & FOLLOW Sets", "unit": "Unit III", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Parsing Table Numericals"},
+            {"title": "Bottom-Up Parsing — SLR, LALR & LR(1) Parsing", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "LR Table Construction"},
+            {"title": "Code Optimization & Intermediate Code Generation (3-Address Code)", "unit": "Unit V", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "Code Transformation"},
+        ]
+        skip_guidelines = [
+            "Low-level machine code generation for specific ISAs",
+            "Advanced register allocation graph coloring details",
+            "Linker and loader internal OS specifics",
+        ]
+
+    elif sub_type == "ai_ml":
+        topics_repo = [
+            {"title": "Search Algorithms — BFS, DFS, A*, Heuristic & Admissibility", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Algorithm + State Space Diagrams"},
+            {"title": "Knowledge Representation — Propositional & Predicate Logic, Resolution", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Logic Proofs + Truth Tables"},
+            {"title": "Machine Learning — Supervised vs Unsupervised, Decision Trees, K-NN", "unit": "Unit III", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Algorithm + Diagrams"},
+            {"title": "Neural Networks — Perceptron, Backpropagation & Activation Functions", "unit": "Unit IV", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Network Diagrams + Math"},
+            {"title": "Fuzzy Logic & Expert Systems — Membership Functions & Inference Engines", "unit": "Unit V", "freq": "7/10", "recency": "2022, 2020", "weight": 15, "type": "Fuzzy Set Numericals"},
+        ]
+        skip_guidelines = [
+            "Deep reinforcement learning policy gradients (not in RTU basic AI)",
+            "GPU CUDA programming internals",
+            "Proprietary ML framework (PyTorch) source internals",
+        ]
+
+    elif sub_type == "c_programming":
+        topics_repo = [
+            {"title": "Pointers — Pointer Arithmetic, Array-Pointer Equivalence & Function Pointers", "unit": "Unit I", "freq": "10/10", "recency": "2024, 2023", "weight": 30, "type": "Code + Memory Diagrams"},
+            {"title": "Structures & Unions — typedef, Nested Structs, Bit Fields", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Code + Memory Layout"},
+            {"title": "Dynamic Memory — malloc, calloc, realloc, free & Memory Leaks", "unit": "Unit III", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Heap Allocation Diagrams"},
+            {"title": "File I/O — fopen, fread, fwrite, fseek & Binary vs Text Files", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2021", "weight": 20, "type": "File Code Examples"},
+            {"title": "Recursion — Factorial, Tower of Hanoi, Fibonacci with Trace", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2022", "weight": 20, "type": "Recursion Tree Trace"},
+        ]
+        skip_guidelines = [
+            "Platform-specific Windows API calls",
+            "GCC compiler internal optimization flags",
+            "Hardware register-level C code (embedded-only)",
+        ]
+
+    else:  # general_theory — generic but subject-named
+        topics_repo = [
+            {"title": f"{sub_title} — Core System Definitions, Architecture & First Principles", "unit": "Unit I", "freq": "9/10", "recency": "2024, 2023", "weight": 25, "type": "Definitions + Block Diagrams"},
+            {"title": f"{sub_title} — Primary Laws, Theorems & Derivation Methods", "unit": "Unit II", "freq": "9/10", "recency": "2024, 2022", "weight": 25, "type": "Derivations + Working"},
+            {"title": f"{sub_title} — High-Yield Numericals & Step-by-Step Analytical Problems", "unit": "Unit III", "freq": "10/10", "recency": "2024, 2023, 2021", "weight": 30, "type": "Numerical Calculations"},
+            {"title": f"{sub_title} — System Optimization, Failure Modes & Comparison Tables", "unit": "Unit IV", "freq": "8/10", "recency": "2023, 2022", "weight": 20, "type": "Comparison Tables + Analysis"},
+            {"title": f"{sub_title} — Real-World Applications, Case Studies & Short PYQs", "unit": "Unit V", "freq": "8/10", "recency": "2024, 2020", "weight": 20, "type": "Short Answer PYQs"},
+        ]
+        skip_guidelines = [
+            f"Historical non-standard {sub_title} variations (not in RTU syllabus)",
+            "Unnecessary commercial marketing jargon",
+            "Non-syllabus optional appendices",
+        ]
+
+    # ─────────────────────────────────────────────────────────────────
+    # TIME ALLOCATION based on target_mode & available hours
+    # ─────────────────────────────────────────────────────────────────
     if target_mode == 'pass_minimum' or hrs <= 2:
         selected_topics = topics_repo[:3]
     elif target_mode == 'target_60' or hrs <= 4:
@@ -552,17 +711,17 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
 
     available_study_mins = max(40, int(total_minutes * 0.80))
     total_weight = sum(t["weight"] for t in selected_topics)
-    
+
     timeline = []
     current_time_offset = 0
 
     for i, t in enumerate(selected_topics):
         allocated_mins = max(15, int((t["weight"] / total_weight) * available_study_mins))
-        
+
         start_h, start_m = divmod(current_time_offset, 60)
         end_h, end_m = divmod(current_time_offset + allocated_mins, 60)
         time_range = f"{start_h:02d}:{start_m:02d} – {end_h:02d}:{end_m:02d}"
-        
+
         timeline.append({
             "id": i + 1,
             "subject_id": sub_id,
@@ -575,11 +734,15 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
             "allocated_mins": allocated_mins,
             "time_range": time_range,
             "priority": "🔥 VERY HIGH" if i < 2 else ("🟡 HIGH" if i < 4 else "🟢 MEDIUM"),
-            "focus_points": [f"Master core {t['type']}", "Practice top repeated PYQ patterns", "Memorize mandatory exam diagram"],
+            "focus_points": [
+                f"Master core {t['type']}",
+                "Practice top repeated PYQ patterns",
+                "Memorize mandatory exam diagram / formula"
+            ],
             "skip_points": skip_guidelines
         })
         current_time_offset += allocated_mins
-        
+
         if (i + 1) % 2 == 0 and (current_time_offset + 10) < total_minutes:
             b_start_h, b_start_m = divmod(current_time_offset, 60)
             b_end_h, b_end_m = divmod(current_time_offset + 10, 60)
@@ -602,8 +765,6 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
     }
 
     # PULL REAL EXAMINER PYQS FROM AUTHENTIC PYQ BANK ENGINE
-    sub_id = slugify_subject(subject)
-    sub_title = subject.strip().title()
     top_10_pyqs = get_examiner_pyqs_for_subject(subject, university)
     for q in top_10_pyqs:
         q["subject_id"] = sub_id
@@ -611,21 +772,27 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
         q["subject_name"] = sub_title
         q["subject"] = sub_title
 
-    unit_cheat_sheets = [
-        {
-            "unit": f"Unit {idx+1}",
-            "title": f"Unit {idx+1} Rapid Revision",
-            "key_formulas_terms": [f"{sub_title} Core Definition", "Primary Invariants", "Step Working Rules"],
-            "diagram_shortcut": f"Component block diagram for Unit {idx+1}",
-            "rapid_summary": f"Focus on high-frequency PYQ definitions and step-by-step working for Unit {idx+1}."
-        } for idx in range(5)
-    ]
+    # SUBJECT-SPECIFIC UNIT CHEAT SHEETS
+    unit_cheat_sheets = []
+    for idx, t in enumerate(topics_repo[:5]):
+        unit_cheat_sheets.append({
+            "unit": t["unit"],
+            "title": f"{t['unit']} Rapid Revision — {t['title'][:50]}",
+            "key_formulas_terms": [f"Core {sub_title} Definition", t["type"], "Exam Diagram Blueprint"],
+            "diagram_shortcut": f"✏️ {sub_title} {t['unit']} key diagram: {t['type']}",
+            "rapid_summary": f"Focus on {t['title']} — PYQ Frequency: {t['freq']} — Appeared in {t['recency']}."
+        })
 
-    audio_text = f"Welcome to your 1-Night Command Center for {sub_title}. You have {available_hours} hours available. Focus first on {next_best_action['title']} which appears in {timeline[0]['pyq_freq']} previous year papers. Follow your timed survival timeline, practice the top 10 must-do PYQs, and take your scheduled breaks. You are well on track to excel in your exam!"
+    audio_text = (
+        f"Welcome to your 1-Night Command Center for {sub_title}. "
+        f"You have {available_hours} hours available. "
+        f"Focus first on {next_best_action['title']}, which appears in {timeline[0]['pyq_freq']} previous year papers. "
+        f"Follow your timed survival timeline, practice the top 22 must-do RTU PYQs, "
+        f"and take your scheduled breaks. You are well on track to excel in your {sub_title} exam tomorrow!"
+    )
 
     prep_pct = 75 if prep_level == 'good' else (50 if prep_level == 'average' else (25 if prep_level == 'low' else 10))
 
-    sub_id = slugify_subject(subject)
     return {
         "subject_id": sub_id,
         "subjectId": sub_id,
@@ -647,6 +814,9 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
         "audio_text": audio_text,
         "skip_guidelines": skip_guidelines
     }
+
+
+
 
 
 #  STEP 7: Helper  Check if user is logged in 
