@@ -1059,3 +1059,173 @@ img { max-width: 100%; display: block; }
   .featured-tool-card { flex-direction: column; align-items: flex-start; }
   .card-glowing-graphic { display: none; }
 }
+
+
+/* ── 8. 3D DEPTH, MULTI-LAYER GLOW & PAGE TRANSITION ANIMATIONS ── */
+
+/* Page Entrance Animation */
+.app-content {
+  animation: pageEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageEntrance {
+  0% { opacity: 0; transform: translateY(14px) scale(0.99); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Card Stagger Entrance */
+.featured-tool-card, .tool-grid-card, .glass-card, .metric-card {
+  animation: cardFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) ease-out;
+}
+
+@keyframes cardFadeUp {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* 3D Depth & Perspective for Featured Tool Cards */
+.featured-tool-card {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.featured-tool-card.pink-accent {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(139, 92, 246, 0.14));
+  border: 1px solid rgba(236, 72, 153, 0.45);
+  box-shadow: 0 12px 35px rgba(236, 72, 153, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.featured-tool-card.purple-accent {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(99, 102, 241, 0.14));
+  border: 1px solid rgba(139, 92, 246, 0.45);
+  box-shadow: 0 12px 35px rgba(139, 92, 246, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.featured-tool-card.indigo-accent {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(34, 211, 238, 0.14));
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  box-shadow: 0 12px 35px rgba(99, 102, 241, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.featured-tool-card:hover {
+  transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+}
+
+.featured-tool-card.pink-accent:hover {
+  box-shadow: 0 20px 45px rgba(236, 72, 153, 0.45), 0 0 30px rgba(236, 72, 153, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  border-color: rgba(236, 72, 153, 0.7);
+}
+
+.featured-tool-card.purple-accent:hover {
+  box-shadow: 0 20px 45px rgba(139, 92, 246, 0.45), 0 0 30px rgba(139, 92, 246, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  border-color: rgba(139, 92, 246, 0.7);
+}
+
+.featured-tool-card.indigo-accent:hover {
+  box-shadow: 0 20px 45px rgba(99, 102, 241, 0.45), 0 0 30px rgba(99, 102, 241, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  border-color: rgba(99, 102, 241, 0.7);
+}
+
+/* 3D Graphic Sphere Rings */
+.card-glowing-graphic {
+  width: 100px;
+  height: 100px;
+  transform: translateZ(20px);
+}
+
+.glowing-ring {
+  width: 72px;
+  height: 72px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,255,255,0.15);
+  transition: transform 0.3s ease;
+}
+
+.featured-tool-card:hover .glowing-ring {
+  transform: scale(1.1) rotate(6deg);
+}
+
+/* Redesigned 3D Graphic Badges for Bottom 4 Tools */
+.secondary-tools-grid {
+  gap: 20px;
+}
+
+.tool-grid-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(11, 16, 32, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.tool-grid-card:hover {
+  transform: translateY(-5px);
+}
+
+.tool-grid-card.cyan-card:hover {
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: 0 15px 35px rgba(34, 211, 238, 0.3), inset 0 0 15px rgba(34, 211, 238, 0.15);
+}
+
+.tool-grid-card.green-card:hover {
+  border-color: rgba(52, 211, 153, 0.6);
+  box-shadow: 0 15px 35px rgba(52, 211, 153, 0.3), inset 0 0 15px rgba(52, 211, 153, 0.15);
+}
+
+.tool-grid-card.orange-card:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 15px 35px rgba(245, 158, 11, 0.3), inset 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+.tool-grid-card.purple-card:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3), inset 0 0 15px rgba(139, 92, 246, 0.15);
+}
+
+/* 3D Sphere Badges for Bottom 4 Cards */
+.tool-badge-3d {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
+}
+
+.tool-grid-card:hover .tool-badge-3d {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.tool-badge-3d.cyan {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.4), rgba(11, 16, 32, 0.9));
+  color: #22d3ee;
+  box-shadow: 0 8px 20px rgba(34, 211, 238, 0.3);
+}
+
+.tool-badge-3d.green {
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.4), rgba(11, 16, 32, 0.9));
+  color: #34d399;
+  box-shadow: 0 8px 20px rgba(52, 211, 153, 0.3);
+}
+
+.tool-badge-3d.orange {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.4), rgba(11, 16, 32, 0.9));
+  color: #fbbf24;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.tool-badge-3d.purple {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), rgba(11, 16, 32, 0.9));
+  color: #c084fc;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
