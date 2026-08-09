@@ -31,41 +31,45 @@
       </div>
     </div>
 
-    <!-- 2. COMPACT METRICS GRID -->
+    <!-- 2. COMPACT METRICS GRID WITH VIBRANT CORNER LIGHTING -->
     <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-icon purple"><i data-feather="file-text"></i></div>
+      <!-- 1. Saved Notes (BLUE LIGHTING) -->
+      <div class="metric-card blue-light">
+        <div class="metric-icon bright-blue"><i data-feather="file-text"></i></div>
         <div>
-          <div class="metric-number">{{ stats.notes if stats.notes else 12 }}</div>
+          <div class="metric-number" style="color: #60a5fa;">{{ stats.notes if stats.notes else 12 }}</div>
           <div class="metric-label">Saved Notes</div>
-          <div class="metric-trend">↑ 3 this week</div>
+          <div class="metric-trend" style="color: #93c5fd;">↑ 3 this week</div>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon blue"><i data-feather="message-circle"></i></div>
+      <!-- 2. Doubts Solved (RED/PINK LIGHTING) -->
+      <div class="metric-card red-light">
+        <div class="metric-icon bright-red"><i data-feather="message-circle"></i></div>
         <div>
-          <div class="metric-number">{{ stats.doubt if stats.doubt else 27 }}</div>
+          <div class="metric-number" style="color: #f472b6;">{{ stats.doubt if stats.doubt else 27 }}</div>
           <div class="metric-label">Doubts Solved</div>
-          <div class="metric-trend">↑ 8 this week</div>
+          <div class="metric-trend" style="color: #fbcfe8;">↑ 8 this week</div>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon green"><i data-feather="check-circle"></i></div>
+      <!-- 3. Quizzes Taken (GREEN LIGHTING) -->
+      <div class="metric-card green-light">
+        <div class="metric-icon bright-green"><i data-feather="check-circle"></i></div>
         <div>
-          <div class="metric-number">{{ stats.quiz if stats.quiz else 15 }}</div>
+          <div class="metric-number" style="color: #34d399;">{{ stats.quiz if stats.quiz else 15 }}</div>
           <div class="metric-label">Quizzes Taken</div>
-          <div class="metric-trend">↑ 5 this week</div>
+          <div class="metric-trend" style="color: #a7f3d0;">↑ 5 this week</div>
         </div>
       </div>
 
-      <div class="metric-card">
-        <div class="metric-icon orange"><i data-feather="layers"></i></div>
+      <!-- 4. Revision Cards (YELLOW/GOLD LIGHTING) -->
+      <div class="metric-card yellow-light">
+        <div class="metric-icon bright-yellow"><i data-feather="layers"></i></div>
         <div>
-          <div class="metric-number">{{ stats.flashcard if stats.flashcard else 18 }}</div>
+          <div class="metric-number" style="color: #fbbf24;">{{ stats.flashcard if stats.flashcard else 18 }}</div>
           <div class="metric-label">Revision Cards</div>
-          <div class="metric-trend">↑ 7 this week</div>
+          <div class="metric-trend" style="color: #fef08a;">↑ 7 this week</div>
         </div>
       </div>
     </div>
