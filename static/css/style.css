@@ -1396,3 +1396,34 @@ body.dark-mode {
   border: 1px solid rgba(251, 191, 36, 0.5) !important;
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.6) !important;
 }
+
+
+/* ── 11. SUBTLE AMBIENT CORNER LIGHTING & GLOW FOR HERO CARD ── */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  background: 
+    radial-gradient(circle at 5% 5%, rgba(236, 72, 153, 0.35), transparent 35%),
+    radial-gradient(circle at 95% 5%, rgba(34, 211, 238, 0.35), transparent 35%),
+    radial-gradient(circle at 95% 95%, rgba(139, 92, 246, 0.35), transparent 35%),
+    radial-gradient(circle at 5% 95%, rgba(99, 102, 241, 0.25), transparent 35%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 32, 0.98)) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 15px 45px rgba(139, 92, 246, 0.35), inset 0 0 30px rgba(139, 92, 246, 0.2) !important;
+  animation: heroCornerPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes heroCornerPulse {
+  0% {
+    box-shadow: 0 15px 45px rgba(139, 92, 246, 0.35), inset 0 0 30px rgba(236, 72, 153, 0.2);
+    border-color: rgba(139, 92, 246, 0.6);
+  }
+  50% {
+    box-shadow: 0 20px 55px rgba(34, 211, 238, 0.45), inset 0 0 40px rgba(34, 211, 238, 0.25);
+    border-color: rgba(34, 211, 238, 0.7);
+  }
+  100% {
+    box-shadow: 0 15px 45px rgba(236, 72, 153, 0.35), inset 0 0 30px rgba(139, 92, 246, 0.2);
+    border-color: rgba(236, 72, 153, 0.6);
+  }
+}
