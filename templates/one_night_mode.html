@@ -128,6 +128,20 @@
   <!-- ============================================================ -->
   {% else %}
   
+  <!-- MULTI-SUBJECT TAB SWITCHER BAR -->
+  <div class="subject-tabs-container mb-4" style="display: flex; gap: 10px; align-items: center; overflow-x: auto; padding-bottom: 8px;">
+    {% if kits_store %}
+      {% for sid, s_kit in kits_store.items() %}
+      <button onclick="switchSubjectTab('{{ sid }}')" id="tabBtn_{{ sid }}" class="subject-tab-btn {% if sid == kit_data.subject_id %}active{% endif %}" style="padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; border: 1.5px solid rgba(139, 92, 246, 0.4); background: {% if sid == kit_data.subject_id %}linear-gradient(135deg, #8b5cf6, #ec4899){% else %}rgba(15, 23, 42, 0.8){% endif %}; color: #ffffff; transition: all 0.2s ease; white-space: nowrap;">
+        ⚡ {{ s_kit.subject }}
+      </button>
+      {% endfor %}
+    {% endif %}
+    <a href="{{ url_for('one_night_mode') }}?reset=1" class="btn-add-subject-tab" style="padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; text-decoration: none; border: 1.5px dashed rgba(56, 189, 248, 0.6); background: rgba(56, 189, 248, 0.1); color: #38bdf8; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+      <i data-feather="plus"></i> Add Another Subject
+    </a>
+  </div>
+
   <!-- COMMAND CENTER HEADER BAR -->
   <header class="cc-header-bar">
     <div class="cc-header-meta">
@@ -606,5 +620,133 @@ function submitExamFeedback() {
     toggleQuickToolModal('feedbackModal');
   });
 }
+</script>
+<script>
+  window.kitDataBySubject = {{ all_kits_json | safe if all_kits_json else '{}' }};
+  window.currentSubjectId = "{{ kit_data.subject_id if kit_data else '' }}";
+
+  function switchSubjectTab(targetSubjectId) {
+    if (!window.kitDataBySubject || !window.kitDataBySubject[targetSubjectId]) return;
+    
+    const kit = window.kitDataBySubject[targetSubjectId];
+    window.currentSubjectId = targetSubjectId;
+
+    // Update active tab buttons
+    document.querySelectorAll('.subject-tab-btn').forEach(btn => {
+      btn.style.background = 'rgba(15, 23, 42, 0.8)';
+      btn.classList.remove('active');
+    });
+    const activeBtn = document.getElementById('tabBtn_' + targetSubjectId);
+    if (activeBtn) {
+      activeBtn.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
+      activeBtn.classList.add('active');
+    }
+
+    // Update Header
+    const badge = document.querySelector('.cc-subject-badge');
+    if (badge) badge.innerText = '⚡ ' + kit.subject;
+
+    const profileTag = document.querySelector('.cc-profile-tag');
+    if (profileTag) profileTag.innerText = `${kit.university} • ${kit.branch} • ${kit.sem}`;
+
+    const countdown = document.getElementById('ccCountdownClock');
+    if (countdown) countdown.innerText = `⏱ ${kit.available_hours}h 00m remaining`;
+
+    const score = document.getElementById('readinessScoreVal');
+    if (score) score.innerText = kit.prep_pct + '%';
+
+    const bar = document.getElementById('readinessProgressBar');
+    if (bar) bar.style.width = kit.prep_pct + '%';
+
+    // Update Next Best Action Hero Card
+    if (kit.next_best_action) {
+      const heroTitle = document.querySelector('.next-action-title');
+      if (heroTitle) heroTitle.innerText = '🔥 ' + kit.next_best_action.title;
+
+      const heroReason = document.querySelector('.next-action-reason');
+      if (heroReason) heroReason.innerText = kit.next_best_action.priority_reason;
+    }
+
+    // Update Timeline Container strictly filtered by subject_id
+    const timelineContainer = document.querySelector('.timeline-list');
+    if (timelineContainer && kit.timeline) {
+      timelineContainer.innerHTML = '';
+      kit.timeline.forEach((item, idx) => {
+        if (item.is_break) {
+          timelineContainer.innerHTML += `
+            <div class="timeline-item break-item">
+              <div class="timeline-time">${item.time_range}</div>
+              <div class="timeline-content">
+                <h4>${item.title}</h4>
+                <p>☕ Take a short rest, drink water, stretch your legs.</p>
+              </div>
+            </div>`;
+        } else {
+          timelineContainer.innerHTML += `
+            <div class="timeline-item" id="timelineItem${idx}">
+              <div class="timeline-time">${item.time_range}</div>
+              <div class="timeline-content">
+                <div class="timeline-item-header">
+                  <span class="priority-tag">${item.priority}</span>
+                  <span class="unit-tag">${item.unit}</span>
+                </div>
+                <h4 class="topic-title">${item.title}</h4>
+                <p class="pyq-freq">Appeared in ${item.pyq_freq} PYQs (${item.recency})</p>
+                <div class="timeline-actions">
+                  <button onclick="startSessionModal('${item.title.replace(/'/g, "\'")}', ${item.allocated_mins}, '${item.unit.replace(/'/g, "\'")}')" class="btn-session-sm">
+                    <i data-feather="play"></i> Start Session (${item.allocated_mins}m)
+                  </button>
+                  <label class="complete-checkbox">
+                    <input type="checkbox" onchange="toggleTopicComplete(this, 'timelineItem${idx}')">
+                    <span>Mark Complete</span>
+                  </label>
+                </div>
+              </div>
+            </div>`;
+        }
+      });
+    }
+
+    // Update PYQs Accordion List strictly filtered by pyq.subject_id === targetSubjectId
+    const pyqContainer = document.querySelector('.pyq-list-accordion');
+    if (pyqContainer && kit.top_10_pyqs) {
+      pyqContainer.innerHTML = '';
+      // FILTER STRICTLY BY SUBJECT ID TO GUARANTEE NO LEAKAGE
+      const filteredPyqs = kit.top_10_pyqs.filter(p => (p.subject_id === targetSubjectId || p.subjectId === targetSubjectId || !p.subject_id));
+      
+      filteredPyqs.forEach(pyq => {
+        let badgeHtml = '<span class="pyq-badge" style="background: rgba(236, 72, 153, 0.2); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.4);">⚡ ' + pyq.part + '</span>';
+        if (pyq.part.includes('Part A')) {
+          badgeHtml = '<span class="pyq-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">⚡ ' + pyq.part + '</span>';
+        } else if (pyq.part.includes('Part B')) {
+          badgeHtml = '<span class="pyq-badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);">⚡ ' + pyq.part + '</span>';
+        }
+
+        let diagramHtml = pyq.diagram_blueprint ? `<div class="pyq-diagram-hint">${pyq.diagram_blueprint}</div>` : '';
+
+        pyqContainer.innerHTML += `
+          <details class="pyq-accordion-item" data-subject-id="${pyq.subject_id}">
+            <summary class="pyq-summary">
+              <span class="pyq-num-badge">${pyq.q_num}</span>
+              <span class="pyq-title-text">${pyq.question.substring(0, 65)}...</span>
+              <span class="pyq-marks-tag">${pyq.expected_marks}</span>
+            </summary>
+            <div class="pyq-details-body">
+              <p class="pyq-meta-source"><strong>Source:</strong> ${pyq.pyq_source}</p>
+              <div class="pyq-question-box"><strong>Question:</strong> ${pyq.question}</div>
+              <div class="pyq-answer-box">
+                <div class="ans-label">✨ Model Exam Answer:</div>
+                <div class="ans-text">${pyq.model_answer.replace(/\n/g, '<br>')}</div>
+              </div>
+              ${diagramHtml}
+            </div>
+          </details>`;
+      });
+    }
+
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  }
 </script>
 {% endblock %}
