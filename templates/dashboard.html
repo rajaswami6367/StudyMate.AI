@@ -8,7 +8,7 @@
   <!-- LEFT/MAIN COLUMN -->
   <div class="dashboard-main-col">
     
-    <!-- 1. HERO WORKSPACE CARD -->
+    <!-- 1. HERO WORKSPACE CARD WITH REAL 3D STUDENT AVATAR -->
     <div class="hero-card">
       <div class="hero-glow-bg"></div>
 
@@ -25,13 +25,9 @@
         </a>
       </div>
 
-      <!-- Hero AI Student Avatar Box -->
+      <!-- Real 3D Student Avatar Graphic -->
       <div class="hero-illustration">
-        <div class="hero-avatar-box">
-          <span class="avatar-sparkles">✨</span>
-          <div class="avatar-icon-circle">⚡</div>
-          <span style="font-size: 11px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">AI Companion</span>
-        </div>
+        <img src="{{ url_for('static', filename='images/hero_avatar_3d.jpg') }}" alt="AI Student Companion" class="hero-avatar-image" />
       </div>
     </div>
 
@@ -82,7 +78,7 @@
         </h2>
       </div>
 
-      <!-- FEATURED TOOLS ROW WITH CUSTOM 3D SVG GLOWING GRAPHICS -->
+      <!-- FEATURED TOOLS ROW WITH REAL 3D NEON ASSETS -->
       <div class="featured-tools-grid">
         
         <!-- Featured Tool 1: 1-Night Mode -->
@@ -99,35 +95,9 @@
             </a>
           </div>
 
-          <!-- Custom 3D SVG Graphic -->
-          <div style="flex-shrink: 0; margin-left: 12px;">
-            <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-graphic-glow">
-  <circle cx="50" cy="50" r="42" stroke="url(#pinkGlowGrad)" stroke-width="3" filter="url(#pinkGlowFilter)"/>
-  <circle cx="50" cy="50" r="32" fill="url(#pinkFillGrad)" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>
-  <path d="M50 12V18M50 82V88M12 50H18M82 50H88" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/>
-  <!-- Stopwatch Top Knobs -->
-  <rect x="44" y="10" width="12" height="6" rx="2" fill="#ec4899"/>
-  <!-- Lightning Bolt -->
-  <path d="M53 32L39 52H50L47 68L61 48H50L53 32Z" fill="#ffffff" filter="url(#boltGlow)"/>
-  <defs>
-    <radialGradient id="pinkFillGrad" cx="50" cy="50" r="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ec4899" stop-opacity="0.3"/>
-      <stop offset="1" stop-color="#0b1020" stop-opacity="0.9"/>
-    </radialGradient>
-    <linearGradient id="pinkGlowGrad" x1="0" y1="0" x2="100" y2="100">
-      <stop stop-color="#ec4899"/>
-      <stop offset="1" stop-color="#8b5cf6"/>
-    </linearGradient>
-    <filter id="pinkGlowFilter" x="0" y="0" width="100" height="100" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-    <filter id="boltGlow" x="30" y="20" width="40" height="60" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <!-- Real 3D Stopwatch Asset -->
+          <div class="tool-3d-img-container">
+            <img src="{{ url_for('static', filename='images/stopwatch_3d.jpg') }}" alt="1-Night Mode" class="tool-3d-img pink-glow" />
           </div>
         </div>
 
@@ -144,37 +114,9 @@
             </a>
           </div>
 
-          <!-- Custom 3D SVG Graphic -->
-          <div style="flex-shrink: 0; margin-left: 12px;">
-            <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-graphic-glow">
-  <circle cx="50" cy="50" r="42" stroke="url(#purpleGrad)" stroke-width="3" filter="url(#purpleGlowFilter)"/>
-  <!-- Document Sheet -->
-  <rect x="28" y="22" width="34" height="46" rx="4" fill="url(#docFill)" stroke="#8b5cf6" stroke-width="1.5"/>
-  <line x1="34" y1="32" x2="52" y2="32" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
-  <line x1="34" y1="40" x2="48" y2="40" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
-  <line x1="34" y1="48" x2="44" y2="48" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
-  <!-- Magnifying Glass Lens -->
-  <circle cx="56" cy="56" r="14" fill="rgba(139, 92, 246, 0.4)" stroke="#34d399" stroke-width="2.5" filter="url(#lensGlow)"/>
-  <line x1="66" y1="66" x2="76" y2="76" stroke="#34d399" stroke-width="3.5" stroke-linecap="round"/>
-  <defs>
-    <linearGradient id="docFill" x1="28" y1="22" x2="62" y2="68">
-      <stop stop-color="#1e1b4b" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#0f172a" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="purpleGrad" x1="0" y1="0" x2="100" y2="100">
-      <stop stop-color="#8b5cf6"/>
-      <stop offset="1" stop-color="#3b82f6"/>
-    </linearGradient>
-    <filter id="purpleGlowFilter" x="0" y="0" width="100" height="100" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-    <filter id="lensGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <!-- Real 3D Predictor Asset -->
+          <div class="tool-3d-img-container">
+            <img src="{{ url_for('static', filename='images/predictor_3d.jpg') }}" alt="Exam Predictor" class="tool-3d-img purple-glow" />
           </div>
         </div>
 
@@ -191,62 +133,21 @@
             </a>
           </div>
 
-          <!-- Custom 3D SVG Graphic -->
-          <div style="flex-shrink: 0; margin-left: 12px;">
-            <svg width="84" height="84" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-graphic-glow">
-  <circle cx="50" cy="50" r="42" stroke="url(#indigoGrad)" stroke-width="3" filter="url(#indigoGlowFilter)"/>
-  <!-- Note Sheet -->
-  <rect x="28" y="24" width="44" height="52" rx="6" fill="url(#notesFill)" stroke="#6366f1" stroke-width="1.5"/>
-  <line x1="36" y1="36" x2="64" y2="36" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="36" y1="46" x2="60" y2="46" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="36" y1="56" x2="52" y2="56" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Pencil/Sparkle icon -->
-  <circle cx="64" cy="62" r="8" fill="#ec4899"/>
-  <path d="M64 57L66 62L64 67L62 62Z" fill="#ffffff"/>
-  <defs>
-    <linearGradient id="notesFill" x1="28" y1="24" x2="72" y2="76">
-      <stop stop-color="#1e1b4b" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#0f172a" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="indigoGrad" x1="0" y1="0" x2="100" y2="100">
-      <stop stop-color="#6366f1"/>
-      <stop offset="1" stop-color="#ec4899"/>
-    </linearGradient>
-    <filter id="indigoGlowFilter" x="0" y="0" width="100" height="100" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <!-- Real 3D Notes Asset -->
+          <div class="tool-3d-img-container">
+            <img src="{{ url_for('static', filename='images/notes_3d.jpg') }}" alt="AI Notes" class="tool-3d-img indigo-glow" />
           </div>
         </div>
 
       </div>
 
-      <!-- SECONDARY TOOLS GRID WITH CUSTOM SPHERICAL BADGES -->
+      <!-- SECONDARY TOOLS GRID WITH REAL 3D ASSET BOXES -->
       <div class="secondary-tools-grid">
         
         <!-- Tool 1: Doubt Solver -->
         <div class="tool-grid-card cyan-card">
-          <div style="margin-bottom: 12px;">
-            <svg width="50" height="50" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="30" cy="30" r="26" fill="url(#cyanBall)" stroke="#22d3ee" stroke-width="1.5" filter="url(#cyanGlow)"/>
-  <!-- Speech Bubble -->
-  <path d="M20 22C20 19.7909 21.7909 18 24 18H36C38.2091 18 40 19.7909 40 22V32C40 34.2091 38.2091 36 36 36H28L22 41V36C20.8954 36 20 35.1046 20 34V22Z" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
-  <circle cx="26" cy="27" r="2" fill="#22d3ee"/>
-  <circle cx="30" cy="27" r="2" fill="#22d3ee"/>
-  <circle cx="34" cy="27" r="2" fill="#22d3ee"/>
-  <defs>
-    <radialGradient id="cyanBall" cx="30" cy="30" r="26" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22d3ee" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
-    </radialGradient>
-    <filter id="cyanGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <div class="secondary-3d-img-box cyan">
+            <img src="{{ url_for('static', filename='images/doubt_3d.jpg') }}" alt="Doubt Solver" />
           </div>
           <div>
             <h4 class="tool-card-title">AI Doubt Solver</h4>
@@ -260,22 +161,8 @@
 
         <!-- Tool 2: Quiz Generator -->
         <div class="tool-grid-card green-card">
-          <div style="margin-bottom: 12px;">
-            <svg width="50" height="50" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="30" cy="30" r="26" fill="url(#greenBall)" stroke="#34d399" stroke-width="1.5" filter="url(#greenGlow)"/>
-  <!-- Question Mark -->
-  <path d="M26 24C26 21.7909 27.7909 20 30 20C32.2091 20 34 21.7909 34 24C34 25.8 32.8 26.8 31.5 27.8C30.3 28.7 29.5 29.8 29.5 32V33M30 38H30.02" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-  <defs>
-    <radialGradient id="greenBall" cx="30" cy="30" r="26" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34d399" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
-    </radialGradient>
-    <filter id="greenGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <div class="secondary-3d-img-box green">
+            <img src="{{ url_for('static', filename='images/quiz_3d.jpg') }}" alt="Quiz Generator" />
           </div>
           <div>
             <h4 class="tool-card-title">Quiz Generator</h4>
@@ -289,24 +176,8 @@
 
         <!-- Tool 3: Flashcards -->
         <div class="tool-grid-card orange-card">
-          <div style="margin-bottom: 12px;">
-            <svg width="50" height="50" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="30" cy="30" r="26" fill="url(#orangeBall)" stroke="#fbbf24" stroke-width="1.5" filter="url(#orangeGlow)"/>
-  <!-- 3D Stacked Layers -->
-  <path d="M30 18L44 24L30 30L16 24L30 18Z" fill="#fbbf24" stroke="#ffffff" stroke-width="1"/>
-  <path d="M16 28L30 34L44 28" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
-  <path d="M16 34L30 40L44 34" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-  <defs>
-    <radialGradient id="orangeBall" cx="30" cy="30" r="26" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fbbf24" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
-    </radialGradient>
-    <filter id="orangeGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <div class="secondary-3d-img-box orange">
+            <img src="{{ url_for('static', filename='images/flashcard_3d.jpg') }}" alt="Flashcards" />
           </div>
           <div>
             <h4 class="tool-card-title">Flashcards</h4>
@@ -320,26 +191,8 @@
 
         <!-- Tool 4: Roadmap & Mind Map -->
         <div class="tool-grid-card purple-card">
-          <div style="margin-bottom: 12px;">
-            <svg width="50" height="50" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="30" cy="30" r="26" fill="url(#purpleBall)" stroke="#c084fc" stroke-width="1.5" filter="url(#purpleGlow)"/>
-  <!-- Folded Map / Nodes -->
-  <path d="M18 20L26 16L34 20L42 16V40L34 44L26 40L18 44V20Z" fill="rgba(192, 132, 252, 0.2)" stroke="#c084fc" stroke-width="1.5"/>
-  <line x1="26" y1="16" x2="26" y2="40" stroke="#c084fc" stroke-dasharray="2 2"/>
-  <line x1="34" y1="20" x2="34" y2="44" stroke="#c084fc" stroke-dasharray="2 2"/>
-  <circle cx="26" cy="28" r="3" fill="#22d3ee"/>
-  <circle cx="34" cy="34" r="3" fill="#ec4899"/>
-  <defs>
-    <radialGradient id="purpleBall" cx="30" cy="30" r="26" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#c084fc" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#0b1020" stop-opacity="0.95"/>
-    </radialGradient>
-    <filter id="purpleGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-</svg>
+          <div class="secondary-3d-img-box purple">
+            <img src="{{ url_for('static', filename='images/roadmap_3d.jpg') }}" alt="Roadmap" />
           </div>
           <div>
             <h4 class="tool-card-title">Roadmap & Mind Map</h4>
