@@ -2,166 +2,263 @@
 {% block title %}3D Flashcards — StudyMate AI{% endblock %}
 {% block content %}
 <style>
-  .fc-hero { text-align:center; padding:40px 20px 28px; }
-  .fc-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); padding:6px 18px; border-radius:999px; font-size:12px; font-weight:700; color:#fbbf24; margin-bottom:16px; letter-spacing:.5px; }
-  .fc-title { font-size:clamp(24px,5vw,42px); font-weight:900; background:linear-gradient(135deg,#fff 30%,#fbbf24); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
-  .fc-sub { color:rgba(255,255,255,0.45); font-size:14px; max-width:480px; margin:0 auto 28px; }
-  .fc-search { display:flex; gap:10px; max-width:680px; margin:0 auto; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:8px 8px 8px 18px; backdrop-filter:blur(16px); }
-  .fc-search input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px; }
-  .fc-search input::placeholder { color:rgba(255,255,255,0.3); }
-  .btn-fc { background:linear-gradient(135deg,#fbbf24,#f59e0b); border:none; color:#000; font-weight:800; padding:11px 24px; border-radius:11px; cursor:pointer; font-size:13px; transition:.2s; white-space:nowrap; }
-  .btn-fc:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(251,191,36,0.4); }
-  /* Flip Card */
-  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px; max-width:1100px; margin:32px auto 0; padding:0 20px; }
-  .flip-card { perspective:1000px; height:200px; cursor:pointer; }
-  .flip-card-inner { position:relative; width:100%; height:100%; transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); transform-style:preserve-3d; }
-  .flip-card.flipped .flip-card-inner { transform:rotateY(180deg); }
-  .flip-card-front, .flip-card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:20px; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; }
-  .flip-card-front { background:linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.05)); border:1px solid rgba(251,191,36,0.25); }
-  .flip-card-back { background:linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.05)); border:1px solid rgba(34,211,238,0.25); transform:rotateY(180deg); }
-  .card-num { font-size:10px; font-weight:800; letter-spacing:1px; color:#fbbf24; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
-  .card-num-back { font-size:10px; font-weight:800; letter-spacing:1px; color:#22d3ee; margin-bottom:10px; }
-  .card-q { font-size:14px; font-weight:700; color:#fff; line-height:1.5; }
-  .card-a { font-size:13px; color:rgba(255,255,255,0.85); line-height:1.6; }
-  .card-hint { font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px; }
-  .progress-bar-wrap { max-width:680px; margin:20px auto 0; }
-  .progress-bar-track { background:rgba(255,255,255,0.08); border-radius:999px; height:4px; overflow:hidden; }
-  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#fbbf24,#f59e0b); border-radius:999px; transition:width .4s; }
-  .progress-label { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-top:6px; }
-  .fc-controls { display:flex; justify-content:center; gap:12px; margin:24px 0; flex-wrap:wrap; }
-  .btn-ctrl { display:flex; align-items:center; gap:6px; padding:9px 18px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; cursor:pointer; transition:.2s; }
-  .btn-ctrl:hover { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.3); color:#fbbf24; }
-  .stats-row { display:flex; gap:12px; justify-content:center; margin:12px 0 28px; flex-wrap:wrap; }
-  .stat-pill { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:999px; padding:6px 16px; font-size:12px; color:rgba(255,255,255,0.6); }
-  .stat-pill b { color:#fbbf24; }
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media(max-width:500px){.fc-search{flex-direction:column;} .btn-fc{width:100%;} .cards-grid{grid-template-columns:1fr;}}
+  .fc-page { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+  .fc-hero { text-align: center; padding: 36px 20px 24px; }
+  .fc-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 14px; letter-spacing: .5px; }
+  .fc-title { font-size: clamp(22px,5vw,40px); font-weight: 900; background: linear-gradient(135deg, #fff 30%, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .fc-sub { color: rgba(255,255,255,0.45); font-size: 14px; max-width: 480px; margin: 0 auto 24px; }
+  .fc-search { display: flex; gap: 10px; max-width: 680px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 8px 8px 8px 18px; backdrop-filter: blur(16px); }
+  .fc-search input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; }
+  .fc-search input::placeholder { color: rgba(255,255,255,0.3); }
+  .btn-fc { background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none; color: #000; font-weight: 800; padding: 12px 26px; border-radius: 12px; cursor: pointer; font-size: 14px; transition: .2s; white-space: nowrap; }
+  .btn-fc:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(251,191,36,0.4); }
+
+  /* Stats row */
+  .stats-row { display: flex; gap: 12px; justify-content: center; margin: 20px 0 10px; flex-wrap: wrap; }
+  .stat-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: rgba(255,255,255,0.6); }
+  .stat-pill b { color: #fbbf24; }
+
+  /* Progress bar */
+  .progress-wrap { max-width: 680px; margin: 8px auto 16px; }
+  .progress-track { background: rgba(255,255,255,0.08); border-radius: 999px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 999px; transition: width .5s ease; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 5px; }
+
+  /* Controls */
+  .fc-controls { display: flex; justify-content: center; gap: 10px; margin: 8px 0 28px; flex-wrap: wrap; }
+  .btn-ctrl { display: flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.65); font-size: 12px; font-weight: 600; cursor: pointer; transition: .2s; }
+  .btn-ctrl:hover { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.35); color: #fbbf24; }
+
+  /* Cards grid */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+
+  /* Each card — REVEAL style (no 3D mirror issue) */
+  .fc-card { border-radius: 20px; overflow: hidden; cursor: pointer; transition: transform .2s, box-shadow .2s; position: relative; }
+  .fc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+
+  /* Question face */
+  .fc-front { background: linear-gradient(135deg, rgba(30,20,60,0.95), rgba(20,15,45,0.98)); border: 1px solid rgba(251,191,36,0.25); padding: 22px 20px 18px; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; }
+  .fc-front.revealed { border-color: rgba(34,211,238,0.35); }
+
+  /* Answer face — slides in below */
+  .fc-back { background: linear-gradient(135deg, rgba(5,30,40,0.98), rgba(5,20,35,0.99)); border: 1px solid rgba(34,211,238,0.3); border-top: none; padding: 18px 20px; display: none; }
+  .fc-back.show { display: block; }
+
+  .card-q-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #fbbf24; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .card-q-label svg { flex-shrink: 0; }
+  .card-q-text { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.55; flex: 1; }
+  .card-hint { font-size: 11px; color: rgba(255,255,255,0.28); margin-top: 14px; display: flex; align-items: center; gap: 5px; }
+  .card-hint-hide { display: none; }
+
+  .card-a-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #22d3ee; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .card-a-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.65; }
+
+  /* Mastered badge */
+  .mastered-badge { position: absolute; top: 12px; right: 12px; background: rgba(52,211,153,0.2); border: 1px solid rgba(52,211,153,0.5); border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 800; color: #34d399; display: none; }
+  .fc-card.mastered .mastered-badge { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 500px) { .fc-search { flex-direction: column; } .btn-fc { width: 100%; } .cards-grid { grid-template-columns: 1fr; } }
 </style>
 
-<div class="fc-hero">
-  <div class="fc-badge">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-    3D FLIP FLASHCARDS — ACTIVE RECALL
-  </div>
-  <h1 class="fc-title">Master Any Topic with Flashcards</h1>
-  <p class="fc-sub">Click any card to flip and reveal the answer. Built for active recall learning.</p>
-
-  <form method="POST" action="{{ url_for('flashcards') }}" id="fcForm">
-    <div class="fc-search">
-      <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. OOPS Concepts, OS Scheduling, Fourier Series..." required />
-      <button type="submit" class="btn-fc" onclick="showLoading()">
-        ⚡ Generate Cards
-      </button>
+<div class="fc-page">
+  <div class="fc-hero">
+    <div class="fc-badge">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      3D FLIP FLASHCARDS — ACTIVE RECALL
     </div>
-  </form>
-</div>
+    <h1 class="fc-title">Master Any Topic with Flashcards</h1>
+    <p class="fc-sub">Click any card to reveal the answer. Built for fast active recall before exams.</p>
 
-<!-- Loading -->
-<div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
-  <div style="width:52px;height:52px;border:4px solid rgba(251,191,36,0.2);border-top-color:#fbbf24;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
-  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:6px;">Generating Flashcard Deck...</h3>
-  <p style="color:rgba(255,255,255,0.4); font-size:13px;">Creating 10 active recall cards on "{{ topic }}"</p>
-</div>
+    <form method="POST" action="{{ url_for('flashcards') }}" id="fcForm">
+      <div class="fc-search">
+        <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. OOPS Concepts, OS Scheduling, BST..." required />
+        <button type="submit" class="btn-fc" onclick="showLoading()">
+          ⚡ Generate Cards
+        </button>
+      </div>
+    </form>
+  </div>
 
-{% if flashcards_data %}
-<div style="max-width:1100px; margin:0 auto; padding:0 20px;">
+  <!-- Loading -->
+  <div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
+    <div style="width:52px;height:52px;border:4px solid rgba(251,191,36,0.2);border-top-color:#fbbf24;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
+    <h3 style="color:#fff;font-size:18px;font-weight:700;margin-bottom:6px;">Generating Flashcard Deck...</h3>
+    <p style="color:rgba(255,255,255,0.4);font-size:13px;">Creating 10 active recall cards on "{{ topic }}"</p>
+  </div>
+
+  {% if flashcards_data %}
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-pill"><b>{{ flashcards_data|length }}</b> Cards</div>
-    <div class="stat-pill" id="masteredPill"><b id="masteredCount">0</b> Mastered</div>
+    <div class="stat-pill"><b id="revealedCount">0</b> Revealed</div>
+    <div class="stat-pill"><b id="masteredCount">0</b> Mastered ✓</div>
     <div class="stat-pill">Topic: <b>{{ topic }}</b></div>
   </div>
 
-  <!-- Progress -->
-  <div class="progress-bar-wrap">
-    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
-    <div class="progress-label"><span>Progress</span><span id="progressText">0 / {{ flashcards_data|length }}</span></div>
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span>Reveal Progress</span>
+      <span id="progressText">0 / {{ flashcards_data|length }}</span>
+    </div>
   </div>
 
   <!-- Controls -->
   <div class="fc-controls">
-    <button class="btn-ctrl" onclick="flipAll()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      Flip All Cards
+    <button class="btn-ctrl" onclick="revealAll()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Reveal All
     </button>
     <button class="btn-ctrl" onclick="resetAll()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
       Reset All
     </button>
-    <button class="btn-ctrl" onclick="shuffleCards()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-      Shuffle
+    <button class="btn-ctrl" onclick="markAllMastered()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Mark All Mastered
     </button>
   </div>
 
-  <!-- Cards Grid -->
+  <!-- Cards -->
   <div class="cards-grid" id="cardsGrid">
     {% for card in flashcards_data %}
-    <div class="flip-card" id="card-{{ loop.index0 }}" onclick="flipCard({{ loop.index0 }})">
-      <div class="flip-card-inner">
-        <div class="flip-card-front">
-          <div class="card-num">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path fill="#000" d="M12 8v4l3 3"/></svg>
+    <div class="fc-card" id="fcard-{{ loop.index0 }}" onclick="toggleCard({{ loop.index0 }})">
+      <div class="mastered-badge">✓ MASTERED</div>
+      <div class="fc-front" id="front-{{ loop.index0 }}">
+        <div>
+          <div class="card-q-label">
+            <svg width="12" height="12" fill="#fbbf24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path fill="#000" d="M12 8v4l3 3-1.5 1.5L10 12V8h2z"/></svg>
             QUESTION {{ loop.index }} of {{ flashcards_data|length }}
           </div>
-          <div class="card-q">{{ card.question }}</div>
-          <div class="card-hint">👆 Tap to reveal answer</div>
+          <div class="card-q-text">{{ card.question }}</div>
         </div>
-        <div class="flip-card-back">
-          <div class="card-num-back">✅ ANSWER {{ loop.index }}</div>
-          <div class="card-a">{{ card.answer }}</div>
-          <div class="card-hint" style="color:rgba(255,255,255,0.25);">Tap to flip back</div>
+        <div class="card-hint" id="hint-{{ loop.index0 }}">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22V12m0 0l-3-3m3 3l3-3"/><circle cx="12" cy="7" r="1" fill="currentColor"/></svg>
+          Click to reveal answer
+        </div>
+      </div>
+      <div class="fc-back" id="back-{{ loop.index0 }}">
+        <div class="card-a-label">
+          <svg width="12" height="12" fill="#22d3ee" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          ANSWER
+        </div>
+        <div class="card-a-text">{{ card.answer }}</div>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button onclick="event.stopPropagation(); toggleMastered({{ loop.index0 }})" id="mbtn-{{ loop.index0 }}"
+            style="font-size:11px; font-weight:700; padding:5px 14px; border-radius:999px; border:1px solid rgba(52,211,153,0.4); background:rgba(52,211,153,0.1); color:#34d399; cursor:pointer;">
+            ✓ Mark Mastered
+          </button>
+          <button onclick="event.stopPropagation(); toggleCard({{ loop.index0 }})"
+            style="font-size:11px; font-weight:700; padding:5px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); cursor:pointer;">
+            ↑ Hide Answer
+          </button>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <p style="text-align:center; color:rgba(255,255,255,0.25); font-size:12px; margin:32px 0;">📌 Click each card to flip • Track your mastery above</p>
-</div>
+  <p style="text-align:center; color:rgba(255,255,255,0.2); font-size:12px; margin-top:28px;">
+    📌 Click any card to reveal answer • Mark mastered to track progress
+  </p>
 
-<script>
-var total = {{ flashcards_data|length }};
-var mastered = 0;
-var flippedState = {};
+  <script>
+    var total = {{ flashcards_data|length }};
+    var revealed = {};
+    var mastered = {};
 
-function flipCard(idx){
-  var card = document.getElementById('card-' + idx);
-  card.classList.toggle('flipped');
-  if(card.classList.contains('flipped')){
-    if(!flippedState[idx]){ flippedState[idx]=true; mastered++; updateProgress(); }
-  }
-}
-function updateProgress(){
-  document.getElementById('masteredCount').textContent = mastered;
-  document.getElementById('progressBar').style.width = (mastered/total*100) + '%';
-  document.getElementById('progressText').textContent = mastered + ' / ' + total;
-}
-function flipAll(){
-  for(var i=0;i<total;i++){
-    var card = document.getElementById('card-' + i);
-    if(!card.classList.contains('flipped')){ card.classList.add('flipped'); if(!flippedState[i]){flippedState[i]=true;mastered++;} }
-  }
-  updateProgress();
-}
-function resetAll(){
-  for(var i=0;i<total;i++){
-    document.getElementById('card-'+i).classList.remove('flipped');
-  }
-  flippedState = {}; mastered = 0; updateProgress();
-}
-function shuffleCards(){
-  var grid = document.getElementById('cardsGrid');
-  var cards = Array.from(grid.children);
-  for(var i=cards.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); grid.appendChild(cards[j]); cards.splice(j,1); }
-}
-function showLoading(){ document.getElementById('loadingState').style.display='block'; }
-</script>
-{% else %}
-<div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
-  <div style="font-size:48px; margin-bottom:16px;">🃏</div>
-  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">No Cards Yet</h3>
-  <p style="font-size:14px;">Enter a topic above to generate your flashcard deck instantly.</p>
+    function toggleCard(idx) {
+      var back = document.getElementById('back-' + idx);
+      var front = document.getElementById('front-' + idx);
+      var hint = document.getElementById('hint-' + idx);
+      var isOpen = back.classList.contains('show');
+      if (isOpen) {
+        back.classList.remove('show');
+        front.classList.remove('revealed');
+        hint.style.display = 'flex';
+      } else {
+        back.classList.add('show');
+        front.classList.add('revealed');
+        hint.style.display = 'none';
+        if (!revealed[idx]) { revealed[idx] = true; updateStats(); }
+      }
+    }
+
+    function toggleMastered(idx) {
+      var card = document.getElementById('fcard-' + idx);
+      var btn = document.getElementById('mbtn-' + idx);
+      if (mastered[idx]) {
+        delete mastered[idx];
+        card.classList.remove('mastered');
+        btn.textContent = '✓ Mark Mastered';
+        btn.style.color = '#34d399';
+      } else {
+        mastered[idx] = true;
+        card.classList.add('mastered');
+        btn.textContent = '✓ Mastered!';
+        btn.style.color = '#fff';
+        btn.style.background = 'rgba(52,211,153,0.25)';
+      }
+      updateStats();
+    }
+
+    function updateStats() {
+      var rev = Object.keys(revealed).length;
+      var mast = Object.keys(mastered).length;
+      document.getElementById('revealedCount').textContent = rev;
+      document.getElementById('masteredCount').textContent = mast;
+      document.getElementById('progressBar').style.width = (rev / total * 100) + '%';
+      document.getElementById('progressText').textContent = rev + ' / ' + total;
+    }
+
+    function revealAll() {
+      for (var i = 0; i < total; i++) {
+        var back = document.getElementById('back-' + i);
+        var front = document.getElementById('front-' + i);
+        var hint = document.getElementById('hint-' + i);
+        if (!back.classList.contains('show')) {
+          back.classList.add('show');
+          front.classList.add('revealed');
+          hint.style.display = 'none';
+          if (!revealed[i]) { revealed[i] = true; }
+        }
+      }
+      updateStats();
+    }
+
+    function resetAll() {
+      for (var i = 0; i < total; i++) {
+        document.getElementById('back-' + i).classList.remove('show');
+        document.getElementById('front-' + i).classList.remove('revealed');
+        document.getElementById('hint-' + i).style.display = 'flex';
+        document.getElementById('fcard-' + i).classList.remove('mastered');
+        var btn = document.getElementById('mbtn-' + i);
+        btn.textContent = '✓ Mark Mastered';
+        btn.style.color = '#34d399';
+        btn.style.background = 'rgba(52,211,153,0.1)';
+      }
+      revealed = {}; mastered = {};
+      updateStats();
+    }
+
+    function markAllMastered() {
+      revealAll();
+      for (var i = 0; i < total; i++) {
+        if (!mastered[i]) { toggleMastered(i); }
+      }
+    }
+
+    function showLoading() { document.getElementById('loadingState').style.display = 'block'; }
+  </script>
+
+  {% else %}
+  <div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
+    <div style="font-size:52px; margin-bottom:16px;">🃏</div>
+    <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">No Cards Yet</h3>
+    <p style="font-size:14px;">Enter a topic above to generate your flashcard deck instantly.</p>
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 {% endblock %}
