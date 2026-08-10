@@ -1,60 +1,139 @@
 {% extends "base.html" %}
 {% block title %}AI Notes Generator — StudyMate AI{% endblock %}
 {% block content %}
-<div style="max-width: 1050px; margin: 0 auto;">
-  <div style="margin-bottom: 24px;">
-    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
-      <i data-feather="arrow-left" style="width: 14px;"></i>
-      <span>Back to Dashboard</span>
-    </a>
-    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-      AI NOTES GENERATOR
-    </h1>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Generate highly-visual revision sheets with formulas, comparison tables & key concept callouts.
-    </p>
+<style>
+  .notes-hero { text-align:center; padding:40px 20px 28px; }
+  .notes-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); padding:6px 18px; border-radius:999px; font-size:12px; font-weight:700; color:#a78bfa; margin-bottom:16px; letter-spacing:.5px; }
+  .notes-title { font-size:clamp(24px,5vw,42px); font-weight:900; background:linear-gradient(135deg,#fff 30%,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+  .notes-sub { color:rgba(255,255,255,0.45); font-size:14px; max-width:500px; margin:0 auto 28px; }
+  .notes-search { display:flex; gap:10px; max-width:720px; margin:0 auto; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:8px 8px 8px 18px; backdrop-filter:blur(16px); }
+  .notes-search input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px; }
+  .notes-search input::placeholder { color:rgba(255,255,255,0.3); }
+  .btn-notes { background:linear-gradient(135deg,#8b5cf6,#6d28d9); border:none; color:#fff; font-weight:800; padding:11px 24px; border-radius:11px; cursor:pointer; font-size:13px; transition:.2s; white-space:nowrap; }
+  .btn-notes:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(139,92,246,0.4); }
+  /* Markdown rendered notes */
+  .notes-output { max-width:960px; margin:32px auto 0; padding:0 20px 60px; }
+  .notes-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:24px; overflow:hidden; }
+  .notes-top-bar { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; background:rgba(139,92,246,0.08); border-bottom:1px solid rgba(139,92,246,0.15); flex-wrap:wrap; gap:10px; }
+  .notes-subject-tag { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#a78bfa; }
+  .notes-actions { display:flex; gap:8px; }
+  .btn-act { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-size:12px; font-weight:600; cursor:pointer; transition:.2s; }
+  .btn-act:hover { background:rgba(139,92,246,0.2); border-color:rgba(139,92,246,0.4); color:#a78bfa; }
+  .notes-body { padding:32px 36px; }
+  /* Markdown styles */
+  .notes-body h1 { font-size:26px; font-weight:900; color:#fff; border-bottom:2px solid rgba(139,92,246,0.4); padding-bottom:10px; margin:0 0 20px; }
+  .notes-body h2 { font-size:20px; font-weight:800; color:#a78bfa; margin:28px 0 12px; display:flex; align-items:center; gap:8px; }
+  .notes-body h2::before { content:''; display:inline-block; width:4px; height:20px; background:linear-gradient(135deg,#8b5cf6,#6d28d9); border-radius:2px; }
+  .notes-body h3 { font-size:16px; font-weight:700; color:#c4b5fd; margin:18px 0 8px; }
+  .notes-body h4 { font-size:14px; font-weight:700; color:#ddd6fe; margin:14px 0 6px; }
+  .notes-body p { color:rgba(255,255,255,0.8); line-height:1.8; margin:8px 0; font-size:14px; }
+  .notes-body ul, .notes-body ol { color:rgba(255,255,255,0.8); padding-left:20px; line-height:1.9; font-size:14px; }
+  .notes-body li { margin-bottom:4px; }
+  .notes-body strong { color:#fff; }
+  .notes-body em { color:#fbbf24; font-style:italic; }
+  .notes-body code { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px; color:#a78bfa; font-family:'Courier New',monospace; }
+  .notes-body pre { background:rgba(0,0,0,0.65); border:1px solid rgba(139,92,246,0.2); border-radius:14px; padding:20px; overflow-x:auto; margin:14px 0; position:relative; }
+  .notes-body pre code { background:none; border:none; padding:0; font-size:13px; color:#c4b5fd; }
+  .notes-body table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13px; border-radius:10px; overflow:hidden; }
+  .notes-body thead { background:rgba(139,92,246,0.2); }
+  .notes-body th { color:#a78bfa; padding:12px 16px; text-align:left; font-weight:700; }
+  .notes-body td { padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.05); color:rgba(255,255,255,0.8); }
+  .notes-body tr:last-child td { border-bottom:none; }
+  .notes-body tr:hover td { background:rgba(139,92,246,0.05); }
+  .notes-body blockquote { border-left:3px solid #8b5cf6; margin:14px 0; padding:10px 18px; background:rgba(139,92,246,0.08); border-radius:0 12px 12px 0; color:rgba(255,255,255,0.8); font-size:14px; }
+  .notes-body hr { border:none; border-top:1px solid rgba(255,255,255,0.08); margin:24px 0; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:600px){.notes-search{flex-direction:column;} .btn-notes{width:100%;} .notes-body{padding:20px;}}
+</style>
+
+<div class="notes-hero">
+  <div class="notes-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    AI NOTES GENERATOR — EXAM REVISION
   </div>
+  <h1 class="notes-title">Generate Instant Study Notes</h1>
+  <p class="notes-sub">Visual, structured notes with formulas, comparison tables & concept callouts — ready in seconds.</p>
 
-  <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
-    <!-- Controls Panel -->
-    <div class="glass-card" style="padding: 24px; border-radius: 20px;">
-      <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">Note Settings</h3>
-      <form method="POST" action="{{ url_for('ai_notes') }}" onsubmit="showLoading()">
-        <div style="margin-bottom: 16px;">
-          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Topic / Subject:</label>
-          <input type="text" name="topic" value="{{ topic }}" placeholder="e.g. Operating System Deadlocks, BST..." required style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 13px; outline: none;" />
-        </div>
-        <button type="submit" class="btn-primary-gradient" style="width: 100%; justify-content: center;">
-          <i data-feather="edit-3" style="width: 14px;"></i>
-          <span>Generate Notes</span>
-        </button>
-      </form>
+  <form method="POST" action="{{ url_for('ai_notes') }}" id="notesForm">
+    <div class="notes-search">
+      <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. Deadlock in OS, OOPS Inheritance, Fourier Series..." required />
+      <button type="submit" class="btn-notes" onclick="showLoading()">
+        ✨ Generate Notes
+      </button>
     </div>
+  </form>
+</div>
 
-    <!-- Output Preview Panel -->
-    <div>
-      <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
-        <div style="width: 44px; height: 44px; border: 3px solid rgba(139, 92, 246, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
-        <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Notes for "{{ topic }}"...</h3>
-      </div>
+<!-- Loading -->
+<div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
+  <div style="width:52px;height:52px;border:4px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:6px;">Generating Study Notes...</h3>
+  <p style="color:rgba(255,255,255,0.4); font-size:13px;">Creating structured revision notes on "{{ topic }}"</p>
+</div>
 
-      {% if notes %}
-      <div class="glass-card" style="padding: 28px; border-radius: 20px; line-height: 1.6; color: var(--text-primary);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <h2 style="font-size: 20px; font-weight: 800; color: #fff;">{{ topic }} — Revision Notes</h2>
-          <button onclick="window.print()" class="btn-tool-action purple">Print / PDF</button>
-        </div>
-        <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-secondary);">{{ notes }}</div>
+{% if notes %}
+<div class="notes-output">
+  <div class="notes-card">
+    <div class="notes-top-bar">
+      <div class="notes-subject-tag">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        {{ topic }} — AI Revision Notes
       </div>
-      {% else %}
-      <div class="glass-card" style="padding: 48px; border-radius: 20px; text-align: center; color: var(--text-muted);">
-        <i data-feather="file-text" style="width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.5;"></i>
-        <h3 style="color: #fff; font-size: 16px; margin-bottom: 4px;">No Notes Generated Yet</h3>
-        <p style="font-size: 13px;">Enter a topic on the left to generate your first AI revision sheet.</p>
+      <div class="notes-actions">
+        <button class="btn-act" onclick="copyNotes()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+        <button class="btn-act" onclick="window.print()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          PDF
+        </button>
+        <button class="btn-act" onclick="speakNotes()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Listen
+        </button>
       </div>
-      {% endif %}
+    </div>
+    <div class="notes-body" id="notesBody">
+      <!-- Markdown rendered here -->
     </div>
   </div>
 </div>
-<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
+
+<!-- Raw notes for JS -->
+<script id="rawNotes" type="text/plain">{{ notes | e }}</script>
+{% else %}
+<div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
+  <div style="font-size:48px; margin-bottom:16px;">📒</div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">No Notes Yet</h3>
+  <p style="font-size:14px;">Enter any topic above to generate beautiful, structured revision notes.</p>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+function showLoading(){ document.getElementById('loadingState').style.display='block'; }
+function copyNotes(){
+  var el = document.getElementById('notesBody');
+  if(el){ navigator.clipboard.writeText(el.innerText).then(function(){ alert('Notes copied to clipboard!'); }); }
+}
+function speakNotes(){
+  var el = document.getElementById('notesBody');
+  if(el){
+    var text = el.innerText.substring(0, 3000);
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.lang='en-IN'; utt.rate=0.92;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+  }
+}
+window.addEventListener('DOMContentLoaded', function(){
+  var raw = document.getElementById('rawNotes');
+  var body = document.getElementById('notesBody');
+  if(raw && body){
+    marked.setOptions({ breaks: true, gfm: true });
+    body.innerHTML = marked.parse(raw.textContent);
+  }
+});
+</script>
 {% endblock %}

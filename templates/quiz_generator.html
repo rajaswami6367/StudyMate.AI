@@ -1,43 +1,183 @@
 {% extends "base.html" %}
-{% block title %}Quiz Generator — StudyMate AI{% endblock %}
+{% block title %}MCQ Quiz Generator — StudyMate AI{% endblock %}
 {% block content %}
-<div style="max-width: 850px; margin: 0 auto;">
-  <div style="margin-bottom: 24px;">
-    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
-      <i data-feather="arrow-left" style="width: 14px;"></i>
-      <span>Back to Dashboard</span>
-    </a>
-    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-      QUIZ GENERATOR
-    </h1>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Test your syllabus knowledge with interactive MCQ quizzes.
-    </p>
-  </div>
+<style>
+  .quiz-hero { text-align:center; padding:40px 20px 28px; }
+  .quiz-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); padding:6px 18px; border-radius:999px; font-size:12px; font-weight:700; color:#34d399; margin-bottom:16px; letter-spacing:.5px; }
+  .quiz-title { font-size:clamp(24px,5vw,42px); font-weight:900; background:linear-gradient(135deg,#fff 30%,#34d399); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+  .quiz-sub { color:rgba(255,255,255,0.45); font-size:14px; max-width:480px; margin:0 auto 28px; }
+  .quiz-search { display:flex; gap:10px; max-width:680px; margin:0 auto; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:8px 8px 8px 18px; backdrop-filter:blur(16px); }
+  .quiz-search input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px; }
+  .quiz-search input::placeholder { color:rgba(255,255,255,0.3); }
+  .btn-quiz { background:linear-gradient(135deg,#34d399,#059669); border:none; color:#fff; font-weight:800; padding:11px 24px; border-radius:11px; cursor:pointer; font-size:13px; transition:.2s; white-space:nowrap; }
+  .btn-quiz:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,211,153,0.4); }
+  /* Quiz Cards */
+  .quiz-wrap { max-width:800px; margin:32px auto 0; padding:0 20px; }
+  .quiz-header-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:10px; }
+  .quiz-title-sm { font-size:20px; font-weight:800; color:#fff; }
+  .quiz-score-box { background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); border-radius:12px; padding:8px 18px; font-size:13px; font-weight:700; color:#34d399; }
+  .q-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:24px; margin-bottom:16px; transition:.3s; }
+  .q-card.correct { border-color:rgba(52,211,153,0.5); background:rgba(52,211,153,0.05); }
+  .q-card.wrong { border-color:rgba(239,68,68,0.5); background:rgba(239,68,68,0.05); }
+  .q-num { font-size:11px; font-weight:800; color:#34d399; letter-spacing:1px; margin-bottom:8px; }
+  .q-text { font-size:15px; font-weight:700; color:#fff; line-height:1.5; margin-bottom:18px; }
+  .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .opt-btn { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.8); font-size:13px; font-weight:500; cursor:pointer; transition:.2s; text-align:left; }
+  .opt-btn:hover { border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.08); color:#fff; }
+  .opt-btn.selected-correct { border-color:#34d399; background:rgba(52,211,153,0.2); color:#34d399; font-weight:700; }
+  .opt-btn.selected-wrong { border-color:#ef4444; background:rgba(239,68,68,0.15); color:#ef4444; font-weight:700; }
+  .opt-btn.reveal-correct { border-color:#34d399; background:rgba(52,211,153,0.12); color:#34d399; }
+  .opt-btn.disabled { pointer-events:none; opacity:0.5; }
+  .opt-label { width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+  .explanation-box { background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.2); border-radius:12px; padding:12px 16px; margin-top:14px; font-size:13px; color:rgba(255,255,255,0.75); display:none; }
+  .explanation-box strong { color:#34d399; }
+  .result-card { background:linear-gradient(135deg, rgba(52,211,153,0.1), rgba(34,211,238,0.05)); border:1px solid rgba(52,211,153,0.3); border-radius:24px; padding:32px; text-align:center; margin:32px 0; }
+  .result-score { font-size:56px; font-weight:900; background:linear-gradient(135deg,#34d399,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .btn-retry { background:linear-gradient(135deg,#34d399,#059669); border:none; color:#fff; font-weight:700; padding:12px 28px; border-radius:12px; cursor:pointer; font-size:14px; margin-top:16px; display:inline-block; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:560px){.options-grid{grid-template-columns:1fr;} .quiz-search{flex-direction:column;} .btn-quiz{width:100%;}}
+</style>
 
-  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
-    <form method="POST" action="{{ url_for('quiz') }}" onsubmit="showLoading()">
-      <div style="display: flex; gap: 12px;">
-        <input type="text" name="topic" value="{{ topic }}" placeholder="Enter quiz topic (e.g. Operating Systems, OOPS, Chemistry...)" required style="flex: 1; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
-        <button type="submit" class="btn-primary-gradient" style="background: linear-gradient(135deg, var(--success), var(--cyan));">
-          <i data-feather="play" style="width: 14px;"></i>
-          <span>Start Quiz</span>
-        </button>
-      </div>
-    </form>
+<div class="quiz-hero">
+  <div class="quiz-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    MCQ QUIZ GENERATOR — INSTANT EXAM PRACTICE
   </div>
+  <h1 class="quiz-title">Test Your Knowledge</h1>
+  <p class="quiz-sub">Generate 5-question MCQ quizzes on any subject. Get instant feedback & explanations.</p>
 
-  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
-    <div style="width: 44px; height: 44px; border: 3px solid rgba(52, 211, 153, 0.2); border-top-color: var(--success); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
-    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Quiz Questions...</h3>
-  </div>
-
-  {% if quiz_data %}
-  <div class="glass-card" style="padding: 28px; border-radius: 20px;">
-    <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 20px;">Quiz: {{ topic }}</h2>
-    <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-primary); line-height: 1.6;">{{ quiz_data }}</div>
-  </div>
-  {% endif %}
+  <form method="POST" action="{{ url_for('quiz') }}" id="quizForm">
+    <div class="quiz-search">
+      <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. Operating Systems, OOPS, Fourier Series, KCL KVL..." required />
+      <button type="submit" class="btn-quiz" onclick="showLoading()">
+        ▶ Start Quiz
+      </button>
+    </div>
+  </form>
 </div>
-<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
+
+<!-- Loading -->
+<div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
+  <div style="width:52px;height:52px;border:4px solid rgba(52,211,153,0.2);border-top-color:#34d399;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:6px;">Generating Quiz Questions...</h3>
+  <p style="color:rgba(255,255,255,0.4); font-size:13px;">Creating 5 MCQ questions on "{{ topic }}"</p>
+</div>
+
+{% if quiz_data %}
+<div class="quiz-wrap">
+  <div class="quiz-header-bar">
+    <div class="quiz-title-sm">📝 Quiz: {{ topic }}</div>
+    <div class="quiz-score-box" id="scoreBox">Score: <span id="score">0</span> / <span id="total">{{ quiz_data|length }}</span></div>
+  </div>
+
+  <div id="quizContainer">
+    {% for q in quiz_data %}
+    <div class="q-card" id="qcard-{{ loop.index0 }}">
+      <div class="q-num">QUESTION {{ loop.index }} of {{ quiz_data|length }}</div>
+      <div class="q-text">{{ q.question }}</div>
+      <div class="options-grid" id="opts-{{ loop.index0 }}">
+        {% for key, val in q.options.items() %}
+        <button class="opt-btn" id="opt-{{ loop.index0 }}-{{ key }}"
+          onclick="selectOption({{ loop.index0 }}, '{{ key }}', '{{ q.correct }}', '{{ q.explanation | replace("'", "\\'") }}')">
+          <span class="opt-label">{{ key }}</span>
+          {{ val }}
+        </button>
+        {% endfor %}
+      </div>
+      <div class="explanation-box" id="exp-{{ loop.index0 }}">
+        <strong>💡 Explanation:</strong> {{ q.explanation }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="resultCard" style="display:none;">
+    <div style="font-size:14px; color:rgba(255,255,255,0.6); margin-bottom:8px;">Your Final Score</div>
+    <div class="result-score" id="finalScore">0/{{ quiz_data|length }}</div>
+    <div style="font-size:16px; color:rgba(255,255,255,0.7); margin:12px 0;" id="resultMsg"></div>
+    <button class="btn-retry" onclick="retryQuiz()">🔄 Try Again</button>
+    <a href="{{ url_for('quiz') }}" style="display:inline-block; margin-left:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); font-weight:700; padding:12px 24px; border-radius:12px; font-size:14px; text-decoration:none;">New Topic</a>
+  </div>
+</div>
+
+<script>
+var answered = {};
+var correctCount = 0;
+var total = {{ quiz_data|length }};
+
+function selectOption(qIdx, chosen, correct, explanation){
+  if(answered[qIdx]) return;
+  answered[qIdx] = true;
+  
+  // Mark selected
+  var chosenBtn = document.getElementById('opt-' + qIdx + '-' + chosen);
+  var correctBtn = document.getElementById('opt-' + qIdx + '-' + correct);
+  
+  // Disable all options
+  var opts = document.getElementById('opts-' + qIdx).querySelectorAll('.opt-btn');
+  opts.forEach(function(b){ b.classList.add('disabled'); });
+  
+  if(chosen === correct){
+    chosenBtn.classList.add('selected-correct');
+    document.getElementById('qcard-' + qIdx).classList.add('correct');
+    correctCount++;
+  } else {
+    chosenBtn.classList.add('selected-wrong');
+    correctBtn.classList.add('reveal-correct');
+    document.getElementById('qcard-' + qIdx).classList.add('wrong');
+  }
+  
+  // Show explanation
+  var expBox = document.getElementById('exp-' + qIdx);
+  expBox.style.display = 'block';
+  
+  // Update score
+  document.getElementById('score').textContent = correctCount;
+  
+  // Check if all answered
+  if(Object.keys(answered).length === total){
+    showResult();
+  }
+}
+
+function showResult(){
+  setTimeout(function(){
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('finalScore').textContent = correctCount + '/' + total;
+    var pct = (correctCount/total)*100;
+    var msg = pct === 100 ? '🏆 Perfect Score! Excellent preparation!' :
+              pct >= 80 ? '🎉 Great job! Almost exam-ready!' :
+              pct >= 60 ? '👍 Good effort! Review the explanations.' :
+              '📚 Keep practising! Focus on weak areas.';
+    document.getElementById('resultMsg').textContent = msg;
+    document.getElementById('resultCard').scrollIntoView({ behavior:'smooth' });
+  }, 600);
+}
+
+function retryQuiz(){
+  answered = {}; correctCount = 0;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('resultCard').style.display = 'none';
+  
+  for(var i=0; i<total; i++){
+    var card = document.getElementById('qcard-' + i);
+    card.classList.remove('correct','wrong');
+    var expBox = document.getElementById('exp-' + i);
+    expBox.style.display = 'none';
+    var opts = document.getElementById('opts-' + i).querySelectorAll('.opt-btn');
+    opts.forEach(function(b){ b.classList.remove('selected-correct','selected-wrong','reveal-correct','disabled'); });
+  }
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+
+function showLoading(){ document.getElementById('loadingState').style.display='block'; }
+</script>
+{% else %}
+<div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
+  <div style="font-size:48px; margin-bottom:16px;">🧠</div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">Ready to Quiz?</h3>
+  <p style="font-size:14px;">Enter any topic above to start a 5-question MCQ session with instant explanations.</p>
+</div>
+{% endif %}
 {% endblock %}

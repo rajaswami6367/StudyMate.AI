@@ -1,50 +1,167 @@
 {% extends "base.html" %}
 {% block title %}3D Flashcards — StudyMate AI{% endblock %}
 {% block content %}
-<div style="max-width: 850px; margin: 0 auto;">
-  <div style="margin-bottom: 24px;">
-    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
-      <i data-feather="arrow-left" style="width: 14px;"></i>
-      <span>Back to Dashboard</span>
-    </a>
-    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-      3D REVISION FLASHCARDS
-    </h1>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Master key formulas and definitions using active recall and 3D card flips.
-    </p>
+<style>
+  .fc-hero { text-align:center; padding:40px 20px 28px; }
+  .fc-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); padding:6px 18px; border-radius:999px; font-size:12px; font-weight:700; color:#fbbf24; margin-bottom:16px; letter-spacing:.5px; }
+  .fc-title { font-size:clamp(24px,5vw,42px); font-weight:900; background:linear-gradient(135deg,#fff 30%,#fbbf24); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+  .fc-sub { color:rgba(255,255,255,0.45); font-size:14px; max-width:480px; margin:0 auto 28px; }
+  .fc-search { display:flex; gap:10px; max-width:680px; margin:0 auto; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:8px 8px 8px 18px; backdrop-filter:blur(16px); }
+  .fc-search input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px; }
+  .fc-search input::placeholder { color:rgba(255,255,255,0.3); }
+  .btn-fc { background:linear-gradient(135deg,#fbbf24,#f59e0b); border:none; color:#000; font-weight:800; padding:11px 24px; border-radius:11px; cursor:pointer; font-size:13px; transition:.2s; white-space:nowrap; }
+  .btn-fc:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(251,191,36,0.4); }
+  /* Flip Card */
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px; max-width:1100px; margin:32px auto 0; padding:0 20px; }
+  .flip-card { perspective:1000px; height:200px; cursor:pointer; }
+  .flip-card-inner { position:relative; width:100%; height:100%; transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); transform-style:preserve-3d; }
+  .flip-card.flipped .flip-card-inner { transform:rotateY(180deg); }
+  .flip-card-front, .flip-card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:20px; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; }
+  .flip-card-front { background:linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.05)); border:1px solid rgba(251,191,36,0.25); }
+  .flip-card-back { background:linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.05)); border:1px solid rgba(34,211,238,0.25); transform:rotateY(180deg); }
+  .card-num { font-size:10px; font-weight:800; letter-spacing:1px; color:#fbbf24; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .card-num-back { font-size:10px; font-weight:800; letter-spacing:1px; color:#22d3ee; margin-bottom:10px; }
+  .card-q { font-size:14px; font-weight:700; color:#fff; line-height:1.5; }
+  .card-a { font-size:13px; color:rgba(255,255,255,0.85); line-height:1.6; }
+  .card-hint { font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px; }
+  .progress-bar-wrap { max-width:680px; margin:20px auto 0; }
+  .progress-bar-track { background:rgba(255,255,255,0.08); border-radius:999px; height:4px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#fbbf24,#f59e0b); border-radius:999px; transition:width .4s; }
+  .progress-label { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-top:6px; }
+  .fc-controls { display:flex; justify-content:center; gap:12px; margin:24px 0; flex-wrap:wrap; }
+  .btn-ctrl { display:flex; align-items:center; gap:6px; padding:9px 18px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; cursor:pointer; transition:.2s; }
+  .btn-ctrl:hover { background:rgba(251,191,36,0.15); border-color:rgba(251,191,36,0.3); color:#fbbf24; }
+  .stats-row { display:flex; gap:12px; justify-content:center; margin:12px 0 28px; flex-wrap:wrap; }
+  .stat-pill { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:999px; padding:6px 16px; font-size:12px; color:rgba(255,255,255,0.6); }
+  .stat-pill b { color:#fbbf24; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:500px){.fc-search{flex-direction:column;} .btn-fc{width:100%;} .cards-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="fc-hero">
+  <div class="fc-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    3D FLIP FLASHCARDS — ACTIVE RECALL
+  </div>
+  <h1 class="fc-title">Master Any Topic with Flashcards</h1>
+  <p class="fc-sub">Click any card to flip and reveal the answer. Built for active recall learning.</p>
+
+  <form method="POST" action="{{ url_for('flashcards') }}" id="fcForm">
+    <div class="fc-search">
+      <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. OOPS Concepts, OS Scheduling, Fourier Series..." required />
+      <button type="submit" class="btn-fc" onclick="showLoading()">
+        ⚡ Generate Cards
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Loading -->
+<div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
+  <div style="width:52px;height:52px;border:4px solid rgba(251,191,36,0.2);border-top-color:#fbbf24;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:6px;">Generating Flashcard Deck...</h3>
+  <p style="color:rgba(255,255,255,0.4); font-size:13px;">Creating 10 active recall cards on "{{ topic }}"</p>
+</div>
+
+{% if flashcards_data %}
+<div style="max-width:1100px; margin:0 auto; padding:0 20px;">
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-pill"><b>{{ flashcards_data|length }}</b> Cards</div>
+    <div class="stat-pill" id="masteredPill"><b id="masteredCount">0</b> Mastered</div>
+    <div class="stat-pill">Topic: <b>{{ topic }}</b></div>
   </div>
 
-  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
-    <form method="POST" action="{{ url_for('flashcards') }}" onsubmit="showLoading()">
-      <div style="display: flex; gap: 12px;">
-        <input type="text" name="topic" value="{{ topic }}" placeholder="Enter topic for Flashcards (e.g. OOPS Concepts, Physics Formulas...)" required style="flex: 1; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
-        <button type="submit" class="btn-primary-gradient" style="background: linear-gradient(135deg, var(--warning), var(--pink));">
-          <i data-feather="layers" style="width: 14px;"></i>
-          <span>Create Cards</span>
-        </button>
-      </div>
-    </form>
+  <!-- Progress -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label"><span>Progress</span><span id="progressText">0 / {{ flashcards_data|length }}</span></div>
   </div>
 
-  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
-    <div style="width: 44px; height: 44px; border: 3px solid rgba(245, 158, 11, 0.2); border-top-color: var(--warning); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
-    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Generating Flashcards Deck...</h3>
+  <!-- Controls -->
+  <div class="fc-controls">
+    <button class="btn-ctrl" onclick="flipAll()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Flip All Cards
+    </button>
+    <button class="btn-ctrl" onclick="resetAll()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Reset All
+    </button>
+    <button class="btn-ctrl" onclick="shuffleCards()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+      Shuffle
+    </button>
   </div>
 
-  {% if flashcards_data %}
-  <div style="display: flex; flex-direction: column; gap: 16px;">
+  <!-- Cards Grid -->
+  <div class="cards-grid" id="cardsGrid">
     {% for card in flashcards_data %}
-      <div class="glass-card" style="padding: 24px; border-radius: 18px; background: rgba(15, 23, 42, 0.8);">
-        <div style="font-size: 12px; font-weight: 800; color: var(--warning); margin-bottom: 4px;">QUESTION #{{ loop.index }}:</div>
-        <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 12px;">{{ card.question }}</h4>
-        <div style="background: rgba(0,0,0,0.4); padding: 12px 16px; border-radius: 10px; border-left: 3px solid var(--warning); font-size: 13px; color: var(--text-secondary);">
-          <strong style="color: var(--cyan);">ANSWER:</strong> {{ card.answer }}
+    <div class="flip-card" id="card-{{ loop.index0 }}" onclick="flipCard({{ loop.index0 }})">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="card-num">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path fill="#000" d="M12 8v4l3 3"/></svg>
+            QUESTION {{ loop.index }} of {{ flashcards_data|length }}
+          </div>
+          <div class="card-q">{{ card.question }}</div>
+          <div class="card-hint">👆 Tap to reveal answer</div>
+        </div>
+        <div class="flip-card-back">
+          <div class="card-num-back">✅ ANSWER {{ loop.index }}</div>
+          <div class="card-a">{{ card.answer }}</div>
+          <div class="card-hint" style="color:rgba(255,255,255,0.25);">Tap to flip back</div>
         </div>
       </div>
+    </div>
     {% endfor %}
   </div>
-  {% endif %}
+
+  <p style="text-align:center; color:rgba(255,255,255,0.25); font-size:12px; margin:32px 0;">📌 Click each card to flip • Track your mastery above</p>
 </div>
-<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
+
+<script>
+var total = {{ flashcards_data|length }};
+var mastered = 0;
+var flippedState = {};
+
+function flipCard(idx){
+  var card = document.getElementById('card-' + idx);
+  card.classList.toggle('flipped');
+  if(card.classList.contains('flipped')){
+    if(!flippedState[idx]){ flippedState[idx]=true; mastered++; updateProgress(); }
+  }
+}
+function updateProgress(){
+  document.getElementById('masteredCount').textContent = mastered;
+  document.getElementById('progressBar').style.width = (mastered/total*100) + '%';
+  document.getElementById('progressText').textContent = mastered + ' / ' + total;
+}
+function flipAll(){
+  for(var i=0;i<total;i++){
+    var card = document.getElementById('card-' + i);
+    if(!card.classList.contains('flipped')){ card.classList.add('flipped'); if(!flippedState[i]){flippedState[i]=true;mastered++;} }
+  }
+  updateProgress();
+}
+function resetAll(){
+  for(var i=0;i<total;i++){
+    document.getElementById('card-'+i).classList.remove('flipped');
+  }
+  flippedState = {}; mastered = 0; updateProgress();
+}
+function shuffleCards(){
+  var grid = document.getElementById('cardsGrid');
+  var cards = Array.from(grid.children);
+  for(var i=cards.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); grid.appendChild(cards[j]); cards.splice(j,1); }
+}
+function showLoading(){ document.getElementById('loadingState').style.display='block'; }
+</script>
+{% else %}
+<div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
+  <div style="font-size:48px; margin-bottom:16px;">🃏</div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">No Cards Yet</h3>
+  <p style="font-size:14px;">Enter a topic above to generate your flashcard deck instantly.</p>
+</div>
+{% endif %}
 {% endblock %}

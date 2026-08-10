@@ -1,45 +1,147 @@
 {% extends "base.html" %}
 {% block title %}AI Doubt Solver — StudyMate AI{% endblock %}
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto;">
-  <div style="margin-bottom: 24px;">
-    <a href="{{ url_for('dashboard') }}" class="btn-ghost-sm" style="margin-bottom: 12px;">
-      <i data-feather="arrow-left" style="width: 14px;"></i>
-      <span>Back to Dashboard</span>
-    </a>
-    <h1 style="font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-      AI DOUBT SOLVER
-    </h1>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Ask any academic question and get instant step-by-step solutions with voice narration.
-    </p>
-  </div>
+<style>
+  .doubt-hero { text-align:center; padding: 48px 20px 32px; }
+  .doubt-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.3); padding:6px 18px; border-radius:999px; font-size:12px; font-weight:700; color:#22d3ee; margin-bottom:18px; letter-spacing:.5px; }
+  .doubt-title { font-size:clamp(26px,5vw,44px); font-weight:900; background:linear-gradient(135deg,#fff 30%,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px; }
+  .doubt-sub { color:rgba(255,255,255,0.5); font-size:15px; max-width:540px; margin:0 auto 32px; }
+  .search-bar { display:flex; gap:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:10px 10px 10px 20px; backdrop-filter:blur(16px); box-shadow:0 8px 32px rgba(0,0,0,0.3); max-width:800px; margin:0 auto; }
+  .search-bar input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:15px; }
+  .search-bar input::placeholder { color:rgba(255,255,255,0.35); }
+  .btn-ask { background:linear-gradient(135deg,#22d3ee,#818cf8); border:none; color:#fff; font-weight:700; padding:12px 28px; border-radius:12px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; transition:.2s; white-space:nowrap; }
+  .btn-ask:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(34,211,238,0.35); }
+  .quick-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:20px auto 0; max-width:700px; }
+  .chip { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); padding:6px 14px; border-radius:999px; font-size:12px; cursor:pointer; transition:.2s; }
+  .chip:hover { background:rgba(34,211,238,0.15); border-color:rgba(34,211,238,0.4); color:#22d3ee; }
+  .answer-card { max-width:900px; margin:32px auto 0; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:24px; backdrop-filter:blur(20px); overflow:hidden; }
+  .answer-header { display:flex; align-items:center; gap:10px; padding:18px 24px; background:rgba(34,211,238,0.08); border-bottom:1px solid rgba(34,211,238,0.15); }
+  .answer-header-icon { width:36px; height:36px; background:linear-gradient(135deg,#22d3ee,#818cf8); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .answer-header h3 { font-size:15px; font-weight:800; color:#22d3ee; margin:0; }
+  .answer-header .q-text { font-size:12px; color:rgba(255,255,255,0.5); margin:2px 0 0; }
+  .answer-body { padding:24px; }
+  .answer-body h1,.answer-body h2,.answer-body h3 { color:#fff; margin:18px 0 8px; }
+  .answer-body h2 { font-size:18px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px; }
+  .answer-body h3 { font-size:15px; color:#22d3ee; }
+  .answer-body p { color:rgba(255,255,255,0.8); line-height:1.7; margin:8px 0; }
+  .answer-body ul,.answer-body ol { color:rgba(255,255,255,0.8); padding-left:22px; line-height:1.8; }
+  .answer-body li { margin-bottom:4px; }
+  .answer-body strong { color:#fff; }
+  .answer-body em { color:#fbbf24; }
+  .answer-body code { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px; color:#22d3ee; font-family:monospace; }
+  .answer-body pre { background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; overflow-x:auto; margin:12px 0; }
+  .answer-body pre code { background:none; border:none; padding:0; font-size:13px; color:#a5f3fc; }
+  .answer-body table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+  .answer-body th { background:rgba(34,211,238,0.15); color:#22d3ee; padding:10px 14px; text-align:left; }
+  .answer-body td { padding:9px 14px; border-bottom:1px solid rgba(255,255,255,0.06); color:rgba(255,255,255,0.8); }
+  .answer-body blockquote { border-left:3px solid #22d3ee; margin:12px 0; padding:8px 16px; background:rgba(34,211,238,0.07); border-radius:0 10px 10px 0; color:rgba(255,255,255,0.75); }
+  .answer-footer { display:flex; gap:10px; padding:14px 24px; border-top:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.2); }
+  .btn-action { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; cursor:pointer; transition:.2s; }
+  .btn-action:hover { background:rgba(34,211,238,0.15); border-color:rgba(34,211,238,0.3); color:#22d3ee; }
+  .loading-ring { width:52px; height:52px; border:4px solid rgba(34,211,238,0.2); border-top-color:#22d3ee; border-radius:50%; animation:spin 0.8s infinite linear; margin:0 auto 20px; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:600px){.search-bar{flex-direction:column;} .btn-ask{width:100%;justify-content:center;}}
+</style>
 
-  <div class="glass-card" style="padding: 24px; border-radius: 20px; margin-bottom: 28px;">
-    <form method="POST" action="{{ url_for('doubt_solver') }}" onsubmit="showLoading()">
-      <div style="display: flex; gap: 12px; margin-bottom: 14px;">
-        <input type="text" name="question" value="{{ question }}" placeholder="Type your doubt or question here..." required style="flex: 1; padding: 14px 18px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 14px; outline: none;" />
-        <button type="submit" class="btn-primary-gradient">
-          <i data-feather="send" style="width: 14px;"></i>
-          <span>Ask AI</span>
-        </button>
-      </div>
-    </form>
+<div class="doubt-hero">
+  <div class="doubt-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    AI DOUBT SOLVER — INSTANT ANSWERS
   </div>
+  <h1 class="doubt-title">Ask Any Academic Question</h1>
+  <p class="doubt-sub">Get step-by-step explanations, formulas & code snippets — powered by Google Gemini AI.</p>
 
-  <div id="loadingState" style="display: none; text-align: center; padding: 48px 20px;">
-    <div style="width: 44px; height: 44px; border: 3px solid rgba(34, 211, 238, 0.2); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s infinite linear; margin: 0 auto 16px;"></div>
-    <h3 style="color: #fff; font-weight: 700; font-size: 16px;">Analyzing Doubt & Solving...</h3>
-  </div>
+  <form method="POST" action="{{ url_for('doubt_solver') }}" id="doubtForm">
+    <div class="search-bar">
+      <input type="text" name="question" id="questionInput" value="{{ question }}" placeholder="e.g. Explain Banker's Algorithm with example..." autofocus required />
+      <button type="submit" class="btn-ask" onclick="showLoading()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Ask AI
+      </button>
+    </div>
+  </form>
 
-  {% if answer %}
-  <div class="glass-card" style="padding: 28px; border-radius: 20px;">
-    <h3 style="font-size: 16px; font-weight: 800; color: var(--cyan); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-      <i data-feather="check-circle" style="width: 18px;"></i> Solution Explanation
-    </h3>
-    <div style="white-space: pre-wrap; font-size: 14px; color: var(--text-primary); line-height: 1.6;">{{ answer }}</div>
+  <div class="quick-chips">
+    <span class="chip" onclick="setQ('What is virtual function and VTABLE in C++?')">VTABLE in C++</span>
+    <span class="chip" onclick="setQ('Explain Dijkstra shortest path algorithm with example')">Dijkstra Algorithm</span>
+    <span class="chip" onclick="setQ('What is normalization in DBMS? Explain 3NF BCNF')">DBMS Normalization</span>
+    <span class="chip" onclick="setQ('Explain CPU scheduling Round Robin with Gantt chart')">Round Robin CPU</span>
+    <span class="chip" onclick="setQ('What is Laplace transform? Give basic formulas')">Laplace Transform</span>
+    <span class="chip" onclick="setQ('Explain OSI 7 layer model with functions of each layer')">OSI Model</span>
   </div>
-  {% endif %}
 </div>
-<script>function showLoading(){document.getElementById('loadingState').style.display='block';}</script>
+
+<!-- Loading -->
+<div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
+  <div class="loading-ring"></div>
+  <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">Analyzing Your Doubt...</h3>
+  <p style="color:rgba(255,255,255,0.4); font-size:13px;">Gemini AI is generating a detailed explanation for you</p>
+</div>
+
+{% if answer %}
+<div class="answer-card" id="answerCard">
+  <div class="answer-header">
+    <div class="answer-header-icon">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <h3>AI Solution Ready ✓</h3>
+      <div class="q-text">{{ question }}</div>
+    </div>
+  </div>
+  <div class="answer-body" id="answerBody">
+    <!-- Markdown rendered here by JS -->
+  </div>
+  <div class="answer-footer">
+    <button class="btn-action" onclick="speakAnswer()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      Listen
+    </button>
+    <button class="btn-action" onclick="copyAnswer()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Answer
+    </button>
+    <button class="btn-action" onclick="window.print()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / PDF
+    </button>
+  </div>
+</div>
+
+<!-- Raw answer stored for JS -->
+<script id="rawAnswer" type="text/plain">{{ answer | e }}</script>
+{% endif %}
+
+<!-- Marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+function setQ(q){ document.getElementById('questionInput').value = q; }
+function showLoading(){
+  document.getElementById('loadingState').style.display='block';
+  var card = document.getElementById('answerCard');
+  if(card) card.style.display='none';
+}
+function copyAnswer(){
+  var el = document.getElementById('answerBody');
+  if(el){ navigator.clipboard.writeText(el.innerText).then(function(){ alert('Copied to clipboard!'); }); }
+}
+function speakAnswer(){
+  var el = document.getElementById('answerBody');
+  if(el){
+    var utt = new SpeechSynthesisUtterance(el.innerText.substring(0, 2000));
+    utt.lang='en-IN'; utt.rate=0.95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+  }
+}
+// Render markdown answer
+window.addEventListener('DOMContentLoaded', function(){
+  var raw = document.getElementById('rawAnswer');
+  var body = document.getElementById('answerBody');
+  if(raw && body){
+    marked.setOptions({ breaks: true, gfm: true });
+    body.innerHTML = marked.parse(raw.textContent);
+  }
+});
+</script>
 {% endblock %}
