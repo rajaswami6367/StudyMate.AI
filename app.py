@@ -287,8 +287,7 @@ import os
 import sqlite3
 import json
 import time
-import asyncio
-import edge_tts
+# edge_tts removed - using browser SpeechSynthesis API instead
 import random
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
@@ -2343,60 +2342,16 @@ def delete_saved_item(item_id):
     return redirect(url_for('library'))
 
 
-#  NEURAL TEXT-TO-SPEECH STREAMING 
-async def generate_tts_async(text, voice_name, output_path):
-    communicate = edge_tts.Communicate(text, voice_name)
-    await communicate.save(output_path)
-
-
+#  TEXT-TO-SPEECH — Browser Native API
 @app.route('/speak')
 def speak():
-
-    text = request.args.get('text', '').strip()
+    """Returns TTS instruction for browser's SpeechSynthesis API."""
+    text = request.args.get('text', '').strip()[:2000]
     gender = request.args.get('gender', 'female').strip()
-    
     if not text:
-        return "Missing text parameter", 400
-        
-    # Limit text length to prevent abuse
-    text = text[:1500]
-    
-    # Detect language: If text contains Devanagari (Hindi) characters
-    has_hindi = any(ord(char) in range(0x0900, 0x0980) for char in text)
-    
-    # Select Microsoft premium neural voices
-    if has_hindi:
-        voice = 'hi-IN-SwaraNeural' if gender == 'female' else 'hi-IN-MadhurNeural'
-    else:
-        voice = 'en-US-AriaNeural' if gender == 'female' else 'en-US-GuyNeural'
-        
-    # Configure temporary directories for caching audio
-    temp_dir = os.path.join(app.root_path, 'static', 'temp_audio')
-    os.makedirs(temp_dir, exist_ok=True)
-    
-    # Housekeeping: delete temp files older than 5 minutes
-    try:
-        now = time.time()
-        for f in os.listdir(temp_dir):
-            fpath = os.path.join(temp_dir, f)
-            if now - os.path.getmtime(fpath) > 300:
-                os.remove(fpath)
-    except Exception:
-        pass
-        
-    # Unique filename based on hash of text and gender
-    text_hash = hash(text + gender) & 0xffffffff
-    filename = f"tts_{text_hash}.mp3"
-    filepath = os.path.join(temp_dir, filename)
-    
-    # Generate audio file if it doesn't already exist in cache
-    if not os.path.exists(filepath):
-        try:
-            asyncio.run(generate_tts_async(text, voice, filepath))
-        except Exception as e:
-            return f"TTS Error: {str(e)}", 500
-            
-    return send_from_directory(temp_dir, filename)
+        return json.dumps({"error": "Missing text"}), 400
+    # Return JSON so frontend can use window.speechSynthesis
+    return json.dumps({"text": text, "gender": gender, "use_browser_tts": True}), 200
 
 
 #  RUN THE APP 
