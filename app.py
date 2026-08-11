@@ -1097,7 +1097,7 @@ Question: {question}"""
 #  QUIZ GENERATOR 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    """Generates a 5-question MCQ quiz on any topic."""
+    """Generates fresh unique MCQ quiz questions on any topic each time."""
     if not is_logged_in():
         return redirect(url_for('login'))
 
@@ -1112,49 +1112,53 @@ def quiz():
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
 
-        prompt = f"""Generate a multiple-choice quiz with exactly 5 questions on the topic: '{topic}'.
-Return the output as a valid JSON array of objects, with NO markdown code block wrapper (i.e. no ```json).
-Each object in the array must have exactly these keys:
-- "question": string, the text of the question
-- "options": object with keys "A", "B", "C", "D" representing options
-- "correct": string, one of "A", "B", "C", "D"
-- "explanation": string, a brief explanation of why that option is correct
+        # Use random seed hint so Gemini gives different questions each time
+        rand_hint = random.randint(1000, 9999)
 
-Example structure:
+        prompt = f"""You are a B.Tech exam question setter for RTU Kota university.
+Generate EXACTLY 5 UNIQUE multiple-choice questions STRICTLY about '{topic}' only.
+Request ID: {rand_hint} — generate DIFFERENT questions than usual, covering varied subtopics.
+
+Rules:
+1. Every question MUST be 100% specific to '{topic}' — no generic CS questions.
+2. Cover 5 DIFFERENT subtopics/concepts of '{topic}' — no repetition.
+3. All 4 options must be plausible but only ONE correct.
+4. Explanation must clearly justify why the correct answer is right.
+5. Questions should be RTU B.Tech exam level difficulty.
+
+Return ONLY a valid JSON array. NO markdown. NO ```json wrapper. NO extra text.
+Format:
 [
   {{
-    "question": "What is the primary function of RAM?",
-    "options": {{
-      "A": "Permanent data storage",
-      "B": "Temporary working memory for the CPU",
-      "C": "Running basic input/output operations",
-      "D": "Controlling cooling systems"
-    }},
-    "correct": "B",
-    "explanation": "RAM (Random Access Memory) is volatile memory used by the CPU to store data currently in use for fast access."
+    "question": "Specific question about {topic}...",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+    "correct": "A",
+    "explanation": "Clear explanation why A is correct..."
   }}
 ]"""
 
         result, error_msg = ask_gemini(prompt)
-        
+
         if result:
             raw_quiz_json = result.strip()
-            if raw_quiz_json.startswith("```"):
+            # Strip markdown wrappers if present
+            if raw_quiz_json.startswith('```'):
                 lines = raw_quiz_json.split('\n')
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines[-1].startswith("```"):
-                    lines = lines[:-1]
-                raw_quiz_json = "\n".join(lines).strip()
-            
+                lines = [l for l in lines if not l.strip().startswith('```')]
+                raw_quiz_json = '\n'.join(lines).strip()
+
             try:
-                quiz_data = json.loads(raw_quiz_json)
+                parsed = json.loads(raw_quiz_json)
+                if isinstance(parsed, list) and len(parsed) >= 3:
+                    quiz_data = parsed[:10]  # max 10 questions
+                else:
+                    quiz_data = generate_fallback_quiz(topic)
             except Exception:
                 quiz_data = generate_fallback_quiz(topic)
-                raw_quiz_json = json.dumps(quiz_data)
         else:
             quiz_data = generate_fallback_quiz(topic)
-            raw_quiz_json = json.dumps(quiz_data)
+
+        raw_quiz_json = json.dumps(quiz_data)
 
     return render_template('quiz_generator.html', quiz_data=quiz_data, raw_quiz_json=raw_quiz_json, topic=topic, error=error)
 
@@ -2089,64 +2093,123 @@ def process_concept(data_input):
 
 
 def generate_fallback_quiz(topic):
-    clean_t = topic.strip().title()
-    return [
-        {
-            "question": f"What is the primary architectural purpose of {clean_t}?",
-            "options": {
-                "A": f"To systematically manage computation and data structures in {clean_t}",
-                "B": "To permanently delete unsaved temporary cache files",
-                "C": "To bypass operating system security protocols",
-                "D": "To increase hardware power consumption"
-            },
-            "correct": "A",
-            "explanation": f"{clean_t} systematically organizes computation, resources, and data structures to optimize performance."
-        },
-        {
-            "question": f"Which metric is most crucial when evaluating {clean_t} algorithm efficiency?",
-            "options": {
-                "A": "Number of lines of code written",
-                "B": "Time Complexity O(N) and Space Complexity",
-                "C": "Monitor screen refresh rate",
-                "D": "Keyboard keystroke latency"
-            },
-            "correct": "B",
-            "explanation": "Time Complexity (Big-O) and Space Complexity determine how scalable an algorithm remains as input size grows."
-        },
-        {
-            "question": f"In {clean_t}, what occurs during the initial setup/input processing phase?",
-            "options": {
-                "A": "Immediate shutdown of worker threads",
-                "B": "Input validation, state initialization, and parameter setup",
-                "C": "Compilation directly into machine bytecode without parsing",
-                "D": "Creation of infinite recursive loops"
-            },
-            "correct": "B",
-            "explanation": "The initial phase verifies inputs and initializes memory/state before main execution begins."
-        },
-        {
-            "question": f"What is a common trade-off when optimizing {clean_t} for speed?",
-            "options": {
-                "A": "Increased space complexity (higher memory usage)",
-                "B": "Complete loss of network connectivity",
-                "C": "Reduction in CPU clock speed",
-                "D": "Inability to write unit tests"
-            },
-            "correct": "A",
-            "explanation": "Space-Time Trade-off: Memorization or caching increases speed at the cost of higher RAM usage."
-        },
-        {
-            "question": f"Which best practice ensures high reliability in {clean_t} production implementations?",
-            "options": {
-                "A": "Ignoring exception handling and null pointer checks",
-                "B": "Robust input validation, modular architecture, and edge-case testing",
-                "C": "Hardcoding static memory addresses",
-                "D": "Disabling logging and telemetry"
-            },
-            "correct": "B",
-            "explanation": "Modular design and defensive programming prevent unexpected runtime crashes."
-        }
-    ]
+    t = topic.strip().lower()
+
+    # ── Subject-specific question banks ──────────────────────────────────
+    BANKS = {
+        'oops': [
+            {"question": "Which OOPS concept allows a subclass to provide its own implementation of a method defined in the parent class?", "options": {"A": "Encapsulation", "B": "Abstraction", "C": "Method Overriding", "D": "Data Hiding"}, "correct": "C", "explanation": "Method Overriding (Runtime Polymorphism) allows a child class to redefine a parent class method."},
+            {"question": "What is a Virtual Function Table (VTABLE) in C++?", "options": {"A": "A table storing global variable addresses", "B": "A lookup table of function pointers for virtual methods", "C": "A hardware cache for CPU instructions", "D": "A database index structure"}, "correct": "B", "explanation": "VTABLE is a compile-time mechanism to achieve runtime polymorphism via function pointers."},
+            {"question": "Which principle of OOPS hides internal implementation details from the user?", "options": {"A": "Inheritance", "B": "Polymorphism", "C": "Encapsulation", "D": "Compilation"}, "correct": "C", "explanation": "Encapsulation wraps data and methods into a single unit (class) and restricts direct access."},
+            {"question": "What is the difference between Method Overloading and Method Overriding?", "options": {"A": "Overloading is compile-time, Overriding is runtime polymorphism", "B": "Both are runtime polymorphism", "C": "Overriding is compile-time, Overloading is runtime", "D": "Both occur only in interfaces"}, "correct": "A", "explanation": "Overloading = same name, different parameters (compile-time). Overriding = redefine parent method (runtime)."},
+            {"question": "Which type of inheritance causes the Diamond Problem in C++?", "options": {"A": "Single Inheritance", "B": "Multilevel Inheritance", "C": "Multiple Inheritance", "D": "Hierarchical Inheritance"}, "correct": "C", "explanation": "Diamond Problem arises in Multiple Inheritance when two parent classes share a common grandparent."},
+            {"question": "What does the 'abstract' keyword enforce in Java OOPS?", "options": {"A": "Class can be instantiated directly", "B": "Class cannot be instantiated; must be subclassed", "C": "Method is final and cannot be overridden", "D": "Variable is constant"}, "correct": "B", "explanation": "Abstract class provides a blueprint; only its concrete subclasses can be instantiated."},
+            {"question": "What is a Copy Constructor in C++?", "options": {"A": "Constructor that creates object from scratch", "B": "Constructor that initializes object using another object of same class", "C": "Destructor for heap memory", "D": "Function to clone databases"}, "correct": "B", "explanation": "Copy Constructor: ClassName(const ClassName& obj) — creates a deep copy of another object."},
+            {"question": "Which access specifier makes class members accessible only within the same class?", "options": {"A": "public", "B": "protected", "C": "private", "D": "static"}, "correct": "C", "explanation": "private members are accessible only within the class itself, not even by derived classes."},
+            {"question": "What is the output of calling a pure virtual function in C++?", "options": {"A": "Returns 0", "B": "Compilation error", "C": "Runtime error/undefined behavior if called on base class", "D": "Returns NULL pointer"}, "correct": "C", "explanation": "Pure virtual function (= 0) makes class abstract. Calling it directly causes undefined behavior."},
+            {"question": "Which OOPS concept models 'IS-A' relationship?", "options": {"A": "Encapsulation", "B": "Inheritance", "C": "Composition", "D": "Aggregation"}, "correct": "B", "explanation": "Inheritance models IS-A: Dog IS-A Animal. Composition models HAS-A: Car HAS-A Engine."},
+        ],
+        'operating system': [
+            {"question": "In Round Robin scheduling, what happens when a process's time quantum expires?", "options": {"A": "Process is terminated", "B": "Process is placed at the end of the ready queue", "C": "Process gets higher priority", "D": "CPU goes idle"}, "correct": "B", "explanation": "On quantum expiry, the running process is preempted and added to the back of the ready queue."},
+            {"question": "Which page replacement algorithm suffers from Belady's Anomaly?", "options": {"A": "LRU", "B": "Optimal", "C": "FIFO", "D": "LFU"}, "correct": "C", "explanation": "Belady's Anomaly: with FIFO, increasing page frames can actually increase page faults."},
+            {"question": "What are the four necessary conditions for Deadlock?", "options": {"A": "Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait", "B": "Starvation, Aging, Preemption, Mutex", "C": "Thrashing, Paging, Segmentation, Swapping", "D": "Ready, Running, Waiting, Terminated"}, "correct": "A", "explanation": "Coffman conditions: all four must hold simultaneously for deadlock."},
+            {"question": "What is the purpose of the Translation Lookaside Buffer (TLB)?", "options": {"A": "Store process stack data", "B": "Cache recent virtual-to-physical address translations", "C": "Store CPU register values", "D": "Buffer disk I/O operations"}, "correct": "B", "explanation": "TLB is a fast cache that speeds up virtual memory address translation without accessing page table every time."},
+            {"question": "Which scheduling algorithm is optimal in minimizing average waiting time?", "options": {"A": "FCFS", "B": "Round Robin", "C": "SJF (Shortest Job First)", "D": "Priority Scheduling"}, "correct": "C", "explanation": "SJF gives minimum average waiting time but requires knowing burst times in advance."},
+            {"question": "What is the difference between a Process and a Thread?", "options": {"A": "Thread has its own memory space; process shares memory", "B": "Process is heavyweight with own memory; thread is lightweight sharing process memory", "C": "Both are identical in resource usage", "D": "Process runs in user mode; thread runs in kernel mode only"}, "correct": "B", "explanation": "Process: independent memory/resources. Thread: shares memory of parent process — lightweight."},
+            {"question": "What does Banker's Algorithm prevent?", "options": {"A": "Starvation", "B": "Deadlock", "C": "Thrashing", "D": "Context switching"}, "correct": "B", "explanation": "Banker's Algorithm is a deadlock avoidance algorithm that simulates safe state before granting resources."},
+            {"question": "In segmentation, which fault occurs when a segment is not in memory?", "options": {"A": "Page Fault", "B": "Segmentation Fault", "C": "Bus Error", "D": "TLB Miss"}, "correct": "B", "explanation": "Segmentation Fault (Segment Missing) causes the OS to load the segment from secondary storage."},
+            {"question": "What is Thrashing in OS?", "options": {"A": "CPU executing too many threads", "B": "Excessive paging causing CPU to spend more time on page faults than execution", "C": "Disk fragmentation issue", "D": "Overflow of CPU registers"}, "correct": "B", "explanation": "Thrashing: process spends more time swapping pages in/out than doing useful work — caused by insufficient frames."},
+            {"question": "Which system call creates a new process in Unix/Linux?", "options": {"A": "exec()", "B": "create()", "C": "fork()", "D": "spawn()"}, "correct": "C", "explanation": "fork() creates a child process that is a duplicate of the parent. exec() replaces process image."},
+        ],
+        'data structures': [
+            {"question": "What is the time complexity of searching an element in a Balanced BST?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n log n)"}, "correct": "B", "explanation": "Balanced BST (AVL/Red-Black) ensures O(log n) search by maintaining height balance."},
+            {"question": "Which data structure uses LIFO (Last In First Out) principle?", "options": {"A": "Queue", "B": "Linked List", "C": "Stack", "D": "Heap"}, "correct": "C", "explanation": "Stack follows LIFO — last element pushed is the first to be popped. Used in recursion, undo operations."},
+            {"question": "What is the worst-case time complexity of QuickSort?", "options": {"A": "O(n log n)", "B": "O(n)", "C": "O(n²)", "D": "O(log n)"}, "correct": "C", "explanation": "QuickSort worst case O(n²) when pivot is always smallest/largest element (sorted array). Average: O(n log n)."},
+            {"question": "In a Min-Heap, the root node always contains?", "options": {"A": "Maximum element", "B": "Minimum element", "C": "Middle element", "D": "Random element"}, "correct": "B", "explanation": "Min-Heap property: parent ≤ children. So root = minimum. Max-Heap: parent ≥ children, root = maximum."},
+            {"question": "What is the time complexity of inserting into a Hash Table (average case)?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n²)"}, "correct": "C", "explanation": "Hash Table average case: O(1) insert, delete, search. Worst case O(n) with all collisions."},
+            {"question": "Which traversal of BST gives elements in sorted order?", "options": {"A": "Preorder", "B": "Postorder", "C": "Inorder", "D": "Level-order"}, "correct": "C", "explanation": "Inorder traversal (Left→Root→Right) of BST always gives elements in ascending sorted order."},
+            {"question": "What is the advantage of Doubly Linked List over Singly Linked List?", "options": {"A": "Uses less memory", "B": "Allows traversal in both directions", "C": "Faster search O(1)", "D": "No null pointer required"}, "correct": "B", "explanation": "Doubly LL has prev and next pointers enabling bidirectional traversal. Extra memory cost: one pointer per node."},
+            {"question": "Which algorithm finds shortest path in unweighted graph?", "options": {"A": "Dijkstra", "B": "DFS", "C": "BFS", "D": "Bellman-Ford"}, "correct": "C", "explanation": "BFS explores level by level — shortest path in unweighted graph. Dijkstra handles weighted graphs."},
+            {"question": "What is amortized time complexity of Dynamic Array (ArrayList) insertion?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1) amortized", "D": "O(n²)"}, "correct": "C", "explanation": "Dynamic array doubles size when full. Occasional O(n) resize but amortized over n insertions = O(1)."},
+            {"question": "AVL Tree maintains balance by ensuring height difference between subtrees is at most?", "options": {"A": "0", "B": "1", "C": "2", "D": "log n"}, "correct": "B", "explanation": "AVL Tree Balance Factor = |height(left) - height(right)| ≤ 1. Rotations restore balance when violated."},
+        ],
+        'dbms': [
+            {"question": "What is the difference between Primary Key and Candidate Key?", "options": {"A": "No difference, they are same", "B": "Candidate Key can be NULL; Primary Key cannot", "C": "Primary Key is selected from Candidate Keys; all candidate keys can uniquely identify rows", "D": "Primary Key allows duplicates; Candidate Key does not"}, "correct": "C", "explanation": "Candidate Keys are all minimal unique identifiers. Primary Key = chosen candidate key (NOT NULL, unique)."},
+            {"question": "What does ACID stand for in database transactions?", "options": {"A": "Atomicity, Consistency, Isolation, Durability", "B": "Access, Control, Index, Data", "C": "Automatic, Consistent, Indexed, Durable", "D": "Aggregation, Compression, Integrity, Distribution"}, "correct": "A", "explanation": "ACID: Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent txns), Durability (persisted)."},
+            {"question": "In 3NF, a table must be in 2NF and?", "options": {"A": "No partial dependencies", "B": "No transitive dependencies on primary key", "C": "All attributes are multi-valued", "D": "No foreign keys allowed"}, "correct": "B", "explanation": "3NF: 2NF + no transitive dependency (non-prime attribute depending on another non-prime attribute)."},
+            {"question": "What is a Deadlock in DBMS?", "options": {"A": "Table with too many rows", "B": "Two transactions waiting for each other's locked resources indefinitely", "C": "Query executing for more than 10 seconds", "D": "Index corruption on primary key"}, "correct": "B", "explanation": "DBMS Deadlock: T1 holds R1 waiting for R2; T2 holds R2 waiting for R1 — circular wait."},
+            {"question": "Which SQL command permanently saves transaction changes?", "options": {"A": "ROLLBACK", "B": "SAVEPOINT", "C": "COMMIT", "D": "END"}, "correct": "C", "explanation": "COMMIT permanently writes transaction changes to database. ROLLBACK undoes all changes since last COMMIT."},
+            {"question": "What is the purpose of an Index in DBMS?", "options": {"A": "Store backup copies of tables", "B": "Speed up data retrieval by providing fast lookup", "C": "Enforce foreign key constraints", "D": "Compress table storage"}, "correct": "B", "explanation": "Index (B-Tree/Hash) allows O(log n) search instead of full table scan O(n). Tradeoff: slower writes."},
+            {"question": "E-R Diagram 'participation constraint' specifies?", "options": {"A": "Number of entity types", "B": "Whether all instances must participate in a relationship", "C": "Attribute data types", "D": "Primary key selection"}, "correct": "B", "explanation": "Total participation (double line): every entity must participate. Partial participation (single line): optional."},
+            {"question": "Which join returns all rows from both tables, with NULLs for non-matching rows?", "options": {"A": "INNER JOIN", "B": "LEFT JOIN", "C": "RIGHT JOIN", "D": "FULL OUTER JOIN"}, "correct": "D", "explanation": "FULL OUTER JOIN returns all rows from both tables — NULL where no match exists on either side."},
+            {"question": "What is a Trigger in DBMS?", "options": {"A": "A stored function called manually", "B": "Automatic procedure that executes on INSERT/UPDATE/DELETE events", "C": "Index rebuild operation", "D": "Database backup procedure"}, "correct": "B", "explanation": "Trigger: automatic stored procedure that fires on specified DML events (BEFORE/AFTER INSERT, UPDATE, DELETE)."},
+            {"question": "BCNF is stricter than 3NF because in BCNF?", "options": {"A": "No multi-valued dependencies", "B": "Every determinant must be a super key", "C": "Primary key can be NULL", "D": "All tables must be denormalized"}, "correct": "B", "explanation": "BCNF (Boyce-Codd NF): for every functional dependency X→Y, X must be a super key — stricter than 3NF."},
+        ],
+        'computer networks': [
+            {"question": "At which OSI layer does the IP protocol operate?", "options": {"A": "Layer 2 — Data Link", "B": "Layer 3 — Network", "C": "Layer 4 — Transport", "D": "Layer 5 — Session"}, "correct": "B", "explanation": "IP (Internet Protocol) operates at Layer 3 (Network). TCP/UDP at Layer 4. Ethernet at Layer 2."},
+            {"question": "What is the difference between TCP and UDP?", "options": {"A": "TCP is connectionless; UDP is connection-oriented", "B": "TCP is reliable, ordered, connection-oriented; UDP is unreliable, faster, connectionless", "C": "Both provide same reliability", "D": "UDP uses 3-way handshake; TCP does not"}, "correct": "B", "explanation": "TCP: reliable, ordered, flow control, 3-way handshake. UDP: fast, no guarantees — used for video/DNS."},
+            {"question": "What is the purpose of ARP (Address Resolution Protocol)?", "options": {"A": "Resolve domain names to IP addresses", "B": "Resolve IP addresses to MAC addresses", "C": "Assign dynamic IP addresses", "D": "Encrypt network traffic"}, "correct": "B", "explanation": "ARP maps IP address → MAC address for same-network communication. DNS maps domain name → IP."},
+            {"question": "Which routing algorithm uses Dijkstra's shortest path algorithm?", "options": {"A": "Distance Vector Routing", "B": "Link State Routing", "C": "RIP Protocol", "D": "BGP Protocol"}, "correct": "B", "explanation": "Link State Routing (OSPF): each router knows full topology, applies Dijkstra to find shortest paths."},
+            {"question": "What is the 3-Way Handshake sequence in TCP connection establishment?", "options": {"A": "SYN → ACK → SYN-ACK", "B": "SYN → SYN-ACK → ACK", "C": "ACK → SYN → FIN", "D": "HELLO → AUTH → CONNECT"}, "correct": "B", "explanation": "TCP 3-way handshake: Client sends SYN → Server replies SYN-ACK → Client sends ACK. Connection established."},
+            {"question": "What does CSMA/CD stand for and where is it used?", "options": {"A": "Carrier Sense Multiple Access/Collision Detection — Ethernet", "B": "Continuous Signal Monitoring — WiFi", "C": "Channel Switching — Token Ring", "D": "Circuit Synchronization — Fiber"}, "correct": "A", "explanation": "CSMA/CD: Listen before transmit; detect collision, back off. Used in wired Ethernet (IEEE 802.3)."},
+            {"question": "What is the range of port numbers for 'Well-Known Ports'?", "options": {"A": "0 – 1023", "B": "1024 – 49151", "C": "49152 – 65535", "D": "1000 – 9999"}, "correct": "A", "explanation": "Well-Known Ports: 0-1023. HTTP=80, HTTPS=443, FTP=21, SSH=22, DNS=53, SMTP=25."},
+            {"question": "CIDR notation '192.168.1.0/24' means how many host addresses are available?", "options": {"A": "24", "B": "256", "C": "254", "D": "512"}, "correct": "C", "explanation": "/24 = 32-24 = 8 host bits = 256 addresses. Subtract network (0) and broadcast (255) = 254 usable hosts."},
+            {"question": "Which protocol is used for secure remote login?", "options": {"A": "Telnet", "B": "FTP", "C": "SSH", "D": "SMTP"}, "correct": "C", "explanation": "SSH (Secure Shell) port 22 provides encrypted remote login. Telnet (port 23) is plaintext — insecure."},
+            {"question": "What is the main function of the DNS protocol?", "options": {"A": "Assign IP addresses dynamically", "B": "Translate domain names to IP addresses", "C": "Route packets between networks", "D": "Compress web traffic"}, "correct": "B", "explanation": "DNS (Domain Name System): translates human-readable domain names (google.com) → IP addresses (142.250.x.x)."},
+        ],
+        'software engineering': [
+            {"question": "What is the main advantage of Agile over Waterfall model?", "options": {"A": "No documentation required", "B": "Iterative delivery with customer feedback at each sprint", "C": "Fixed requirements from start", "D": "No testing phase needed"}, "correct": "B", "explanation": "Agile delivers working software in short sprints with continuous feedback. Waterfall is sequential/rigid."},
+            {"question": "What does Cyclomatic Complexity measure?", "options": {"A": "Lines of code", "B": "Number of independent paths through code", "C": "Memory usage", "D": "API response time"}, "correct": "B", "explanation": "Cyclomatic Complexity V(G) = E - N + 2P. Higher value = more complex/harder to test code."},
+            {"question": "What is the purpose of SRS (Software Requirements Specification)?", "options": {"A": "Source code documentation", "B": "Contract document describing functional and non-functional requirements", "C": "Test case repository", "D": "Project budget estimate"}, "correct": "B", "explanation": "SRS: formal document defining what the system must do (functional) and quality attributes (non-functional)."},
+            {"question": "Black-Box testing tests software from?", "options": {"A": "Internal code structure view", "B": "External interface/behavior without knowing internal code", "C": "Hardware component level", "D": "Database schema level"}, "correct": "B", "explanation": "Black-Box: tests input/output behavior without seeing source code. White-Box: tests internal logic paths."},
+            {"question": "Which SDLC model is best suited for projects with unclear initial requirements?", "options": {"A": "Waterfall", "B": "V-Model", "C": "Spiral", "D": "RAD"}, "correct": "C", "explanation": "Spiral Model handles risk through iterative prototyping — ideal for large, complex, uncertain projects."},
+        ],
+        'engineering mathematics': [
+            {"question": "What is the Laplace transform of a unit step function u(t)?", "options": {"A": "1/s²", "B": "1/s", "C": "s", "D": "1"}, "correct": "B", "explanation": "L{u(t)} = 1/s for s > 0. Laplace transform of unit step = 1/s."},
+            {"question": "The eigenvalues of a 2×2 matrix A are roots of which equation?", "options": {"A": "det(A) = 0", "B": "det(A - λI) = 0", "C": "trace(A) = 0", "D": "A² = I"}, "correct": "B", "explanation": "Characteristic equation: det(A - λI) = 0. Solving gives eigenvalues λ. Eigenvectors satisfy (A-λI)v = 0."},
+            {"question": "Fourier series represents a periodic function as a sum of?", "options": {"A": "Polynomials", "B": "Exponentials", "C": "Sines and Cosines", "D": "Logarithms"}, "correct": "C", "explanation": "Fourier Series: f(x) = a₀/2 + Σ(aₙcos(nx) + bₙsin(nx)). Decomposes any periodic function."},
+            {"question": "What is the order of the ODE: d²y/dx² + 3(dy/dx) + 2y = 0?", "options": {"A": "0", "B": "1", "C": "2", "D": "3"}, "correct": "C", "explanation": "Order = highest derivative. Highest here is d²y/dx² (2nd derivative), so order = 2."},
+            {"question": "If P(A) = 0.4 and P(B) = 0.3 and A, B are independent, what is P(A∩B)?", "options": {"A": "0.7", "B": "0.1", "C": "0.12", "D": "0.34"}, "correct": "C", "explanation": "For independent events: P(A∩B) = P(A) × P(B) = 0.4 × 0.3 = 0.12."},
+        ],
+        'c programming': [
+            {"question": "What does the 'static' keyword do when applied to a local variable in C?", "options": {"A": "Makes it global", "B": "Persists variable across function calls", "C": "Allocates on heap", "D": "Makes it constant"}, "correct": "B", "explanation": "Static local variable retains its value between function calls. Memory allocated in data segment, not stack."},
+            {"question": "What is the output of: int a = 5; printf('%d', a++);?", "options": {"A": "6", "B": "5", "C": "Compilation error", "D": "Undefined"}, "correct": "B", "explanation": "Post-increment (a++): uses current value (5) THEN increments. So printf prints 5, then a becomes 6."},
+            {"question": "What does malloc() return on failure?", "options": {"A": "0", "B": "-1", "C": "NULL", "D": "ENOMEM"}, "correct": "C", "explanation": "malloc() returns NULL if memory allocation fails. Always check: if(ptr == NULL) { handle error; }"},
+            {"question": "What is a dangling pointer in C?", "options": {"A": "Pointer to NULL", "B": "Pointer that points to already freed memory", "C": "Pointer to stack variable", "D": "Uninitialized integer variable"}, "correct": "B", "explanation": "Dangling pointer: pointer still holds address of memory that has been freed with free(). Accessing it = undefined behavior."},
+            {"question": "What is the size of int on a 64-bit system (typically)?", "options": {"A": "2 bytes", "B": "4 bytes", "C": "8 bytes", "D": "16 bytes"}, "correct": "B", "explanation": "int is typically 4 bytes (32 bits) on both 32 and 64-bit systems. long long int = 8 bytes."},
+        ],
+    }
+
+    # Find best matching bank — check longer keys first (more specific)
+    matched_bank = None
+    sorted_keys = sorted(BANKS.keys(), key=lambda k: -len(k))
+    for key in sorted_keys:
+        bank = BANKS[key]
+        if key in t or all(kw in t for kw in key.split()):
+            matched_bank = bank
+            break
+        # Also check if any word of key exists in topic
+        if any(kw in t for kw in key.split() if len(kw) > 4):
+            matched_bank = bank
+            break
+
+
+    if matched_bank is None:
+        # Generic fallback — still topic-named
+        clean_t = topic.strip().title()
+        matched_bank = [
+            {"question": f"What is the primary purpose of {clean_t}?", "options": {"A": f"To systematically solve problems in {clean_t}", "B": "To increase hardware power consumption", "C": "To bypass security protocols", "D": "To delete temporary files"}, "correct": "A", "explanation": f"{clean_t} provides structured methods to systematically analyze and solve domain problems."},
+            {"question": f"Which concept is MOST fundamental to understanding {clean_t}?", "options": {"A": "Core definitions and first principles", "B": "Screen resolution settings", "C": "Browser cache management", "D": "Network bandwidth allocation"}, "correct": "A", "explanation": f"Core definitions and first principles form the foundation of {clean_t}."},
+            {"question": f"What skill does mastering {clean_t} primarily develop?", "options": {"A": "Analytical and problem-solving ability", "B": "Typing speed", "C": "Hardware repair", "D": "Language translation"}, "correct": "A", "explanation": f"Mastering {clean_t} develops strong analytical reasoning and structured problem-solving skills."},
+            {"question": f"In RTU B.Tech exams, {clean_t} questions are mostly from which part?", "options": {"A": "Part A — 2 mark short questions", "B": "Part B — 4 mark conceptual", "C": "Part C — 10 mark long answer", "D": "All parts equally"}, "correct": "D", "explanation": "RTU papers have Part A (2M), Part B (4M), Part C (10M) — all cover topics from the complete syllabus."},
+            {"question": f"What is the best preparation strategy for {clean_t}?", "options": {"A": "Study all PYQs and understand concepts deeply", "B": "Only memorize formulas without understanding", "C": "Skip difficult chapters", "D": "Read reference books only"}, "correct": "A", "explanation": "PYQ analysis + concept clarity = highest marks. RTU repeats questions 70-90% from previous years."},
+        ]
+
+    # Shuffle and pick 5 random questions so each refresh gives different set
+    import random as _random
+    pool = list(matched_bank)
+    _random.shuffle(pool)
+    return pool[:5]
 
 
 def generate_fallback_notes(topic):
