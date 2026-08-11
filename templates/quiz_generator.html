@@ -2,193 +2,289 @@
 {% block title %}MCQ Quiz Generator — StudyMate AI{% endblock %}
 {% block content %}
 <style>
-  .quiz-page { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
-  .quiz-hero { text-align: center; padding: 36px 20px 24px; }
-  .quiz-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #34d399; margin-bottom: 14px; letter-spacing: .5px; }
-  .quiz-title { font-size: clamp(22px,5vw,40px); font-weight: 900; background: linear-gradient(135deg, #fff 30%, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-  .quiz-sub { color: rgba(255,255,255,0.45); font-size: 14px; max-width: 480px; margin: 0 auto 24px; }
-  .quiz-search { display: flex; gap: 10px; max-width: 680px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 8px 8px 8px 18px; backdrop-filter: blur(16px); }
-  .quiz-search input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; }
-  .quiz-search input::placeholder { color: rgba(255,255,255,0.3); }
-  .btn-quiz { background: linear-gradient(135deg, #34d399, #059669); border: none; color: #fff; font-weight: 800; padding: 12px 26px; border-radius: 12px; cursor: pointer; font-size: 14px; transition: .2s; white-space: nowrap; }
-  .btn-quiz:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,211,153,0.4); }
-  /* Score bar */
-  .score-bar { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 16px; flex-wrap: wrap; gap: 10px; }
-  .quiz-label { font-size: 18px; font-weight: 800; color: #fff; }
-  .score-pill { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); border-radius: 12px; padding: 8px 20px; font-size: 14px; font-weight: 700; color: #34d399; }
-  /* Question card */
-  .q-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; margin-bottom: 16px; transition: border-color .3s, background .3s; }
-  .q-card.correct { border-color: rgba(52,211,153,0.5); background: rgba(52,211,153,0.04); }
-  .q-card.wrong { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.04); }
-  .q-num { font-size: 11px; font-weight: 800; color: #34d399; letter-spacing: 1px; margin-bottom: 10px; }
-  .q-text { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.55; margin-bottom: 20px; }
+  .qz-page { max-width: 860px; margin: 0 auto; padding: 0 20px 60px; }
+  .qz-hero { text-align: center; padding: 36px 20px 28px; }
+  .qz-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); padding: 6px 18px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #34d399; margin-bottom: 14px; }
+  .qz-title { font-size: clamp(24px,5vw,40px); font-weight: 900; background: linear-gradient(135deg,#fff 30%,#34d399); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom: 8px; }
+  .qz-sub { color: rgba(255,255,255,.45); font-size: 14px; max-width: 480px; margin: 0 auto 24px; }
+  .qz-bar { display: flex; gap: 10px; max-width: 680px; margin: 0 auto; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 8px 8px 8px 18px; backdrop-filter: blur(16px); }
+  .qz-bar input { flex:1; background:transparent; border:none; outline:none; color:#fff; font-size:14px; }
+  .qz-bar input::placeholder { color:rgba(255,255,255,.3); }
+  .btn-gen { background: linear-gradient(135deg,#34d399,#059669); border:none; color:#fff; font-weight:800; padding:12px 26px; border-radius:12px; cursor:pointer; font-size:14px; transition:.2s; white-space:nowrap; }
+  .btn-gen:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,211,153,.4); }
+
+  /* Question Card */
+  .qz-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:24px 24px 20px; margin-bottom:14px; transition:border-color .3s; }
+  .qz-card.answered { border-color:rgba(255,255,255,.15); }
+  .qz-num { font-size:11px; font-weight:800; color:#34d399; letter-spacing:1px; margin-bottom:10px; }
+  .qz-q { font-size:15px; font-weight:700; color:#fff; line-height:1.55; margin-bottom:18px; }
+
   /* Options */
-  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .opt-btn { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); font-size: 13px; cursor: pointer; transition: .2s; text-align: left; width: 100%; }
-  .opt-btn:hover:not(.disabled) { border-color: rgba(52,211,153,0.45); background: rgba(52,211,153,0.08); color: #fff; }
-  .opt-btn.selected-correct { border-color: #34d399 !important; background: rgba(52,211,153,0.18) !important; color: #34d399 !important; font-weight: 700; }
-  .opt-btn.selected-wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.14) !important; color: #ef4444 !important; font-weight: 700; }
-  .opt-btn.reveal-correct { border-color: #34d399 !important; background: rgba(52,211,153,0.1) !important; color: #34d399 !important; }
-  .opt-btn.disabled { pointer-events: none; }
-  .opt-key { min-width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.6); flex-shrink: 0; }
-  .opt-btn.selected-correct .opt-key { background: rgba(52,211,153,0.3); color: #34d399; }
-  .opt-btn.selected-wrong .opt-key { background: rgba(239,68,68,0.3); color: #ef4444; }
-  .opt-btn.reveal-correct .opt-key { background: rgba(52,211,153,0.2); color: #34d399; }
+  .opts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .opt { display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:13px; border:2px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:rgba(255,255,255,.85); font-size:13px; cursor:pointer; transition:.15s; text-align:left; width:100%; user-select:none; }
+  .opt:hover { border-color:rgba(52,211,153,.45); background:rgba(52,211,153,.07); color:#fff; }
+  .opt.selected { border-color:#34d399; background:rgba(52,211,153,.15); color:#fff; font-weight:600; }
+  /* After submit */
+  .opt.correct-ans { border-color:#34d399 !important; background:rgba(52,211,153,.2) !important; color:#34d399 !important; font-weight:700; }
+  .opt.wrong-ans   { border-color:#ef4444 !important; background:rgba(239,68,68,.15) !important; color:#ef4444 !important; font-weight:700; }
+  .opt.show-correct { border-color:#34d399 !important; background:rgba(52,211,153,.1) !important; color:#34d399 !important; }
+  .opt.locked { pointer-events:none; }
+  .opt-k { min-width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.09); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+  .opt.selected .opt-k { background:rgba(52,211,153,.3); color:#34d399; }
+  .opt.correct-ans .opt-k { background:rgba(52,211,153,.35); color:#34d399; }
+  .opt.wrong-ans .opt-k { background:rgba(239,68,68,.35); color:#ef4444; }
+  .opt.show-correct .opt-k { background:rgba(52,211,153,.25); color:#34d399; }
+
   /* Explanation */
-  .exp-box { background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.2); border-radius: 12px; padding: 14px 16px; margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.6; display: none; }
-  .exp-box b { color: #34d399; }
-  /* Result */
-  .result-card { background: linear-gradient(135deg, rgba(52,211,153,0.1), rgba(34,211,238,0.05)); border: 1px solid rgba(52,211,153,0.3); border-radius: 24px; padding: 36px; text-align: center; margin: 28px 0; }
-  .result-num { font-size: 60px; font-weight: 900; background: linear-gradient(135deg, #34d399, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 8px; }
-  .result-msg { font-size: 16px; color: rgba(255,255,255,0.75); margin: 10px 0 20px; }
-  .btn-retry { background: linear-gradient(135deg, #34d399, #059669); border: none; color: #fff; font-weight: 700; padding: 13px 28px; border-radius: 13px; cursor: pointer; font-size: 14px; margin-right: 10px; }
-  .btn-new { display: inline-block; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.75); font-weight: 700; padding: 13px 24px; border-radius: 13px; font-size: 14px; text-decoration: none; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (max-width: 560px) { .options-grid { grid-template-columns: 1fr; } .quiz-search { flex-direction: column; } .btn-quiz { width: 100%; } }
+  .exp { background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.2); border-radius:12px; padding:13px 16px; margin-top:14px; font-size:13px; color:rgba(255,255,255,.82); line-height:1.6; display:none; }
+  .exp b { color:#34d399; }
+
+  /* Submit button */
+  .submit-wrap { text-align:center; margin:24px 0; }
+  .btn-submit { background:linear-gradient(135deg,#34d399,#059669); border:none; color:#fff; font-weight:800; padding:14px 40px; border-radius:14px; cursor:pointer; font-size:15px; transition:.2s; box-shadow:0 4px 20px rgba(52,211,153,.3); }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(52,211,153,.45); }
+  .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+  .answered-count { font-size:13px; color:rgba(255,255,255,.45); margin-top:10px; }
+
+  /* Score progress bar */
+  .prog-wrap { max-width:500px; margin:0 auto 4px; }
+  .prog-track { background:rgba(255,255,255,.08); border-radius:999px; height:8px; overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,#34d399,#22d3ee); border-radius:999px; transition:width .6s ease; }
+
+  /* Result card */
+  .res-card { background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(34,211,238,.05)); border:1px solid rgba(52,211,153,.3); border-radius:24px; padding:36px 24px; text-align:center; margin:28px 0 16px; }
+  .res-score { font-size:64px; font-weight:900; background:linear-gradient(135deg,#34d399,#22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+  .res-label { font-size:14px; color:rgba(255,255,255,.5); margin-bottom:4px; }
+  .res-msg { font-size:16px; color:rgba(255,255,255,.75); margin:12px 0 6px; }
+  .res-sub { font-size:13px; color:rgba(255,255,255,.4); margin-bottom:24px; }
+  .res-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .btn-retry { background:linear-gradient(135deg,#34d399,#059669); border:none; color:#fff; font-weight:700; padding:13px 28px; border-radius:13px; cursor:pointer; font-size:14px; }
+  .btn-new { display:inline-block; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.75); font-weight:700; padding:13px 24px; border-radius:13px; font-size:14px; text-decoration:none; }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media(max-width:560px) { .opts{grid-template-columns:1fr;} .qz-bar{flex-direction:column;} .btn-gen{width:100%;} }
 </style>
 
-<div class="quiz-page">
-  <!-- Hero / Search -->
-  <div class="quiz-hero">
-    <div class="quiz-badge">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      MCQ QUIZ — INSTANT EXAM PRACTICE
-    </div>
-    <h1 class="quiz-title">Test Your Knowledge</h1>
-    <p class="quiz-sub">5-question MCQ quizzes on any subject with instant feedback & explanations.</p>
+<div class="qz-page">
 
-    <form method="POST" action="{{ url_for('quiz') }}" id="quizForm">
-      <div class="quiz-search">
-        <input type="text" name="topic" id="topicInput" value="{{ topic }}" placeholder="e.g. Operating Systems, OOPS, BST, KCL KVL..." required />
-        <button type="submit" class="btn-quiz" onclick="showLoading()">
-          ▶ Start Quiz
-        </button>
+  <!-- Hero -->
+  <div class="qz-hero">
+    <div class="qz-badge">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      MCQ QUIZ — EXAM STYLE PRACTICE
+    </div>
+    <h1 class="qz-title">Test Your Knowledge</h1>
+    <p class="qz-sub">Answer all questions, then submit to see your score with explanations.</p>
+
+    <form method="POST" action="{{ url_for('quiz') }}" id="genForm">
+      <div class="qz-bar">
+        <input type="text" name="topic" id="topicInput" value="{{ topic }}"
+               placeholder="e.g. Operating Systems, OOPS, BST, KCL KVL..." required />
+        <button type="submit" class="btn-gen" onclick="showLoading()">▶ Generate Quiz</button>
       </div>
     </form>
   </div>
 
   <!-- Loading -->
-  <div id="loadingState" style="display:none; text-align:center; padding:60px 20px;">
-    <div style="width:52px;height:52px;border:4px solid rgba(52,211,153,0.2);border-top-color:#34d399;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;"></div>
+  <div id="loadingState" style="display:none;text-align:center;padding:60px 20px;">
+    <div style="width:52px;height:52px;border:4px solid rgba(52,211,153,.2);border-top-color:#34d399;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;"></div>
     <h3 style="color:#fff;font-size:18px;font-weight:700;margin-bottom:6px;">Generating Quiz...</h3>
-    <p style="color:rgba(255,255,255,0.4);font-size:13px;">Creating 5 questions on "{{ topic }}"</p>
+    <p style="color:rgba(255,255,255,.4);font-size:13px;">Creating 5 questions on "{{ topic }}"</p>
   </div>
 
   {% if quiz_data %}
 
-  <!-- Score bar -->
-  <div class="score-bar">
-    <div class="quiz-label">📝 {{ topic }}</div>
-    <div class="score-pill">Score: <span id="score">0</span> / {{ quiz_data|length }}</div>
+  <!-- Question header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 20px;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:18px;font-weight:800;color:#fff;">📝 {{ topic }}</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.45);">
+      Answered: <span id="answeredCount" style="color:#34d399;font-weight:700;">0</span> / {{ quiz_data|length }}
+    </div>
   </div>
 
-  <!-- Questions (rendered server-side — safe) -->
+  <!-- Questions -->
   <div id="quizContainer">
     {% for q in quiz_data %}
-    <div class="q-card" id="qcard-{{ loop.index0 }}">
-      <div class="q-num">QUESTION {{ loop.index }} of {{ quiz_data|length }}</div>
-      <div class="q-text">{{ q.question }}</div>
-      <div class="options-grid" id="opts-{{ loop.index0 }}">
-        {% set qi = loop.index0 %}
+    <div class="qz-card" id="qcard-{{ loop.index0 }}">
+      <div class="qz-num">QUESTION {{ loop.index }} of {{ quiz_data|length }}</div>
+      <div class="qz-q">{{ q.question }}</div>
+      <div class="opts" id="opts-{{ loop.index0 }}">
         {% for key in ['A','B','C','D'] %}
-          {% if q.options[key] is defined %}
-          <button class="opt-btn" id="opt-{{ qi }}-{{ key }}"
-                  data-qi="{{ qi }}" data-key="{{ key }}"
-                  onclick="selectOption(this)">
-            <span class="opt-key">{{ key }}</span>
+          {% if key in q.options %}
+          <button type="button" class="opt"
+                  id="opt-{{ loop.index0 }}-{{ key }}"
+                  data-qi="{{ loop.index0 }}"
+                  data-key="{{ key }}"
+                  onclick="pickOpt(this)">
+            <span class="opt-k">{{ key }}</span>
             <span>{{ q.options[key] }}</span>
           </button>
           {% endif %}
         {% endfor %}
       </div>
-      <div class="exp-box" id="exp-{{ loop.index0 }}">
+      <div class="exp" id="exp-{{ loop.index0 }}">
         <b>💡 Explanation:</b> {{ q.explanation }}
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Result Card -->
-  <div class="result-card" id="resultCard" style="display:none;">
-    <div class="result-num" id="finalScore">0/{{ quiz_data|length }}</div>
-    <div class="result-msg" id="resultMsg"></div>
-    <button class="btn-retry" onclick="retryQuiz()">🔄 Try Again</button>
-    <a class="btn-new" href="{{ url_for('quiz') }}">New Topic</a>
+  <!-- Submit -->
+  <div class="submit-wrap" id="submitWrap">
+    <button class="btn-submit" id="submitBtn" onclick="submitQuiz()" disabled>
+      ✅ Submit Quiz
+    </button>
+    <div class="answered-count">Select an answer for all {{ quiz_data|length }} questions to submit</div>
   </div>
 
-  <!-- Store correct answers safely in JSON — no inline JS injection -->
-  <script id="quizMeta" type="application/json">
+  <!-- Result (hidden initially) -->
+  <div class="res-card" id="resCard" style="display:none;">
+    <div class="res-label">Your Final Score</div>
+    <div class="res-score" id="resScore">0/{{ quiz_data|length }}</div>
+    <div class="res-msg" id="resMsg"></div>
+    <div class="res-sub" id="resSub"></div>
+    <div class="prog-wrap">
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.35);" id="progLabel"></div>
+    <div class="res-actions" style="margin-top:24px;">
+      <button class="btn-retry" onclick="retryQuiz()">🔄 Try Again</button>
+      <a class="btn-new" href="{{ url_for('quiz') }}">New Topic</a>
+    </div>
+  </div>
+
+  <!-- Safe JSON data — no JS injection -->
+  <script id="qzData" type="application/json">
   {
     "total": {{ quiz_data|length }},
-    "answers": {
-      {% for q in quiz_data %}
-      "{{ loop.index0 }}": "{{ q.correct }}"{% if not loop.last %},{% endif %}
-      {% endfor %}
-    }
+    "answers": { {% for q in quiz_data %}"{{ loop.index0 }}": "{{ q.correct }}"{% if not loop.last %}, {% endif %}{% endfor %} }
   }
   </script>
 
   <script>
-    var meta = JSON.parse(document.getElementById('quizMeta').textContent);
-    var total = meta.total;
-    var answers = meta.answers;
-    var answered = {};
-    var correctCount = 0;
+    var QZ = JSON.parse(document.getElementById('qzData').textContent);
+    var total = QZ.total;
+    var correctAnswers = QZ.answers;
+    var userAnswers = {};   // qi -> chosen key
+    var submitted = false;
 
-    function selectOption(btn) {
+    function pickOpt(btn) {
+      if (submitted) return;
       var qi = btn.getAttribute('data-qi');
-      var chosen = btn.getAttribute('data-key');
-      if (answered[qi]) return;
-      answered[qi] = true;
+      var key = btn.getAttribute('data-key');
 
-      var correct = answers[qi];
-      var allBtns = document.getElementById('opts-' + qi).querySelectorAll('.opt-btn');
-      allBtns.forEach(function(b) { b.classList.add('disabled'); });
+      // Deselect all options in this question
+      var allOpts = document.getElementById('opts-' + qi).querySelectorAll('.opt');
+      allOpts.forEach(function(o) { o.classList.remove('selected'); });
 
-      var correctBtn = document.getElementById('opt-' + qi + '-' + correct);
+      // Select chosen
+      btn.classList.add('selected');
 
-      if (chosen === correct) {
-        btn.classList.add('selected-correct');
-        document.getElementById('qcard-' + qi).classList.add('correct');
-        correctCount++;
-      } else {
-        btn.classList.add('selected-wrong');
-        if (correctBtn) correctBtn.classList.add('reveal-correct');
-        document.getElementById('qcard-' + qi).classList.add('wrong');
-      }
+      // Track
+      var wasAnswered = (qi in userAnswers);
+      userAnswers[qi] = key;
 
-      // Show explanation
-      document.getElementById('exp-' + qi).style.display = 'block';
-      document.getElementById('score').textContent = correctCount;
+      // Update answered count
+      if (!wasAnswered) {
+        var count = Object.keys(userAnswers).length;
+        document.getElementById('answeredCount').textContent = count;
 
-      if (Object.keys(answered).length === total) {
-        setTimeout(showResult, 700);
+        // Enable submit when all answered
+        if (count === total) {
+          document.getElementById('submitBtn').disabled = false;
+          document.getElementById('submitBtn').textContent = '✅ Submit Quiz — See Results';
+          document.querySelector('.answered-count').textContent = 'All questions answered! Ready to submit.';
+          document.querySelector('.answered-count').style.color = '#34d399';
+        } else {
+          document.getElementById('submitBtn').textContent = '✅ Submit Quiz (' + count + '/' + total + ' done)';
+        }
       }
     }
 
-    function showResult() {
-      var card = document.getElementById('resultCard');
-      card.style.display = 'block';
-      document.getElementById('finalScore').textContent = correctCount + '/' + total;
-      var pct = correctCount / total * 100;
-      document.getElementById('resultMsg').textContent =
-        pct === 100 ? '🏆 Perfect Score! Excellent prep!' :
-        pct >= 80  ? '🎉 Great job! Almost exam-ready!' :
-        pct >= 60  ? '👍 Good effort! Review explanations.' :
-                     '📚 Keep practising! Focus on weak areas.';
-      card.scrollIntoView({ behavior: 'smooth' });
+    function submitQuiz() {
+      if (submitted) return;
+      submitted = true;
+
+      var correct = 0;
+      document.getElementById('submitBtn').style.display = 'none';
+
+      for (var i = 0; i < total; i++) {
+        var qi = String(i);
+        var chosen = userAnswers[qi];
+        var rightKey = correctAnswers[qi];
+        var allOpts = document.getElementById('opts-' + i).querySelectorAll('.opt');
+
+        // Lock all options
+        allOpts.forEach(function(o) {
+          o.classList.remove('selected');
+          o.classList.add('locked');
+          var k = o.getAttribute('data-key');
+          if (k === rightKey) {
+            o.classList.add('show-correct');
+            o.querySelector('.opt-k').style.background = 'rgba(52,211,153,.25)';
+            o.querySelector('.opt-k').style.color = '#34d399';
+          }
+        });
+
+        // Mark chosen option
+        if (chosen) {
+          var chosenBtn = document.getElementById('opt-' + i + '-' + chosen);
+          if (chosen === rightKey) {
+            chosenBtn.classList.remove('show-correct');
+            chosenBtn.classList.add('correct-ans');
+            chosenBtn.querySelector('.opt-k').style.background = 'rgba(52,211,153,.35)';
+            chosenBtn.querySelector('.opt-k').style.color = '#34d399';
+            correct++;
+          } else {
+            chosenBtn.classList.remove('show-correct');
+            chosenBtn.classList.add('wrong-ans');
+            chosenBtn.querySelector('.opt-k').style.background = 'rgba(239,68,68,.35)';
+            chosenBtn.querySelector('.opt-k').style.color = '#ef4444';
+          }
+        }
+
+        // Show explanation
+        document.getElementById('exp-' + i).style.display = 'block';
+      }
+
+      // Show result
+      var pct = Math.round(correct / total * 100);
+      document.getElementById('resScore').textContent = correct + '/' + total;
+      document.getElementById('resMsg').textContent =
+        pct === 100 ? '🏆 Perfect Score! Outstanding!' :
+        pct >= 80   ? '🎉 Excellent! Almost exam-ready!' :
+        pct >= 60   ? '👍 Good effort! Review the explanations below.' :
+        pct >= 40   ? '📚 Keep practising! Focus on weak areas.' :
+                      '💪 Don\'t give up! Review & retry.';
+      document.getElementById('resSub').textContent =
+        correct + ' correct • ' + (total - correct) + ' wrong • ' + pct + '% score';
+      document.getElementById('progFill').style.width = pct + '%';
+      document.getElementById('progLabel').textContent = pct + '% Accuracy';
+
+      var resCard = document.getElementById('resCard');
+      resCard.style.display = 'block';
+      resCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function retryQuiz() {
-      answered = {}; correctCount = 0;
-      document.getElementById('score').textContent = 0;
-      document.getElementById('resultCard').style.display = 'none';
+      submitted = false;
+      userAnswers = {};
+      document.getElementById('answeredCount').textContent = '0';
+      document.getElementById('resCard').style.display = 'none';
+      document.getElementById('submitBtn').style.display = 'inline-block';
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('submitBtn').textContent = '✅ Submit Quiz';
+      document.querySelector('.answered-count').textContent = 'Select an answer for all ' + total + ' questions to submit';
+      document.querySelector('.answered-count').style.color = '';
+
       for (var i = 0; i < total; i++) {
-        document.getElementById('qcard-' + i).classList.remove('correct', 'wrong');
-        document.getElementById('exp-' + i).style.display = 'none';
-        document.getElementById('opts-' + i).querySelectorAll('.opt-btn').forEach(function(b) {
-          b.classList.remove('selected-correct', 'selected-wrong', 'reveal-correct', 'disabled');
+        var allOpts = document.getElementById('opts-' + i).querySelectorAll('.opt');
+        allOpts.forEach(function(o) {
+          o.classList.remove('selected', 'correct-ans', 'wrong-ans', 'show-correct', 'locked');
+          o.querySelector('.opt-k').style.background = '';
+          o.querySelector('.opt-k').style.color = '';
         });
+        document.getElementById('exp-' + i).style.display = 'none';
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -197,11 +293,12 @@
   </script>
 
   {% else %}
-  <div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.3);">
-    <div style="font-size:52px; margin-bottom:16px;">🧠</div>
-    <h3 style="color:#fff; font-size:18px; font-weight:700; margin-bottom:8px;">Ready to Quiz?</h3>
-    <p style="font-size:14px;">Enter any topic above to start a 5-question MCQ session.</p>
+  <div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,.3);">
+    <div style="font-size:52px;margin-bottom:16px;">🧠</div>
+    <h3 style="color:#fff;font-size:18px;font-weight:700;margin-bottom:8px;">Ready to Quiz?</h3>
+    <p style="font-size:14px;">Enter any topic above to start a 5-question MCQ exam.</p>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}
