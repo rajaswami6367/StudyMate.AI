@@ -180,35 +180,58 @@
     var userAnswers = {};   // qi -> chosen key
     var submitted = false;
 
+    function syncUI() {
+      for (var i = 0; i < total; i++) {
+        var qi = String(i);
+        var optsContainer = document.getElementById('opts-' + qi);
+        if (!optsContainer) continue;
+        var chosenKey = userAnswers[qi];
+        var allOpts = optsContainer.querySelectorAll('.opt');
+
+        allOpts.forEach(function(btn) {
+          var k = btn.getAttribute('data-key');
+          if (chosenKey && k === chosenKey) {
+            btn.classList.add('selected');
+          } else {
+            btn.classList.remove('selected');
+          }
+        });
+      }
+
+      var count = Object.keys(userAnswers).length;
+      var countEl = document.getElementById('answeredCount');
+      if (countEl) countEl.textContent = count;
+
+      var subBtn = document.getElementById('submitBtn');
+      var ansCountEl = document.querySelector('.answered-count');
+
+      if (subBtn) {
+        if (count === total) {
+          subBtn.disabled = false;
+          subBtn.textContent = '✅ Submit Quiz — See Results';
+          if (ansCountEl) {
+            ansCountEl.textContent = 'All questions answered! Ready to submit.';
+            ansCountEl.style.color = '#34d399';
+          }
+        } else {
+          subBtn.disabled = true;
+          subBtn.textContent = '✅ Submit Quiz (' + count + '/' + total + ' done)';
+          if (ansCountEl) {
+            ansCountEl.textContent = 'Select an answer for all ' + total + ' questions to submit';
+            ansCountEl.style.color = '';
+          }
+        }
+      }
+    }
+
     function pickOpt(btn) {
       if (submitted) return;
       var qi = btn.getAttribute('data-qi');
       var key = btn.getAttribute('data-key');
+      if (!qi || !key) return;
 
-      var allOpts = document.getElementById('opts-' + qi).querySelectorAll('.opt');
-
-      // Deselect all options in this question
-      allOpts.forEach(function(o) { o.classList.remove('selected'); });
-
-      // Always select chosen option firmly
-      btn.classList.add('selected');
       userAnswers[qi] = key;
-
-      // Always update answered count accurately
-      var count = Object.keys(userAnswers).length;
-      document.getElementById('answeredCount').textContent = count;
-
-      if (count === total) {
-        document.getElementById('submitBtn').disabled = false;
-        document.getElementById('submitBtn').textContent = '✅ Submit Quiz — See Results';
-        document.querySelector('.answered-count').textContent = 'All questions answered! Ready to submit.';
-        document.querySelector('.answered-count').style.color = '#34d399';
-      } else {
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('submitBtn').textContent = '✅ Submit Quiz (' + count + '/' + total + ' done)';
-        document.querySelector('.answered-count').textContent = 'Select an answer for all ' + total + ' questions to submit';
-        document.querySelector('.answered-count').style.color = '';
-      }
+      syncUI();
     }
 
     function submitQuiz() {
