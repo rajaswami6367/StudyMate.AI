@@ -394,18 +394,11 @@ def health():
     return {"status": "ok", "message": "StudyMate AI is active"}, 200
 
 
-#  STEP 6: Helper Function for Gemini API calls 
-def ask_gemini(prompt):
-    """
-    Sends a prompt to Gemini AI and returns the response text.
-    Fast, non-blocking execution optimized for cloud deployment on Render.
-    """
-    if not client:
-        return None, "AI not configured. Please add your GEMINI_API_KEY."
+import concurrent.futures
 
-    models_to_try = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash']
+def _gemini_worker(prompt):
+    models_to_try = ['gemini-flash-latest', 'gemini-3.6-flash']
     last_error = ""
-
     for model_name in models_to_try:
         try:
             response = client.models.generate_content(
@@ -417,12 +410,31 @@ def ask_gemini(prompt):
         except Exception as e:
             last_error = str(e)
             if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-                break  # Fast fallback on rate limit to prevent 30s Render timeout
+                break
+    return None, last_error
 
-    if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-        return None, "AI Rate Limit Reached"
 
-    return None, f"Gemini API Error: {last_error}"
+#  STEP 6: Helper Function for Gemini API calls 
+def ask_gemini(prompt, timeout_seconds=16):
+    """
+    Sends a prompt to Gemini AI and returns the response text.
+    Fast, non-blocking execution with strict 16s timeout guard to prevent Render 502 Bad Gateway proxy timeouts.
+    """
+    if not client:
+        return None, "AI not configured. Please add your GEMINI_API_KEY."
+
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(_gemini_worker, prompt)
+    try:
+        res, err = future.result(timeout=timeout_seconds)
+        executor.shutdown(wait=False)
+        return res, err
+    except concurrent.futures.TimeoutError:
+        executor.shutdown(wait=False)
+        return None, "AI Request Timed Out (Fast Fallback Activated)"
+    except Exception as e:
+        executor.shutdown(wait=False)
+        return None, str(e)
 
 
 
@@ -1124,7 +1136,7 @@ CRITICAL QUALITY DIRECTIVES:
 2. If '{topic}' is a tech product, gadget, hardware, processor, or real-world technology (e.g. smartphone processor, GPU, EV, Cloud), include REAL SPECIFICS: actual chip model names (Snapdragon 8 Gen 3, Apple A17 Pro, Dimensity 9300, Tensor G3), AnTuTu & Geekbench benchmark scores, manufacturing process nodes (3nm vs 4nm), CPU/GPU architecture (Cortex-X4, Adreno 750), NPU AI TOPS, thermal throttling, and real phone comparisons.
 3. If '{topic}' is an academic/engineering subject (e.g. OOPS, Operating Systems, DBMS, Mathematics), include authentic RTU B.Tech level numericals, code snippets, algorithm time complexities, and core concepts.
 4. Cover 5 DIFFERENT subtopics/angles of '{topic}' with 0 repetition.
-5. Provide 4 clear, plausible, fully detailed options (A, B, C, D) for each question.
+5. Provide 4 clear, plausible options (A, B, C, D) for each question. Keep options and explanations punchy and under 25 words each for high-speed generation.
 6. The explanation must clearly justify why the correct answer is right using real facts, specs, or logic.
 
 Return ONLY a valid JSON array of 5 objects with keys: 'question', 'options' (object with A, B, C, D), 'correct', 'explanation'. NO markdown code blocks. NO ```json wrapper."""
