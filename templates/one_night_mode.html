@@ -585,7 +585,7 @@ function toggleTopicComplete(checkbox, itemId) {
 }
 
 function playAudioSummary() {
-  let audioText = "{{ kit_data.audio_text | default('Welcome to your 1-night survival kit revision podcast.') }}";
+  let audioText = "{{ (kit_data and kit_data.audio_text) or 'Welcome to your 1-night survival kit revision podcast.' }}";
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     currentAudioUtterance = new SpeechSynthesisUtterance(audioText);
@@ -612,7 +612,7 @@ function submitExamFeedback() {
   fetch('/api/exam-feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ subject: "{{ kit_data.subject | default('Subject') }}", rating: rating, questions: questions })
+    body: JSON.stringify({ subject: "{{ (kit_data and kit_data.subject) or 'Subject' }}", rating: rating, questions: questions })
   })
   .then(res => res.json())
   .then(data => {

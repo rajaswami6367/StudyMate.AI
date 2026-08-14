@@ -119,6 +119,15 @@
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       Mark All Mastered
     </button>
+    <form method="POST" action="{{ url_for('save_item') }}" style="margin: 0; display: inline-flex;">
+      <input type="hidden" name="item_type" value="flashcard" />
+      <input type="hidden" name="title" value="Flashcards: {{ topic }}" />
+      <input type="hidden" name="content" value="{% for card in flashcards_data %}Q: {{ card.question }}&#10;A: {{ card.answer }}&#10;&#10;{% endfor %}" />
+      <button type="submit" class="btn-ctrl" style="color: #fbbf24; border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.1);">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Save Deck to Library
+      </button>
+    </form>
   </div>
 
   <!-- Cards -->

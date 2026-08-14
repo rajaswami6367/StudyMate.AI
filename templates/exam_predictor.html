@@ -25,10 +25,20 @@
         </p>
       </div>
 
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; align-items: center;">
         <button type="button" onclick="window.print()" class="btn-tool-action purple">
           <i data-feather="printer" style="width: 14px;"></i> Print / Save PDF
         </button>
+        {% if paper_data %}
+        <form method="POST" action="{{ url_for('save_item') }}" style="margin: 0;">
+          <input type="hidden" name="item_type" value="notes" />
+          <input type="hidden" name="title" value="Predicted Paper: {{ subject }}" />
+          <input type="hidden" name="content" value="{{ raw_json }}" />
+          <button type="submit" class="btn-tool-action purple" style="background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.4); color: #34d399; cursor: pointer;">
+            <i data-feather="bookmark" style="width: 14px;"></i> Save to Library
+          </button>
+        </form>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -37,7 +37,7 @@
       <div class="metric-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #3b82f6 !important; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.45), inset 0 0 20px rgba(59, 130, 246, 0.25) !important;">
         <div class="metric-icon" style="background: rgba(59, 130, 246, 0.35); color: #60a5fa; border: 1.5px solid #60a5fa; box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);"><i data-feather="file-text"></i></div>
         <div>
-          <div class="metric-number" style="color: #60a5fa; font-weight: 800;">{{ stats.notes if stats.notes else 12 }}</div>
+          <div class="metric-number" style="color: #60a5fa; font-weight: 800;">{{ stats.notes if (stats and stats.notes) else 12 }}</div>
           <div class="metric-label" style="color: #e0f2fe; font-weight: 700;">Saved Notes</div>
           <div class="metric-trend" style="color: #93c5fd; font-weight: 700;">↑ 3 this week</div>
         </div>
@@ -47,7 +47,7 @@
       <div class="metric-card" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #ec4899 !important; box-shadow: 0 10px 30px rgba(236, 72, 153, 0.45), inset 0 0 20px rgba(236, 72, 153, 0.25) !important;">
         <div class="metric-icon" style="background: rgba(236, 72, 153, 0.35); color: #f472b6; border: 1.5px solid #f472b6; box-shadow: 0 0 15px rgba(236, 72, 153, 0.8);"><i data-feather="message-circle"></i></div>
         <div>
-          <div class="metric-number" style="color: #f472b6; font-weight: 800;">{{ stats.doubt if stats.doubt else 27 }}</div>
+          <div class="metric-number" style="color: #f472b6; font-weight: 800;">{{ stats.doubt if (stats and stats.doubt) else 27 }}</div>
           <div class="metric-label" style="color: #fce7f3; font-weight: 700;">Doubts Solved</div>
           <div class="metric-trend" style="color: #fbcfe8; font-weight: 700;">↑ 8 this week</div>
         </div>
@@ -57,7 +57,7 @@
       <div class="metric-card" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #10b981 !important; box-shadow: 0 10px 30px rgba(52, 211, 153, 0.45), inset 0 0 20px rgba(52, 211, 153, 0.25) !important;">
         <div class="metric-icon" style="background: rgba(52, 211, 153, 0.35); color: #34d399; border: 1.5px solid #34d399; box-shadow: 0 0 15px rgba(52, 211, 153, 0.8);"><i data-feather="check-circle"></i></div>
         <div>
-          <div class="metric-number" style="color: #34d399; font-weight: 800;">{{ stats.quiz if stats.quiz else 15 }}</div>
+          <div class="metric-number" style="color: #34d399; font-weight: 800;">{{ stats.quiz if (stats and stats.quiz) else 15 }}</div>
           <div class="metric-label" style="color: #ecfdf5; font-weight: 700;">Quizzes Taken</div>
           <div class="metric-trend" style="color: #a7f3d0; font-weight: 700;">↑ 5 this week</div>
         </div>
@@ -67,7 +67,7 @@
       <div class="metric-card" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(11, 16, 32, 0.95)) !important; border: 2px solid #f59e0b !important; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.45), inset 0 0 20px rgba(251, 191, 36, 0.25) !important;">
         <div class="metric-icon" style="background: rgba(251, 191, 36, 0.35); color: #fbbf24; border: 1.5px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);"><i data-feather="layers"></i></div>
         <div>
-          <div class="metric-number" style="color: #fbbf24; font-weight: 800;">{{ stats.flashcard if stats.flashcard else 18 }}</div>
+          <div class="metric-number" style="color: #fbbf24; font-weight: 800;">{{ stats.flashcard if (stats and stats.flashcard) else 18 }}</div>
           <div class="metric-label" style="color: #fefce8; font-weight: 700;">Revision Cards</div>
           <div class="metric-trend" style="color: #fef08a; font-weight: 700;">↑ 7 this week</div>
         </div>

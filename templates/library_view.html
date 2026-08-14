@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}{{ item.title }} — My Library{% endblock %}
+{% block title %}{{ item.title if item else 'Saved Item' }} — My Library{% endblock %}
 
 {% block content %}
+{% if item %}
 <section class="tool-section">
   <div class="tool-header">
     <a href="{{ url_for('library') }}" class="btn btn-ghost btn-sm" style="align-self: flex-start; margin-bottom: var(--space-lg);">
@@ -22,7 +23,7 @@
     </div>
     
     <h2>{{ item.title }}</h2>
-    <p>Saved on {{ item.created_at[:10] }}</p>
+    <p>Saved on {{ item.created_at[:10] if item.created_at else '' }}</p>
   </div>
 
   <div class="tool-container">
@@ -120,12 +121,19 @@
           <i data-feather="trash-2"></i> Delete from Library
         </button>
       </form>
-    </div>
   </div>
 </section>
+{% else %}
+<div style="padding: 60px 20px; text-align: center; color: #fff;">
+  <h2>Item Not Found</h2>
+  <p>The requested item could not be found in your library.</p>
+  <a href="{{ url_for('library') }}" class="btn btn-primary" style="margin-top: 16px;">Back to Library</a>
+</div>
+{% endif %}
+{% endblock %}
 
 {% block extra_js %}
-{% if item.item_type == 'quiz' %}
+{% if item and item.item_type == 'quiz' %}
 <script>
   function gradeQuiz() {
     const form = document.getElementById('mcqForm');

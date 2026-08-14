@@ -150,6 +150,14 @@
     <div class="res-actions" style="margin-top:24px;">
       <button class="btn-retry" onclick="retryQuiz()">🔄 Try Again</button>
       <a class="btn-new" href="{{ url_for('quiz') }}">New Topic</a>
+      <form method="POST" action="{{ url_for('save_item') }}" style="margin:0; display:inline-block;">
+        <input type="hidden" name="item_type" value="quiz" />
+        <input type="hidden" name="title" value="Quiz: {{ topic }}" />
+        <input type="hidden" name="content" value="{{ raw_quiz_json }}" />
+        <button type="submit" class="btn-new" style="background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.4); color: #34d399; cursor: pointer;">
+          📌 Save to Library
+        </button>
+      </form>
     </div>
   </div>
 
