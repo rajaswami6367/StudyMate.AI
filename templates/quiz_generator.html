@@ -21,20 +21,20 @@
 
   /* Options */
   .opts { display: flex; flex-direction: column; gap: 10px; }
-  .opt { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-radius: 14px; border: 2px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); color: rgba(255,255,255,.9); font-size: 14px; line-height: 1.5; cursor: pointer; transition: .15s; text-align: left; width: 100%; user-select: none; word-break: break-word; }
+  .opt { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-radius: 14px; border: 2px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); color: rgba(255,255,255,.9); font-size: 14px; line-height: 1.5; cursor: pointer; transition: all .15s ease; text-align: left; width: 100%; user-select: none; word-break: break-word; outline: none; }
   .opt span:last-child { flex: 1; margin-top: 2px; }
-  .opt:hover { border-color: rgba(52,211,153,.45); background: rgba(52,211,153,.07); color: #fff; }
-  .opt.selected { border-color: #34d399; background: rgba(52,211,153,.15); color: #fff; font-weight: 600; }
+  .opt:hover:not(.selected):not(.locked) { border-color: rgba(52,211,153,.5); background: rgba(52,211,153,.08); color: #fff; }
+  .opt.selected { border-color: #34d399 !important; background: rgba(52,211,153,.22) !important; color: #ffffff !important; font-weight: 700 !important; box-shadow: 0 0 16px rgba(52,211,153,.35) !important; }
   /* After submit */
-  .opt.correct-ans { border-color: #34d399 !important; background: rgba(52,211,153,.2) !important; color: #34d399 !important; font-weight: 700; }
-  .opt.wrong-ans   { border-color: #ef4444 !important; background: rgba(239,68,68,.15) !important; color: #ef4444 !important; font-weight: 700; }
-  .opt.show-correct { border-color: #34d399 !important; background: rgba(52,211,153,.1) !important; color: #34d399 !important; }
+  .opt.correct-ans { border-color: #34d399 !important; background: rgba(52,211,153,.25) !important; color: #34d399 !important; font-weight: 700 !important; }
+  .opt.wrong-ans   { border-color: #ef4444 !important; background: rgba(239,68,68,.2) !important; color: #ef4444 !important; font-weight: 700 !important; }
+  .opt.show-correct { border-color: #34d399 !important; background: rgba(52,211,153,.15) !important; color: #34d399 !important; }
   .opt.locked { pointer-events: none; }
-  .opt-k { min-width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.09); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
-  .opt.selected .opt-k { background: rgba(52,211,153,.3); color: #34d399; }
-  .opt.correct-ans .opt-k { background: rgba(52,211,153,.35); color: #34d399; }
-  .opt.wrong-ans .opt-k { background: rgba(239,68,68,.35); color: #ef4444; }
-  .opt.show-correct .opt-k { background: rgba(52,211,153,.25); color: #34d399; }
+  .opt-k { min-width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.09); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 1px; transition: all .15s ease; }
+  .opt.selected .opt-k { background: #34d399 !important; color: #0b1020 !important; font-weight: 900 !important; }
+  .opt.correct-ans .opt-k { background: #34d399 !important; color: #0b1020 !important; font-weight: 900 !important; }
+  .opt.wrong-ans .opt-k { background: #ef4444 !important; color: #ffffff !important; font-weight: 900 !important; }
+  .opt.show-correct .opt-k { background: rgba(52,211,153,.3) !important; color: #34d399 !important; }
 
   /* Explanation */
   .exp { background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.2); border-radius:12px; padding:13px 16px; margin-top:14px; font-size:13px; color:rgba(255,255,255,.82); line-height:1.6; display:none; }
@@ -181,32 +181,35 @@
       if (submitted) return;
       var qi = btn.getAttribute('data-qi');
       var key = btn.getAttribute('data-key');
+      var isAlreadySelected = btn.classList.contains('selected');
 
-      // Deselect all options in this question
       var allOpts = document.getElementById('opts-' + qi).querySelectorAll('.opt');
-      allOpts.forEach(function(o) { o.classList.remove('selected'); });
 
-      // Select chosen
-      btn.classList.add('selected');
+      if (isAlreadySelected) {
+        // Toggle OFF if user clicks the already selected option again
+        btn.classList.remove('selected');
+        delete userAnswers[qi];
+      } else {
+        // Deselect all options in this question & select chosen option
+        allOpts.forEach(function(o) { o.classList.remove('selected'); });
+        btn.classList.add('selected');
+        userAnswers[qi] = key;
+      }
 
-      // Track
-      var wasAnswered = (qi in userAnswers);
-      userAnswers[qi] = key;
+      // Always update answered count accurately
+      var count = Object.keys(userAnswers).length;
+      document.getElementById('answeredCount').textContent = count;
 
-      // Update answered count
-      if (!wasAnswered) {
-        var count = Object.keys(userAnswers).length;
-        document.getElementById('answeredCount').textContent = count;
-
-        // Enable submit when all answered
-        if (count === total) {
-          document.getElementById('submitBtn').disabled = false;
-          document.getElementById('submitBtn').textContent = '✅ Submit Quiz — See Results';
-          document.querySelector('.answered-count').textContent = 'All questions answered! Ready to submit.';
-          document.querySelector('.answered-count').style.color = '#34d399';
-        } else {
-          document.getElementById('submitBtn').textContent = '✅ Submit Quiz (' + count + '/' + total + ' done)';
-        }
+      if (count === total) {
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').textContent = '✅ Submit Quiz — See Results';
+        document.querySelector('.answered-count').textContent = 'All questions answered! Ready to submit.';
+        document.querySelector('.answered-count').style.color = '#34d399';
+      } else {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').textContent = '✅ Submit Quiz (' + count + '/' + total + ' done)';
+        document.querySelector('.answered-count').textContent = 'Select an answer for all ' + total + ' questions to submit';
+        document.querySelector('.answered-count').style.color = '';
       }
     }
 
