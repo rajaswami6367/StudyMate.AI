@@ -403,7 +403,7 @@ def ask_gemini(prompt):
     if not client:
         return None, "AI not configured. Please add your GEMINI_API_KEY."
 
-    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
+    models_to_try = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash']
     last_error = ""
 
     for model_name in models_to_try:
@@ -1115,27 +1115,19 @@ def quiz():
         # Use random seed hint so Gemini gives different questions each time
         rand_hint = random.randint(1000, 9999)
 
-        prompt = f"""You are a B.Tech exam question setter for RTU Kota university.
-Generate EXACTLY 5 UNIQUE multiple-choice questions STRICTLY about '{topic}' only.
-Request ID: {rand_hint} — generate DIFFERENT questions than usual, covering varied subtopics.
+        prompt = f"""You are an elite Quiz Master and Subject Matter Expert.
+Generate EXACTLY 5 HIGH-YIELD, EXTREMELY SPECIFIC multiple-choice questions on the topic: '{topic}'.
+Request ID: {rand_hint}
 
-Rules:
-1. Every question MUST be 100% specific to '{topic}' — no generic CS questions.
-2. Cover 5 DIFFERENT subtopics/concepts of '{topic}' — no repetition.
-3. All 4 options must be plausible but only ONE correct.
-4. Explanation must clearly justify why the correct answer is right.
-5. Questions should be RTU B.Tech exam level difficulty.
+CRITICAL QUALITY DIRECTIVES:
+1. Every question MUST test authentic, deep, highly specific knowledge about '{topic}' — NEVER produce generic or superficial textbook fluff.
+2. If '{topic}' is a tech product, gadget, hardware, processor, or real-world technology (e.g. smartphone processor, GPU, EV, Cloud), include REAL SPECIFICS: actual chip model names (Snapdragon 8 Gen 3, Apple A17 Pro, Dimensity 9300, Tensor G3), AnTuTu & Geekbench benchmark scores, manufacturing process nodes (3nm vs 4nm), CPU/GPU architecture (Cortex-X4, Adreno 750), NPU AI TOPS, thermal throttling, and real phone comparisons.
+3. If '{topic}' is an academic/engineering subject (e.g. OOPS, Operating Systems, DBMS, Mathematics), include authentic RTU B.Tech level numericals, code snippets, algorithm time complexities, and core concepts.
+4. Cover 5 DIFFERENT subtopics/angles of '{topic}' with 0 repetition.
+5. Provide 4 clear, plausible, fully detailed options (A, B, C, D) for each question.
+6. The explanation must clearly justify why the correct answer is right using real facts, specs, or logic.
 
-Return ONLY a valid JSON array. NO markdown. NO ```json wrapper. NO extra text.
-Format:
-[
-  {{
-    "question": "Specific question about {topic}...",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct": "A",
-    "explanation": "Clear explanation why A is correct..."
-  }}
-]"""
+Return ONLY a valid JSON array of 5 objects with keys: 'question', 'options' (object with A, B, C, D), 'correct', 'explanation'. NO markdown code blocks. NO ```json wrapper."""
 
         result, error_msg = ask_gemini(prompt)
 
