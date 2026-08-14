@@ -35,6 +35,8 @@
   .opt.correct-ans .opt-k { background: #34d399 !important; color: #0b1020 !important; font-weight: 900 !important; }
   .opt.wrong-ans .opt-k { background: #ef4444 !important; color: #ffffff !important; font-weight: 900 !important; }
   .opt.show-correct .opt-k { background: rgba(52,211,153,.3) !important; color: #34d399 !important; }
+  .opt-check { display: none; font-size: 16px; font-weight: 900; color: #34d399; margin-left: auto; flex-shrink: 0; margin-top: 2px; }
+  .opt.selected .opt-check { display: inline-block !important; }
 
   /* Explanation */
   .exp { background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.2); border-radius:12px; padding:13px 16px; margin-top:14px; font-size:13px; color:rgba(255,255,255,.82); line-height:1.6; display:none; }
@@ -119,6 +121,7 @@
                   onclick="pickOpt(this)">
             <span class="opt-k">{{ key }}</span>
             <span>{{ q.options[key] }}</span>
+            <span class="opt-check">✓</span>
           </button>
           {% endif %}
         {% endfor %}
@@ -181,20 +184,15 @@
       if (submitted) return;
       var qi = btn.getAttribute('data-qi');
       var key = btn.getAttribute('data-key');
-      var isAlreadySelected = btn.classList.contains('selected');
 
       var allOpts = document.getElementById('opts-' + qi).querySelectorAll('.opt');
 
-      if (isAlreadySelected) {
-        // Toggle OFF if user clicks the already selected option again
-        btn.classList.remove('selected');
-        delete userAnswers[qi];
-      } else {
-        // Deselect all options in this question & select chosen option
-        allOpts.forEach(function(o) { o.classList.remove('selected'); });
-        btn.classList.add('selected');
-        userAnswers[qi] = key;
-      }
+      // Deselect all options in this question
+      allOpts.forEach(function(o) { o.classList.remove('selected'); });
+
+      // Always select chosen option firmly
+      btn.classList.add('selected');
+      userAnswers[qi] = key;
 
       // Always update answered count accurately
       var count = Object.keys(userAnswers).length;
