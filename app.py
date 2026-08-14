@@ -396,7 +396,12 @@ def health():
 
 import concurrent.futures
 
+# Global AI thread executor pool (reused across all HTTP requests safely)
+ai_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
+
 def _gemini_worker(prompt):
+    if not client:
+        return None, "AI not configured. Please add your GEMINI_API_KEY."
     models_to_try = ['gemini-flash-latest', 'gemini-3.6-flash']
     last_error = ""
     for model_name in models_to_try:
@@ -415,25 +420,21 @@ def _gemini_worker(prompt):
 
 
 #  STEP 6: Helper Function for Gemini API calls 
-def ask_gemini(prompt, timeout_seconds=16):
+def ask_gemini(prompt, timeout_seconds=12):
     """
     Sends a prompt to Gemini AI and returns the response text.
-    Fast, non-blocking execution with strict 16s timeout guard to prevent Render 502 Bad Gateway proxy timeouts.
+    Fast, non-blocking execution with global executor and strict 12s timeout guard.
     """
     if not client:
         return None, "AI not configured. Please add your GEMINI_API_KEY."
 
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    future = executor.submit(_gemini_worker, prompt)
     try:
+        future = ai_executor.submit(_gemini_worker, prompt)
         res, err = future.result(timeout=timeout_seconds)
-        executor.shutdown(wait=False)
         return res, err
     except concurrent.futures.TimeoutError:
-        executor.shutdown(wait=False)
         return None, "AI Request Timed Out (Fast Fallback Activated)"
     except Exception as e:
-        executor.shutdown(wait=False)
         return None, str(e)
 
 
