@@ -30,35 +30,87 @@
   .btn-ctrl:hover { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.35); color: #fbbf24; }
 
   /* Cards grid */
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
-  /* Each card — REVEAL style (no 3D mirror issue) */
-  .fc-card { border-radius: 20px; overflow: hidden; cursor: pointer; transition: transform .2s, box-shadow .2s; position: relative; }
-  .fc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+  /* 3D Scene and Flip Container */
+  .fc-scene {
+    perspective: 1000px;
+    height: 240px;
+    position: relative;
+  }
 
-  /* Question face */
-  .fc-front { background: linear-gradient(135deg, rgba(30,20,60,0.95), rgba(20,15,45,0.98)); border: 1px solid rgba(251,191,36,0.25); padding: 22px 20px 18px; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; }
-  .fc-front.revealed { border-color: rgba(34,211,238,0.35); }
+  .fc-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border-radius: 20px;
+  }
 
-  /* Answer face — slides in below */
-  .fc-back { background: linear-gradient(135deg, rgba(5,30,40,0.98), rgba(5,20,35,0.99)); border: 1px solid rgba(34,211,238,0.3); border-top: none; padding: 18px 20px; display: none; }
-  .fc-back.show { display: block; }
+  .fc-card-inner.flipped {
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+  }
+
+  /* Both Faces */
+  .fc-face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  /* Front Face (Question) */
+  .fc-front {
+    background: linear-gradient(135deg, rgba(30, 20, 60, 0.95), rgba(15, 10, 35, 0.98));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    z-index: 2;
+  }
+  .fc-card-inner:hover .fc-front {
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 12px 36px rgba(251, 191, 36, 0.25);
+  }
+
+  /* Back Face (Answer) */
+  .fc-back {
+    background: linear-gradient(135deg, rgba(5, 35, 45, 0.98), rgba(5, 20, 35, 0.99));
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+  }
+  .fc-card-inner:hover .fc-back {
+    border-color: rgba(34, 211, 238, 0.7);
+    box-shadow: 0 12px 36px rgba(34, 211, 238, 0.25);
+  }
 
   .card-q-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #fbbf24; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
   .card-q-label svg { flex-shrink: 0; }
   .card-q-text { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.55; flex: 1; }
-  .card-hint { font-size: 11px; color: rgba(255,255,255,0.28); margin-top: 14px; display: flex; align-items: center; gap: 5px; }
-  .card-hint-hide { display: none; }
+  .card-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 14px; display: flex; align-items: center; gap: 5px; }
 
   .card-a-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #22d3ee; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
   .card-a-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.65; }
 
   /* Mastered badge */
-  .mastered-badge { position: absolute; top: 12px; right: 12px; background: rgba(52,211,153,0.2); border: 1px solid rgba(52,211,153,0.5); border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 800; color: #34d399; display: none; }
-  .fc-card.mastered .mastered-badge { display: block; }
+  .mastered-badge { position: absolute; top: 12px; right: 12px; background: rgba(52,211,153,0.2); border: 1px solid rgba(52,211,153,0.5); border-radius: 999px; padding: 3px 10px; font-size: 10px; font-weight: 800; color: #34d399; display: none; z-index: 10; }
+  .fc-scene.mastered .mastered-badge { display: block; }
 
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (max-width: 500px) { .fc-search { flex-direction: column; } .btn-fc { width: 100%; } .cards-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 500px) { .fc-search { flex-direction: column; } .btn-fc { width: 100%; } .cards-grid { grid-template-columns: 1fr; } .fc-scene { height: 260px; } }
 </style>
 
 <div class="fc-page">
@@ -68,7 +120,7 @@
       3D FLIP FLASHCARDS — ACTIVE RECALL
     </div>
     <h1 class="fc-title">Master Any Topic with Flashcards</h1>
-    <p class="fc-sub">Click any card to reveal the answer. Built for fast active recall before exams.</p>
+    <p class="fc-sub">Click any card to flip it in 3D and reveal the answer. Built for fast active recall before exams.</p>
 
     <form method="POST" action="{{ url_for('flashcards') }}" id="fcForm">
       <div class="fc-search">
@@ -133,36 +185,37 @@
   <!-- Cards -->
   <div class="cards-grid" id="cardsGrid">
     {% for card in flashcards_data %}
-    <div class="fc-card" id="fcard-{{ loop.index0 }}" onclick="toggleCard({{ loop.index0 }})">
-      <div class="mastered-badge">✓ MASTERED</div>
-      <div class="fc-front" id="front-{{ loop.index0 }}">
-        <div>
-          <div class="card-q-label">
-            <svg width="12" height="12" fill="#fbbf24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path fill="#000" d="M12 8v4l3 3-1.5 1.5L10 12V8h2z"/></svg>
-            QUESTION {{ loop.index }} of {{ flashcards_data|length }}
+    <div class="fc-scene" id="scene-{{ loop.index0 }}">
+      <div class="fc-card-inner" id="fcard-{{ loop.index0 }}" onclick="toggleCard({{ loop.index0 }})">
+        <div class="mastered-badge">✓ MASTERED</div>
+        <div class="fc-face fc-front" id="front-{{ loop.index0 }}">
+          <div>
+            <div class="card-q-label">
+              <svg width="12" height="12" fill="#fbbf24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path fill="#000" d="M12 8v4l3 3-1.5 1.5L10 12V8h2z"/></svg>
+              QUESTION {{ loop.index }} of {{ flashcards_data|length }}
+            </div>
+            <div class="card-q-text">{{ card.question }}</div>
           </div>
-          <div class="card-q-text">{{ card.question }}</div>
+          <div class="card-hint">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22V12m0 0l-3-3m3 3l3-3"/><circle cx="12" cy="7" r="1" fill="currentColor"/></svg>
+            Click card to flip 3D 🔄
+          </div>
         </div>
-        <div class="card-hint" id="hint-{{ loop.index0 }}">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22V12m0 0l-3-3m3 3l3-3"/><circle cx="12" cy="7" r="1" fill="currentColor"/></svg>
-          Click to reveal answer
-        </div>
-      </div>
-      <div class="fc-back" id="back-{{ loop.index0 }}">
-        <div class="card-a-label">
-          <svg width="12" height="12" fill="#22d3ee" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          ANSWER
-        </div>
-        <div class="card-a-text">{{ card.answer }}</div>
-        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button onclick="event.stopPropagation(); toggleMastered({{ loop.index0 }})" id="mbtn-{{ loop.index0 }}"
-            style="font-size:11px; font-weight:700; padding:5px 14px; border-radius:999px; border:1px solid rgba(52,211,153,0.4); background:rgba(52,211,153,0.1); color:#34d399; cursor:pointer;">
-            ✓ Mark Mastered
-          </button>
-          <button onclick="event.stopPropagation(); toggleCard({{ loop.index0 }})"
-            style="font-size:11px; font-weight:700; padding:5px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); cursor:pointer;">
-            ↑ Hide Answer
-          </button>
+        <div class="fc-face fc-back" id="back-{{ loop.index0 }}">
+          <div>
+            <div class="card-a-label">
+              <svg width="12" height="12" fill="#22d3ee" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              ANSWER
+            </div>
+            <div class="card-a-text">{{ card.answer }}</div>
+          </div>
+          <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center;">
+            <button onclick="event.stopPropagation(); toggleMastered({{ loop.index0 }})" id="mbtn-{{ loop.index0 }}"
+              style="font-size:11px; font-weight:700; padding:6px 14px; border-radius:999px; border:1px solid rgba(52,211,153,0.4); background:rgba(52,211,153,0.15); color:#34d399; cursor:pointer; transition:.2s;">
+              ✓ Mark Mastered
+            </button>
+            <span style="font-size:11px; color:rgba(255,255,255,0.4); font-weight:600;">Click to flip back 🔄</span>
+          </div>
         </div>
       </div>
     </div>
@@ -170,7 +223,7 @@
   </div>
 
   <p style="text-align:center; color:rgba(255,255,255,0.2); font-size:12px; margin-top:28px;">
-    📌 Click any card to reveal answer • Mark mastered to track progress
+    📌 Click any card to flip in 3D • Mark mastered to track progress
   </p>
 
   <script>
@@ -179,36 +232,35 @@
     var mastered = {};
 
     function toggleCard(idx) {
-      var back = document.getElementById('back-' + idx);
-      var front = document.getElementById('front-' + idx);
-      var hint = document.getElementById('hint-' + idx);
-      var isOpen = back.classList.contains('show');
-      if (isOpen) {
-        back.classList.remove('show');
-        front.classList.remove('revealed');
-        hint.style.display = 'flex';
+      var cardInner = document.getElementById('fcard-' + idx);
+      if (!cardInner) return;
+      var isFlipped = cardInner.classList.contains('flipped');
+      if (isFlipped) {
+        cardInner.classList.remove('flipped');
       } else {
-        back.classList.add('show');
-        front.classList.add('revealed');
-        hint.style.display = 'none';
-        if (!revealed[idx]) { revealed[idx] = true; updateStats(); }
+        cardInner.classList.add('flipped');
+        if (!revealed[idx]) {
+          revealed[idx] = true;
+          updateStats();
+        }
       }
     }
 
     function toggleMastered(idx) {
-      var card = document.getElementById('fcard-' + idx);
+      var scene = document.getElementById('scene-' + idx);
       var btn = document.getElementById('mbtn-' + idx);
       if (mastered[idx]) {
         delete mastered[idx];
-        card.classList.remove('mastered');
+        scene.classList.remove('mastered');
         btn.textContent = '✓ Mark Mastered';
         btn.style.color = '#34d399';
+        btn.style.background = 'rgba(52,211,153,0.15)';
       } else {
         mastered[idx] = true;
-        card.classList.add('mastered');
+        scene.classList.add('mastered');
         btn.textContent = '✓ Mastered!';
         btn.style.color = '#fff';
-        btn.style.background = 'rgba(52,211,153,0.25)';
+        btn.style.background = 'rgba(52,211,153,0.35)';
       }
       updateStats();
     }
@@ -224,13 +276,9 @@
 
     function revealAll() {
       for (var i = 0; i < total; i++) {
-        var back = document.getElementById('back-' + i);
-        var front = document.getElementById('front-' + i);
-        var hint = document.getElementById('hint-' + i);
-        if (!back.classList.contains('show')) {
-          back.classList.add('show');
-          front.classList.add('revealed');
-          hint.style.display = 'none';
+        var cardInner = document.getElementById('fcard-' + i);
+        if (cardInner && !cardInner.classList.contains('flipped')) {
+          cardInner.classList.add('flipped');
           if (!revealed[i]) { revealed[i] = true; }
         }
       }
@@ -239,16 +287,21 @@
 
     function resetAll() {
       for (var i = 0; i < total; i++) {
-        document.getElementById('back-' + i).classList.remove('show');
-        document.getElementById('front-' + i).classList.remove('revealed');
-        document.getElementById('hint-' + i).style.display = 'flex';
-        document.getElementById('fcard-' + i).classList.remove('mastered');
+        var cardInner = document.getElementById('fcard-' + i);
+        if (cardInner) {
+          cardInner.classList.remove('flipped');
+        }
+        var scene = document.getElementById('scene-' + i);
+        if (scene) scene.classList.remove('mastered');
         var btn = document.getElementById('mbtn-' + i);
-        btn.textContent = '✓ Mark Mastered';
-        btn.style.color = '#34d399';
-        btn.style.background = 'rgba(52,211,153,0.1)';
+        if (btn) {
+          btn.textContent = '✓ Mark Mastered';
+          btn.style.color = '#34d399';
+          btn.style.background = 'rgba(52,211,153,0.15)';
+        }
       }
-      revealed = {}; mastered = {};
+      revealed = {};
+      mastered = {};
       updateStats();
     }
 
