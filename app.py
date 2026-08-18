@@ -1176,12 +1176,14 @@ NO markdown code block wrappers. Output raw JSON array ONLY."""
         result, error_msg = ask_gemini(prompt)
 
         if result:
-            raw_quiz_json = result.strip()
-            # Strip markdown wrappers if present
-            if raw_quiz_json.startswith('```'):
-                lines = raw_quiz_json.split('\n')
-                lines = [l for l in lines if not l.strip().startswith('```')]
-                raw_quiz_json = '\n'.join(lines).strip()
+            raw_text = result.strip()
+            # Robustly extract JSON array substring [ ... ] from any surrounding markdown/text
+            start_idx = raw_text.find('[')
+            end_idx = raw_text.rfind(']')
+            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                raw_quiz_json = raw_text[start_idx:end_idx+1]
+            else:
+                raw_quiz_json = raw_text
 
             try:
                 parsed = json.loads(raw_quiz_json)
@@ -2027,6 +2029,20 @@ def generate_fallback_quiz(topic):
 
     # ── Subject-specific question banks ──────────────────────────────────
     BANKS = {
+        'bgmi': [
+            {"question": "What does BGMI stand for?", "options": {"A": "Battlegrounds Mobile India", "B": "Battle Gaming Mobile India", "C": "Basic Ground Multi Player", "D": "Best Game Match India"}, "correct": "A", "explanation": "BGMI stands for Battlegrounds Mobile India, published by Krafton."},
+            {"question": "Which company developed and published BGMI?", "options": {"A": "Tencent Games", "B": "Krafton", "C": "Epic Games", "D": "EA Sports"}, "correct": "B", "explanation": "Krafton is the South Korean video game publisher of BGMI."},
+            {"question": "What is the maximum number of players in a standard BGMI classic match?", "options": {"A": "50", "B": "64", "C": "100", "D": "120"}, "correct": "C", "explanation": "Standard classic matches drop up to 100 players onto the battle map."},
+            {"question": "Which iconic 8x8 km island map was the original map in BGMI?", "options": {"A": "Miramar", "B": "Sanhok", "C": "Erangel", "D": "Vikendi"}, "correct": "C", "explanation": "Erangel is the iconic original 8x8 km island map in BGMI."},
+            {"question": "What victory phrase is displayed on winning a BGMI match?", "options": {"A": "Victory Royale!", "B": "Winner Winner Chicken Dinner!", "C": "Champion!", "D": "Mission Accomplished!"}, "correct": "B", "explanation": "'Winner Winner Chicken Dinner!' is the classic victory message displayed upon winning."}
+        ],
+        'pubg': [
+            {"question": "What type of game genre is PUBG / BGMI?", "options": {"A": "Battle Royale", "B": "Turn-based Strategy", "C": "Racing Simulation", "D": "Platformer"}, "correct": "A", "explanation": "PUBG / BGMI is a battle royale multiplayer shooter game."},
+            {"question": "What is the shrinking safe area in PUBG called?", "options": {"A": "Red Zone", "B": "Play Zone", "C": "Danger Zone", "D": "Drop Zone"}, "correct": "B", "explanation": "The safe area is called the Play Zone, bounded by the blue circle."},
+            {"question": "Which air drop sniper rifle in PUBG uses 7.62mm ammo?", "options": {"A": "Kar98k", "B": "M24", "C": "AWM", "D": "SKS"}, "correct": "B", "explanation": "M24 is a bolt-action sniper rifle found in air drops and world spawns."},
+            {"question": "What does a Level 3 Helmet protect against in PUBG?", "options": {"A": "One-shot headshot from Kar98k/M24", "B": "Explosion from Red Zone", "C": "Vehicle collision damage", "D": "Drowning damage"}, "correct": "A", "explanation": "Level 3 Helmet prevents instant knock/kill from a single Kar98k or M24 headshot."},
+            {"question": "Which 4-seater military 4x4 vehicle is famous in PUBG?", "options": {"A": "Buggy", "B": "UAZ", "C": "Dacia", "D": "Motorcycle"}, "correct": "B", "explanation": "The UAZ is the classic 4-seater military 4x4 vehicle."}
+        ],
         'oops': [
             {"question": "Which OOPS concept allows a subclass to provide its own implementation of a method defined in the parent class?", "options": {"A": "Encapsulation", "B": "Abstraction", "C": "Method Overriding", "D": "Data Hiding"}, "correct": "C", "explanation": "Method Overriding (Runtime Polymorphism) allows a child class to redefine a parent class method."},
             {"question": "What is a Virtual Function Table (VTABLE) in C++?", "options": {"A": "A table storing global variable addresses", "B": "A lookup table of function pointers for virtual methods", "C": "A hardware cache for CPU instructions", "D": "A database index structure"}, "correct": "B", "explanation": "VTABLE is a compile-time mechanism to achieve runtime polymorphism via function pointers."},
