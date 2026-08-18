@@ -402,7 +402,7 @@ ai_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 def _gemini_worker(prompt):
     if not client:
         return None, "AI not configured. Please add your GEMINI_API_KEY."
-    models_to_try = ['gemini-flash-latest', 'gemini-3.6-flash']
+    models_to_try = ['gemini-3.6-flash', 'gemini-flash-latest']
     last_error = ""
     for model_name in models_to_try:
         try:
@@ -420,7 +420,7 @@ def _gemini_worker(prompt):
 
 
 #  STEP 6: Helper Function for Gemini API calls 
-def ask_gemini(prompt, timeout_seconds=12):
+def ask_gemini(prompt, timeout_seconds=20):
     """
     Sends a prompt to Gemini AI and returns the response text.
     Fast, non-blocking execution with global executor and strict 12s timeout guard.
@@ -1991,30 +1991,35 @@ def parse_flashcards(text):
 
 def generate_fallback_doubt(question):
     clean_q = question.strip()
-    return f"""#  Academic Explanation: {clean_q}
+    q_lower = clean_q.lower()
+    
+    if q_lower in ['hello', 'hi', 'hey', 'greetings', 'hola', 'hello!']:
+        return """# 👋 Hello! Welcome to StudyMate AI
 
->  **Core Summary:** Here is a clear, step-by-step breakdown of your question regarding **{clean_q}**.
+> **Instant Academic Assistant:** I am your 24/7 AI tutor powered by Google Gemini.
 
-###  Key Concepts & Principles
-- **Core Definition:** Understand the foundational mechanics and objectives involved in {clean_q}.
-- **Operational Workflow:** Inputs are parsed, transformed, and executed to produce optimized outcomes.
-- **Key Advantage:** Reduces runtime complexity and ensures deterministic execution.
+### 📚 What would you like to learn today?
+- **Ask Any Doubt:** Enter any question, concept, theorem, or code snippet above.
+- **Generate Notes & Quizzes:** Try our **AI Notes**, **Quiz Generator**, or **Flashcards**.
+- **1-Night Mode:** Prepare for tomorrow's exam with our subject-aware survival command center.
 
->  **Pro Exam Tip:** Always sketch labeled architectural diagrams and state time/space complexity when answering RTU & University exam questions on this topic!
+*Type any subject topic or question above (e.g. "What is Dijkstra Algorithm?", "Explain KCL & KVL", "DBMS Normalization") to get an instant detailed explanation!*"""
 
-###  Technical Blueprint
-```python
-# Conceptual implementation workflow
-def process_concept(data_input):
-    # Step 1: Validate input parameters
-    if not data_input:
-        return None
-    # Step 2: Transform & compute result
-    result = {{"status": "success", "processed_data": data_input}}
-    return result
-```
+    return f"""# 📝 Explanation: {clean_q}
 
- **Summary:** Mastery of **{clean_q}** requires balancing theoretical definitions with practical problem-solving."""
+> **Core Summary:** Here is a clear, structured breakdown of **{clean_q}**.
+
+### 💡 Key Concepts & Principles
+- **Core Definition:** Understand the foundational principles and objectives of {clean_q}.
+- **Operational Workflow:** Concepts are broken down into logical steps, analyzed, and executed for optimal understanding.
+- **Key Takeaway:** Mastering {clean_q} requires building core concept clarity and practicing real-world application.
+
+> 🎓 **Exam Strategy:** When answering exam questions on this topic, state clear definitions first, provide bulleted key points, and include a labeled diagram or example!
+
+### 🔍 Practical Application
+1. **Analyze:** Break down the core question into key components.
+2. **Apply:** Relate theoretical principles to practical problem-solving.
+3. **Review:** Verify your steps and ensure all constraints are satisfied."""
 
 
 def generate_fallback_quiz(topic):
@@ -2139,77 +2144,68 @@ def generate_fallback_quiz(topic):
 
 def generate_fallback_notes(topic):
     clean_t = topic.strip().title()
-    func_name = clean_t.lower().replace(' ', '_')
-    return f"""#  Introduction: {clean_t}
+    return f"""# 📚 Study Notes: {clean_t}
 
-**{clean_t}** is a fundamental domain in Computer Science & Engineering. It encompasses theoretical principles, mathematical models, and practical architectural patterns necessary for building scalable, high-performance systems.
-
----
-
-#  Key Concepts & Callouts
-
->  **Definition:** **{clean_t}** is defined as the systematic study and application of computational mechanics, algorithm design, and resource management.
-
->  **Concept:** Master the core trade-offs between **Time Complexity O(N)** and **Space Complexity O(N)** when designing algorithms for {clean_t}.
-
->  **Warning:** Common exam pitfall: Confusing worst-case Big-O upper bounds with average-case Theta notation in University PYQs!
+**{clean_t}** is an essential topic requiring structured understanding, clear definitions, and practical problem-solving.
 
 ---
 
-#  Structured Breakdown & Comparison
+# 💡 Key Concepts & Core Principles
 
-| Feature / Aspect | Basic Approach | Optimized {clean_t} Approach |
+> 📌 **Definition:** **{clean_t}** encompasses the principles, frameworks, and methodologies used to analyze and solve domain problems.
+
+> 🎯 **Core Objective:** Master foundational definitions, operational workflows, and key trade-offs in **{clean_t}**.
+
+> ⚠️ **Exam Tip:** Focus on active recall, clear diagrams, and solving previous year exam questions!
+
+---
+
+# 📊 Structured Overview
+
+| Aspect / Dimension | Foundational Level | Advanced {clean_t} Level |
 | :--- | :--- | :--- |
-| **Execution Model** | Sequential / Blocking | Asynchronous / Parallel |
-| **Memory Allocation** | Static Stack Arrays | Dynamic Heap Structures |
-| **Search / Lookup** | Linear Search O(N) | Hash Table / BST O(1) ~ O(log N) |
-| **Scalability** | Limited to small datasets | Enterprise Production Grade |
-
-###  Essential Pillars of {clean_t}:
--  **Efficiency:** Minimizes CPU cycles and memory footprint.
--  **Robustness:** Handles boundary conditions and invalid inputs gracefully.
--  **Modularity:** Decouples core logic into reusable components.
+| **Understanding** | Basic definitions & terminology | Deep conceptual clarity & trade-offs |
+| **Application** | Standard textbook problems | Complex real-world case studies & edge cases |
+| **Exam Strategy** | Direct recall questions | Step-by-step derivations & architectural diagrams |
 
 ---
 
-#  Technical Blueprint (Implementation & Formulas)
+# 🚀 Key Takeaways & Summary
 
-T(n) = 2 * T(n/2) + O(n) => O(n log n)
-
-```python
-def execute_{func_name}(data_stream):
-    # Optimized implementation blueprint for {clean_t}
-    processed_results = []
-    for item in data_stream:
-        if item is not None:
-            # Perform core transformation
-            transformed = item * 2
-            processed_results.append(transformed)
-    return processed_results
-```
-
----
-
-#  Summary Cheat Sheet
-
-- **Core Focus:** Master definitions, block diagrams, and algorithmic complexity.
-- **Exam Strategy:** Draw neat labeled diagrams and write pseudocode for 10-mark Part C questions.
-- **Key Takeaway:** {clean_t} combines theoretical rigor with practical software design."""
+- **Concept Clarity:** Always start from first principles when analyzing **{clean_t}**.
+- **Practical Application:** Connect theoretical concepts to real-world scenarios.
+- **Revision:** Use active recall flashcards and PYQ practice for maximum retention."""
 
 
 def generate_fallback_flashcards(topic):
     clean_t = topic.strip().title()
+    t_lower = topic.strip().lower()
+    
+    if any(k in t_lower for k in ['bgmi', 'pubg', 'battlegrounds', 'game', 'gaming']):
+        return [
+            {"question": "What is BGMI?", "answer": "BGMI (Battlegrounds Mobile India) is a popular battle royale online multiplayer game developed by Krafton for mobile devices."},
+            {"question": "What is the primary objective in a BGMI classic match?", "answer": "To survive as the last player or squad standing out of 100 players on a shrinking battle map."},
+            {"question": "What is the Play Zone mechanism in BGMI?", "answer": "A shrinking safe zone marked by a blue circle that inflicts damage to players outside of it as time passes."},
+            {"question": "What are Air Drops in BGMI?", "answer": "Crates dropped by airplanes containing high-tier weapons, lvl 3 armor, and exclusive items like the AWM or Ghillie Suit."},
+            {"question": "Which map is the iconic original map in BGMI?", "answer": "Erangel, an 8x8 km island map featuring varied terrain, cities, and military bases."},
+            {"question": "What is a Red Zone in BGMI?", "answer": "A randomly highlighted artillery bombing zone on the map where explosives randomly strike the ground."},
+            {"question": "What is the difference between Solo, Duo, and Squad modes?", "answer": "Solo is 1-player free for all; Duo is 2-player team; Squad is 4-player team working together."},
+            {"question": "What is recoil control in BGMI gunplay?", "answer": "The technique of pulling down on the screen or using gyroscope while firing to keep weapon crosshairs steady."},
+            {"question": "What is the victory phrase displayed when winning a BGMI match?", "answer": "'Winner Winner Chicken Dinner!' is displayed when a player or squad wins."},
+            {"question": "What is the key strategy for ranking up in BGMI?", "answer": "Balance survival time, placement points, kills, and team revives rather than early hot-dropping."}
+        ]
+
     return [
-        {"question": f"What is the main objective of {clean_t}?", "answer": f"{clean_t} systematically organizes computation and data structures to optimize performance and reduce complexity."},
-        {"question": f"What is the difference between Static and Dynamic memory allocation in {clean_t}?", "answer": "Static allocation occurs at compile time in fixed stack regions, while Dynamic allocation occurs at runtime in heap memory."},
-        {"question": f"What is Big-O notation in {clean_t}?", "answer": "Big-O notation represents the upper bound on worst-case execution time required as input size N grows."},
-        {"question": f"Why is modular design important in {clean_t}?", "answer": "Modular design separates concerns, making code reusable, easier to test, and simpler to maintain."},
-        {"question": f"What is a Space-Time Trade-off in {clean_t}?", "answer": "It is a scenario where memory usage is increased (e.g. caching) to achieve faster execution speed."},
-        {"question": f"What is recursion in {clean_t} algorithm design?", "answer": "Recursion is a technique where a function calls itself to solve smaller subproblems until reaching a base case."},
-        {"question": f"How do Hash Tables achieve O(1) average lookup in {clean_t}?", "answer": "They compute array indices directly using a hash function on keys, allowing instant direct access."},
-        {"question": f"What is deadlock in concurrent {clean_t} systems?", "answer": "Deadlock is a state where two or more processes are blocked indefinitely, each waiting for resources held by the other."},
-        {"question": f"What is the purpose of unit testing in {clean_t}?", "answer": "Unit testing verifies that individual functions and components perform correctly under normal and edge-case inputs."},
-        {"question": f"What is the key takeaway when preparing {clean_t} for University exams?", "answer": "Focus on 5-10 year PYQ repeating numericals, neat architecture diagrams, and step-by-step code algorithms."}
+        {"question": f"What is the core definition of {clean_t}?", "answer": f"{clean_t} represents a specialized field or topic requiring structured study, clear principles, and practical understanding."},
+        {"question": f"What is the primary objective of studying {clean_t}?", "answer": f"To gain comprehensive domain knowledge, master key concepts, and solve real-world problems effectively."},
+        {"question": f"What are the foundational principles of {clean_t}?", "answer": f"First-principles thinking, systematic analysis, and understanding core relationships within {clean_t}."},
+        {"question": f"How do you approach learning {clean_t} step-by-step?", "answer": f"Start with core definitions, study key examples, practice problem solving, and review summary notes."},
+        {"question": f"What is a key advantage of mastering {clean_t}?", "answer": f"Enhances analytical reasoning, subject confidence, and practical application skills."},
+        {"question": f"How do theoretical concepts translate to practical application?", "answer": f"By analyzing real-world case studies, solving exam-style questions, and applying core formulas in {clean_t}."},
+        {"question": f"What are common misconceptions when studying {clean_t}?", "answer": f"Relying purely on memorization instead of building fundamental concept clarity in {clean_t}."},
+        {"question": f"What is the role of continuous practice in {clean_t}?", "answer": f"Reinforces active recall, improves speed, and helps identify weak areas before exams."},
+        {"question": f"How can structured notes improve performance in {clean_t}?", "answer": f"They condense complex ideas into clear bullet points, key terms, and visual summaries for {clean_t}."},
+        {"question": f"What is the recommended revision strategy for {clean_t}?", "answer": f"Perform active recall using flashcards, solve PYQs, and explain key concepts in {clean_t} in your own words."}
     ]
 
 
