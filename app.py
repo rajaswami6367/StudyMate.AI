@@ -2354,14 +2354,6 @@ def speak():
     return json.dumps({"text": text, "gender": gender, "use_browser_tts": True}), 200
 
 
-#  RUN THE APP 
-if __name__ == '__main__':
-    print("\n" + "="*50)
-    print("  StudyMate AI -- Starting Server")
-    print("  Visit: http://127.0.0.1:5000")
-    print("="*50 + "\n")
-    app.run(debug=True, port=5000)
-
 
 
 #  INTERACTIVE AI TEACHER MODE API 
