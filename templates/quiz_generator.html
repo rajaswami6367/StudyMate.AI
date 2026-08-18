@@ -22,6 +22,7 @@
   /* Options */
   .opts { display: flex; flex-direction: column; gap: 10px; }
   .opt { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-radius: 14px; border: 2px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); color: rgba(255,255,255,.9); font-size: 14px; line-height: 1.5; cursor: pointer; transition: all .15s ease; text-align: left; width: 100%; user-select: none; word-break: break-word; outline: none; }
+  .opt:focus { outline: none !important; }
   .opt span:last-child { flex: 1; margin-top: 2px; }
   .opt:hover:not(.selected):not(.locked) { border-color: rgba(52,211,153,.5); background: rgba(52,211,153,.08); color: #fff; }
   .opt.selected { border-color: #34d399 !important; background: rgba(52,211,153,.22) !important; color: #ffffff !important; font-weight: 700 !important; box-shadow: 0 0 16px rgba(52,211,153,.35) !important; }
@@ -108,15 +109,16 @@
   <!-- Questions -->
   <div id="quizContainer">
     {% for q in quiz_data %}
-    <div class="qz-card" id="qcard-{{ loop.index0 }}">
+    {% set q_idx = loop.index0 %}
+    <div class="qz-card" id="qcard-{{ q_idx }}">
       <div class="qz-num">QUESTION {{ loop.index }} of {{ quiz_data|length }}</div>
       <div class="qz-q">{{ q.question }}</div>
-      <div class="opts" id="opts-{{ loop.index0 }}">
+      <div class="opts" id="opts-{{ q_idx }}">
         {% for key in ['A','B','C','D'] %}
           {% if key in q.options %}
           <button type="button" class="opt"
-                  id="opt-{{ loop.index0 }}-{{ key }}"
-                  data-qi="{{ loop.index0 }}"
+                  id="opt-{{ q_idx }}-{{ key }}"
+                  data-qi="{{ q_idx }}"
                   data-key="{{ key }}"
                   onclick="pickOpt(this)">
             <span class="opt-k">{{ key }}</span>
@@ -126,7 +128,7 @@
           {% endif %}
         {% endfor %}
       </div>
-      <div class="exp" id="exp-{{ loop.index0 }}">
+      <div class="exp" id="exp-{{ q_idx }}">
         <b>💡 Explanation:</b> {{ q.explanation }}
       </div>
     </div>
@@ -180,20 +182,26 @@
     var userAnswers = {};   // qi -> chosen key
     var submitted = false;
 
-    function syncUI() {
-      for (var i = 0; i < total; i++) {
-        var qi = String(i);
-        var optsContainer = document.getElementById('opts-' + qi);
-        if (!optsContainer) continue;
-        var chosenKey = userAnswers[qi];
-        var allOpts = optsContainer.querySelectorAll('.opt');
+    function pickOpt(btn) {
+      if (submitted) return;
+      var qi = btn.getAttribute('data-qi');
+      var key = btn.getAttribute('data-key');
+      if (qi === null || qi === undefined || !key) return;
 
-        allOpts.forEach(function(btn) {
-          var k = btn.getAttribute('data-key');
-          if (chosenKey && k === chosenKey) {
-            btn.classList.add('selected');
+      qi = String(qi);
+      userAnswers[qi] = key;
+
+      var card = document.getElementById('qcard-' + qi);
+      if (card) card.classList.add('answered');
+
+      var optsContainer = document.getElementById('opts-' + qi);
+      if (optsContainer) {
+        var opts = optsContainer.querySelectorAll('.opt');
+        opts.forEach(function(o) {
+          if (o.getAttribute('data-key') === key) {
+            o.classList.add('selected');
           } else {
-            btn.classList.remove('selected');
+            o.classList.remove('selected');
           }
         });
       }
@@ -222,16 +230,6 @@
           }
         }
       }
-    }
-
-    function pickOpt(btn) {
-      if (submitted) return;
-      var qi = btn.getAttribute('data-qi');
-      var key = btn.getAttribute('data-key');
-      if (!qi || !key) return;
-
-      userAnswers[qi] = key;
-      syncUI();
     }
 
     function submitQuiz() {

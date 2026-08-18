@@ -836,6 +836,22 @@ def is_logged_in():
     """Returns True if user has an active session."""
     return 'user_id' in session
 
+import time
+AI_RATE_LIMITS = {}
+
+def check_ai_rate_limit(max_reqs=10, window_sec=60):
+    user_id = session.get('user_id')
+    if not user_id:
+        return True
+    now = time.time()
+    if user_id not in AI_RATE_LIMITS:
+        AI_RATE_LIMITS[user_id] = []
+    AI_RATE_LIMITS[user_id] = [t for t in AI_RATE_LIMITS[user_id] if now - t < window_sec]
+    if len(AI_RATE_LIMITS[user_id]) >= max_reqs:
+        return False
+    AI_RATE_LIMITS[user_id].append(now)
+    return True
+
 
 # 
 
@@ -1083,11 +1099,14 @@ def doubt_solver():
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if request.method == 'POST' and not check_ai_rate_limit():
+        return render_template('doubt_solver.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+
     answer = ""
     question = ""
 
     if request.method == 'POST':
-        question = request.form.get('question', '').strip()
+        question = request.form.get('question', '').strip()[:500]
 
         if not question:
             return render_template('doubt_solver.html', error='Please enter a question!')
@@ -1114,13 +1133,16 @@ def quiz():
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if request.method == 'POST' and not check_ai_rate_limit():
+        return render_template('quiz_generator.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+
     quiz_data = []
     raw_quiz_json = ""
     topic = ""
     error = ""
 
     if request.method == 'POST':
-        topic = request.form.get('topic', '').strip()
+        topic = request.form.get('topic', '').strip()[:200]
 
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
@@ -1129,18 +1151,27 @@ def quiz():
         rand_hint = random.randint(1000, 9999)
 
         prompt = f"""You are an elite Quiz Master and Subject Matter Expert.
-Generate EXACTLY 5 HIGH-YIELD, EXTREMELY SPECIFIC multiple-choice questions on the topic: '{topic}'.
-Request ID: {rand_hint}
+First, analyze and understand the topic '{topic}' deeply.
+Generate EXACTLY 5 HIGH-QUALITY, UNIQUE multiple-choice questions on '{topic}'. Request ID: {rand_hint}.
 
-CRITICAL QUALITY DIRECTIVES:
-1. Every question MUST test authentic, deep, highly specific knowledge about '{topic}' — NEVER produce generic or superficial textbook fluff.
-2. If '{topic}' is a tech product, gadget, hardware, processor, or real-world technology (e.g. smartphone processor, GPU, EV, Cloud), include REAL SPECIFICS: actual chip model names (Snapdragon 8 Gen 3, Apple A17 Pro, Dimensity 9300, Tensor G3), AnTuTu & Geekbench benchmark scores, manufacturing process nodes (3nm vs 4nm), CPU/GPU architecture (Cortex-X4, Adreno 750), NPU AI TOPS, thermal throttling, and real phone comparisons.
-3. If '{topic}' is an academic/engineering subject (e.g. OOPS, Operating Systems, DBMS, Mathematics), include authentic RTU B.Tech level numericals, code snippets, algorithm time complexities, and core concepts.
-4. Cover 5 DIFFERENT subtopics/angles of '{topic}' with 0 repetition.
-5. Provide 4 clear, plausible options (A, B, C, D) for each question. Keep options and explanations punchy and under 25 words each for high-speed generation.
-6. The explanation must clearly justify why the correct answer is right using real facts, specs, or logic.
+STRICT DIFFICULTY STRUCTURE (MUST FOLLOW EXACTLY):
+- Questions 1 & 2 MUST be EASY level: test core definitions, foundational concepts, or direct identification.
+- Questions 3, 4, & 5 MUST be HARD level: test deep conceptual understanding, practical application, real-world scenario analysis, code snippets/mathematical problems, or complex architectural trade-offs — NOT simple memorization.
 
-Return ONLY a valid JSON array of 5 objects with keys: 'question', 'options' (object with A, B, C, D), 'correct', 'explanation'. NO markdown code blocks. NO ```json wrapper."""
+STRICT FORMAT & QUALITY RULES:
+1. EXACTLY 5 questions covering 5 DIFFERENT, non-overlapping subtopics of '{topic}'. Zero repetition or superficial fluff.
+2. Every question MUST have EXACTLY 4 distinct, plausible options labeled 'A', 'B', 'C', 'D'.
+3. EXACTLY ONE option is correct.
+4. RANDOMIZE the correct option position across A, B, C, and D across the 5 questions (ensure correct answer keys are varied across letters A, B, C, D).
+5. Explanations must be punchy, clear, and explain the exact logic/reason why the correct option is right.
+
+Return ONLY a valid JSON array of 5 objects with keys:
+'question' (string),
+'options' (object with keys 'A', 'B', 'C', 'D'),
+'correct' (string: 'A', 'B', 'C', or 'D'),
+'explanation' (string).
+
+NO markdown code block wrappers. Output raw JSON array ONLY."""
 
         result, error_msg = ask_gemini(prompt)
 
@@ -1155,7 +1186,37 @@ Return ONLY a valid JSON array of 5 objects with keys: 'question', 'options' (ob
             try:
                 parsed = json.loads(raw_quiz_json)
                 if isinstance(parsed, list) and len(parsed) >= 3:
-                    quiz_data = parsed[:10]  # max 10 questions
+                    cleaned_quiz = []
+                    for q in parsed[:5]:
+                        if not isinstance(q, dict):
+                            continue
+                        opts = q.get('options', {})
+                        # Normalize lowercase keys to uppercase A, B, C, D
+                        norm_opts = {}
+                        if isinstance(opts, dict):
+                            for k, v in opts.items():
+                                norm_opts[str(k).upper().strip()] = str(v)
+                        
+                        # Ensure A, B, C, D exist
+                        for letter in ['A', 'B', 'C', 'D']:
+                            if letter not in norm_opts:
+                                norm_opts[letter] = f"Option {letter}"
+
+                        correct = str(q.get('correct', 'A')).upper().strip()
+                        if correct not in ['A', 'B', 'C', 'D']:
+                            correct = 'A'
+
+                        cleaned_quiz.append({
+                            'question': q.get('question', f'Question on {topic}'),
+                            'options': norm_opts,
+                            'correct': correct,
+                            'explanation': q.get('explanation', 'No detailed explanation provided.')
+                        })
+
+                    if len(cleaned_quiz) >= 3:
+                        quiz_data = cleaned_quiz
+                    else:
+                        quiz_data = generate_fallback_quiz(topic)
                 else:
                     quiz_data = generate_fallback_quiz(topic)
             except Exception:
@@ -1176,11 +1237,14 @@ def ai_notes():
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if request.method == 'POST' and not check_ai_rate_limit():
+        return render_template('ai_notes.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+
     notes_result = ""
     topic = ""
 
     if request.method == 'POST':
-        topic = request.form.get('topic', '').strip()
+        topic = request.form.get('topic', '').strip()[:200]
 
         if not topic:
             return render_template('ai_notes.html', error='Please enter a topic!')
@@ -1227,11 +1291,14 @@ def flashcards():
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if request.method == 'POST' and not check_ai_rate_limit():
+        return render_template('flashcards.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+
     flashcards_data = []
     topic = ""
 
     if request.method == 'POST':
-        topic = request.form.get('topic', '').strip()
+        topic = request.form.get('topic', '').strip()[:200]
 
         if not topic:
             return render_template('flashcards.html', error='Please enter a topic!')
@@ -1286,7 +1353,7 @@ def one_night_mode():
     university = "RTU Kota (B.Tech)"
 
     if request.method == 'POST':
-        subject = request.form.get('subject', '').strip()
+        subject = request.form.get('subject', '').strip()[:200]
         available_hours = request.form.get('available_hours', 8)
         prep_level = request.form.get('prep_level', 'average').strip()
         target_mode = request.form.get('target_mode', 'target_75').strip()
@@ -1350,6 +1417,9 @@ def exam_predictor():
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if request.method == 'POST' and not check_ai_rate_limit():
+        return render_template('exam_predictor.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+
     paper_data = None
     raw_json = ""
     subject = ""
@@ -1363,7 +1433,7 @@ def exam_predictor():
     sem = "Semester 3"
 
     if request.method == 'POST':
-        subject = request.form.get('subject', '').strip()
+        subject = request.form.get('subject', '').strip()[:200]
         target_mode = request.form.get('target_mode', 'distinction').strip()
         branch = request.form.get('branch', 'B.Tech CSE').strip()
         year = request.form.get('year', '2nd Year').strip()
@@ -2050,14 +2120,14 @@ def generate_fallback_quiz(topic):
 
 
     if matched_bank is None:
-        # Generic fallback — still topic-named
+        # Generic fallback — still topic-named with varied correct keys (2 Easy + 3 Hard)
         clean_t = topic.strip().title()
         matched_bank = [
-            {"question": f"What is the primary purpose of {clean_t}?", "options": {"A": f"To systematically solve problems in {clean_t}", "B": "To increase hardware power consumption", "C": "To bypass security protocols", "D": "To delete temporary files"}, "correct": "A", "explanation": f"{clean_t} provides structured methods to systematically analyze and solve domain problems."},
-            {"question": f"Which concept is MOST fundamental to understanding {clean_t}?", "options": {"A": "Core definitions and first principles", "B": "Screen resolution settings", "C": "Browser cache management", "D": "Network bandwidth allocation"}, "correct": "A", "explanation": f"Core definitions and first principles form the foundation of {clean_t}."},
-            {"question": f"What skill does mastering {clean_t} primarily develop?", "options": {"A": "Analytical and problem-solving ability", "B": "Typing speed", "C": "Hardware repair", "D": "Language translation"}, "correct": "A", "explanation": f"Mastering {clean_t} develops strong analytical reasoning and structured problem-solving skills."},
-            {"question": f"In RTU B.Tech exams, {clean_t} questions are mostly from which part?", "options": {"A": "Part A — 2 mark short questions", "B": "Part B — 4 mark conceptual", "C": "Part C — 10 mark long answer", "D": "All parts equally"}, "correct": "D", "explanation": "RTU papers have Part A (2M), Part B (4M), Part C (10M) — all cover topics from the complete syllabus."},
-            {"question": f"What is the best preparation strategy for {clean_t}?", "options": {"A": "Study all PYQs and understand concepts deeply", "B": "Only memorize formulas without understanding", "C": "Skip difficult chapters", "D": "Read reference books only"}, "correct": "A", "explanation": "PYQ analysis + concept clarity = highest marks. RTU repeats questions 70-90% from previous years."},
+            {"question": f"What is the foundational definition of {clean_t}?", "options": {"A": "A system setting in OS", "B": f"A structured domain for analyzing and solving technical problems in {clean_t}", "C": "A hardware driver file", "D": "A database query syntax"}, "correct": "B", "explanation": f"{clean_t} provides first-principles frameworks to systematically analyze and solve domain problems."},
+            {"question": f"Which core principle is MOST fundamental when studying {clean_t}?", "options": {"A": "First principles and foundational definitions", "B": "Monitor refresh rate", "C": "Memory fragmentation", "D": "Browser cache clearing"}, "correct": "A", "explanation": f"Foundational concepts and core principles form the baseline of {clean_t}."},
+            {"question": f"When applying {clean_t} to real-world engineering problems, what is the primary constraint to optimize?", "options": {"A": "Keyboard shortcut speed", "B": "Random background colors", "C": "System trade-offs between efficiency, scalability, and correctness", "D": "Audio sample rates"}, "correct": "C", "explanation": f"Real-world application of {clean_t} requires balancing performance, resource constraints, and structural correctness."},
+            {"question": f"Which scenario demonstrates an ADVANCED application of {clean_t}?", "options": {"A": "Executing a simple print statement", "B": "Renaming a file", "C": "Designing a resilient, fault-tolerant architecture handling edge-case workloads", "D": "Opening a web browser tab"}, "correct": "C", "explanation": f"Advanced {clean_t} involves solving complex edge cases, handling concurrency/throughput, and designing robust systems."},
+            {"question": f"What is the most effective approach for mastering complex topics in {clean_t}?", "options": {"A": "Rote memorization without understanding", "B": "Analyzing previous year exam problems, proving core theorems, and building practical projects", "C": "Ignoring core documentation", "D": "Skimming headings only"}, "correct": "B", "explanation": f"Deep understanding in {clean_t} comes from active problem solving, PYQ analysis, and hands-on application."},
         ]
 
     # Shuffle and pick 5 random questions so each refresh gives different set
@@ -2160,7 +2230,7 @@ def save_item():
         content   = data.get('content', '').strip()
     else:
         item_type = request.form.get('item_type', '').strip()
-        title     = request.form.get('title', '').strip()
+        title     = request.form.get('title', '').strip()[:200]
         content   = request.form.get('content', '').strip()
     
     if not item_type or not title or not content:
@@ -2289,6 +2359,9 @@ def api_ai_teacher_explain():
     if not is_logged_in():
         return json.dumps({"error": "Unauthorized"}), 401
         
+    if not check_ai_rate_limit():
+        return json.dumps({"error": "Rate limit exceeded. Please wait a moment."}), 429
+        
     data = request.get_json() or {}
     topic = data.get('topic', 'Core Concept').strip()
     action = data.get('action', 'explain_simply').strip()
@@ -2315,6 +2388,9 @@ def api_exam_feedback():
     """Records student feedback on actual exam questions to improve AI prediction accuracy."""
     if not is_logged_in():
         return json.dumps({"error": "Unauthorized"}), 401
+        
+    if not check_ai_rate_limit():
+        return json.dumps({"error": "Rate limit exceeded. Please wait a moment."}), 429
         
     data = request.get_json() or {}
     subject = data.get('subject', 'Subject')
