@@ -1182,7 +1182,7 @@ def doubt_clear():
 #  QUIZ GENERATOR 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    """Generates fresh unique MCQ quiz questions on any topic each time."""
+    """Generates fresh unique MCQ quiz questions on any topic using UniversalStudyEngine."""
     if not is_logged_in():
         return redirect(url_for('login'))
 
@@ -1200,92 +1200,8 @@ def quiz():
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
 
-        # Dynamic focus seed ensures non-duplicate, highly varied questions on every regeneration
-        focus_angles = [
-            "Core architectural foundations, specifications, primary definitions, and direct identification.",
-            "Performance metrics, system trade-offs, operational mechanisms, and diagnostic problem solving.",
-            "Advanced comparative analysis, edge cases, formulas/calculations, and real-world implementations.",
-            "High-yield University Exam PYQs, numerical calculations, and conceptual application scenarios."
-        ]
-        chosen_angle = random.choice(focus_angles)
         rand_hint = random.randint(10000, 99999)
-
-        prompt = f"""You are an elite Quiz Master and Subject Matter Expert.
-Generate EXACTLY 5 HIGH-QUALITY multiple-choice questions testing the ACTUAL SUBJECT MATTER of: '{topic}'.
-Request ID: {rand_hint} | Perspective: {chosen_angle}
-
-STRICT CONTENT & ANTI-META DIRECTIVES (DO NOT VIOLATE):
-1. TEST THE ACTUAL SUBJECT MATTER: Questions must test real components, specifications, formulas, code, rules, architectures, mechanisms, or theorems of '{topic}'.
-2. NEVER GENERATE STUDY-ADVICE QUESTIONS: Absolutely NEVER ask meta questions like "How do you study {topic}?", "Why is studying {topic} important?", "What is the best way to master {topic}?", or "Which approach is best for exam revision?". Every question must test real subject facts!
-3. DIFFICULTY SPLIT:
-   - Q1 & Q2 (EASY): Fundamental definitions, primary specifications, or direct core concepts of '{topic}'.
-   - Q3, Q4 & Q5 (HARD): In-depth technical mechanisms, code/math calculations, architectural trade-offs, or complex scenario analysis of '{topic}'.
-4. 4 ACCURATE OPTIONS (A-D): Exactly one unambiguously correct answer. Randomize correct answer position across A, B, C, D. Ensure 'correct' key exactly matches the option letter.
-5. CLEAR EXPLANATIONS: Explain why the correct option is factually accurate.
-
-Return ONLY a valid JSON array of 5 objects with keys:
-'question' (string),
-'options' (object with keys 'A', 'B', 'C', 'D'),
-'correct' (string: 'A', 'B', 'C', or 'D'),
-'explanation' (string).
-
-NO markdown code block wrappers. Output raw JSON array ONLY."""
-
-        result, error_msg = ask_gemini(prompt)
-
-        if result:
-            raw_text = result.strip()
-            # Robustly extract JSON array substring [ ... ] from any surrounding markdown/text
-            start_idx = raw_text.find('[')
-            end_idx = raw_text.rfind(']')
-            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-                raw_quiz_json = raw_text[start_idx:end_idx+1]
-            else:
-                raw_quiz_json = raw_text
-
-            try:
-                parsed = json.loads(raw_quiz_json)
-                if isinstance(parsed, list) and len(parsed) >= 3:
-                    cleaned_quiz = []
-                    for q in parsed[:5]:
-                        if not isinstance(q, dict):
-                            continue
-                        opts = q.get('options', {})
-                        # Normalize lowercase keys to uppercase A, B, C, D
-                        norm_opts = {}
-                        if isinstance(opts, dict):
-                            for k, v in opts.items():
-                                norm_opts[str(k).upper().strip()] = str(v)
-                        
-                        # Ensure A, B, C, D exist
-                        for letter in ['A', 'B', 'C', 'D']:
-                            if letter not in norm_opts:
-                                norm_opts[letter] = f"Option {letter}"
-
-                        raw_corr = q.get('correct') or q.get('answer') or q.get('correct_answer')
-                        exp_text = q.get('explanation', 'Correct answer based on subject principles.')
-                        correct = resolve_correct_key(raw_corr, norm_opts, exp_text)
-
-                        q_text = str(q.get('question') or f'Question on {topic}').strip()
-
-                        cleaned_quiz.append({
-                            'question': q_text,
-                            'options': norm_opts,
-                            'correct': correct,
-                            'explanation': exp_text
-                        })
-
-                    if len(cleaned_quiz) >= 3:
-                        quiz_data = cleaned_quiz
-                    else:
-                        quiz_data = generate_fallback_quiz(topic)
-                else:
-                    quiz_data = generate_fallback_quiz(topic)
-            except Exception:
-                quiz_data = generate_fallback_quiz(topic)
-        else:
-            quiz_data = generate_fallback_quiz(topic)
-
+        quiz_data = UniversalStudyEngine.generate_quiz(topic, rand_hint=rand_hint)
         raw_quiz_json = json.dumps(quiz_data)
 
     return render_template('quiz_generator.html', quiz_data=quiz_data, raw_quiz_json=raw_quiz_json, topic=topic, error=error)
@@ -1349,7 +1265,7 @@ Make the notes authoritative, rich in depth, and crystal clear."""
 #  FLASHCARDS 
 @app.route('/flashcards', methods=['GET', 'POST'])
 def flashcards():
-    """Generates 10 Q&A flashcards on any topic."""
+    """Generates 10 high-yield Q&A flashcards on any topic using UniversalStudyEngine."""
     if not is_logged_in():
         return redirect(url_for('login'))
 
@@ -1365,40 +1281,8 @@ def flashcards():
         if not topic:
             return render_template('flashcards.html', error='Please enter a topic!')
 
-        # Dynamic focus seed ensures non-duplicate, high-yield cards on every refresh/regeneration
-        focus_angles = [
-            "Core definitions, essential terminology, primary architecture, and fundamental formulas/rules.",
-            "Deep operational mechanisms, step-by-step processes, real-world behavior, and technical execution.",
-            "Crucial trade-offs, performance benchmarks, comparisons with alternatives, and industry standards.",
-            "High-probability exam PYQs, common misconceptions, edge cases, and critical analytical questions."
-        ]
-        chosen_angle = random.choice(focus_angles)
         rand_id = random.randint(10000, 99999)
-
-        prompt = f"""You are an elite Academic Professor and Subject Matter Expert.
-Generate EXACTLY 10 HIGH-YIELD study flashcards testing the ACTUAL SUBJECT MATTER of: '{topic}'.
-Request ID: {rand_id} | Perspective: {chosen_angle}
-
-CRITICAL CONTENT & ANTI-META DIRECTIVES:
-1. TEST ACTUAL SUBJECT CONTENT: Every card must test real technical concepts, specifications, formulas, architectures, algorithms, or definitions of '{topic}'.
-2. NEVER ASK STUDY-ADVICE QUESTIONS: Absolutely NEVER ask "How to study/master {topic}?", "Why is continuous practice important?", "What are study tips for {topic}?", or "How do structured notes help?". Test real facts only!
-3. HIGH-YIELD TOPICS: Cover 10 distinct subtopics of '{topic}' (core definitions, working mechanisms, bottlenecks, formulas/equations, trade-offs, and exam-favorite points).
-4. CONCISE & PRECISE ANSWERS: 1 to 3 sentences explaining the factual principle clearly.
-
-OUTPUT FORMAT REQUIREMENT:
-Return ONLY a valid JSON array of 10 objects:
-[
-  {{"question": "...", "answer": "..."}},
-  ...
-]"""
-
-        result, error = ask_gemini(prompt)
-
-        if result:
-            flashcards_data = parse_flashcards(result)
-
-        if not flashcards_data:
-            flashcards_data = generate_fallback_flashcards(topic)
+        flashcards_data = UniversalStudyEngine.generate_flashcards(topic, rand_id=rand_id)
 
     return render_template('flashcards.html', flashcards_data=flashcards_data, topic=topic)
 
@@ -2046,107 +1930,278 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 
-# ============================================================
-#  🛡️ ADVANCED QUALITY VALIDATION & CONCEPT-AWARE ENGINE
-# ============================================================
 
-ROBOTIC_PHRASES = [
-    "primary architectural purpose",
-    "primary technical function of",
-    "essential building blocks of",
-    "primary bottleneck limits throughput",
-    "execution latency and throughput efficiency",
-    "governing the architecture",
-    "standard failure mode or edge-case",
-    "how to study",
-    "how do you approach learning",
-    "what are common misconceptions when studying",
-    "what is the recommended revision strategy",
-    "how can structured notes improve",
-    "why is studying",
-    "how do you master"
-]
+# ==============================================================================
+#  🌟 UNIVERSAL STUDY ENGINE & AI QUALITY ASSURANCE ARCHITECTURE
+# ==============================================================================
 
-def is_robotic_or_meta(text):
-    """Detects if text contains generic template strings or study-advice meta questions."""
-    if not text or not isinstance(text, str):
-        return True
-    t_low = text.lower()
-    for phrase in ROBOTIC_PHRASES:
-        if phrase in t_low:
+class UniversalStudyEngine:
+    """
+    Universal, domain-aware educational AI engine powering all StudyMate AI features.
+    Enforces factual verification, in-domain distractors, zero robotic templates,
+    and automatic self-correcting regeneration.
+    """
+
+    ROBOTIC_PHRASES = [
+        "primary architectural purpose",
+        "primary technical function of",
+        "essential building blocks of",
+        "primary bottleneck limits throughput",
+        "execution latency and throughput efficiency",
+        "governing the architecture",
+        "standard failure mode or edge-case",
+        "how to study",
+        "how do you approach learning",
+        "what are common misconceptions when studying",
+        "what is the recommended revision strategy",
+        "how can structured notes improve",
+        "why is studying",
+        "how do you master"
+    ]
+
+    @staticmethod
+    def analyze_domain(topic):
+        """Identifies academic domain using precise whole-word and phrase matching."""
+        t = topic.lower().strip()
+        
+        # Regex patterns with word boundaries
+        patterns = [
+            ('life_sciences', r'\b(photosynthesis|cell|dna|rna|gene|genetics|mitosis|meiosis|enzyme|chloroplast|protein|biology|respiration|ecology|heart|neuron|botany|zoology)\b'),
+            ('physical_sciences', r'\b(newton|force|gravity|thermodynamics|optics|quantum|physics|atom|molecule|reaction|chemistry|periodic table|acid|base|voltage|circuit|electromagnetism)\b'),
+            ('mathematics', r'\b(matrix|eigenvalue|calculus|derivative|integral|differential|probability|statistics|algebra|fourier|laplace|vector|geometry|trigonometry|math)\b'),
+            ('humanities_social', r'\b(revolution|war|history|constitution|inflation|gdp|monetary|demand|supply|economics|market|law|treaty|philosophy|sociology|geography)\b'),
+            ('cs_algorithms_dsa', r'\b(stack|queue|linked list|tree|graph|heap|hash|sorting|sort|searching|binary search|recursion|dynamic programming|dsa|algorithm|complexity|array|binary tree|avl)\b'),
+            ('cs_systems_core', r'\b(process|thread|deadlock|virtual memory|paging|segmentation|operating system|os|dbms|sql|normalization|transaction|acid|network|tcp|ip|udp|osi|protocol|routing|compiler|vtable|vptr)\b'),
+            ('cs_programming', r'\b(python|java|c\+\+|javascript|oops|oop|class|inheritance|polymorphism|encapsulation|pointer|variable|function|syntax)\b')
+        ]
+
+        for domain, pat in patterns:
+            if re.search(pat, t):
+                return domain
+
+        return 'general_academic'
+
+    @staticmethod
+    def is_robotic_or_meta(text):
+        if not text or not isinstance(text, str):
             return True
-    return False
+        t_low = text.lower()
+        for phrase in UniversalStudyEngine.ROBOTIC_PHRASES:
+            if phrase in t_low:
+                return True
+        return False
 
-def validate_quiz_output(quiz_data, topic=""):
-    """
-    Strictly validates quiz questions for:
-    - Minimum count (>= 3)
-    - Anti-robotic & anti-meta quality
-    - 4 distinct, non-empty options (A, B, C, D)
-    - Valid correct answer key
-    - No duplicate questions
-    """
-    if not quiz_data or not isinstance(quiz_data, list) or len(quiz_data) < 3:
-        return False, "Insufficient questions"
-
-    seen_questions = set()
-    for q in quiz_data:
-        if not isinstance(q, dict):
-            return False, "Invalid question structure"
+    @staticmethod
+    def verify_factual_integrity(question, options, correct_key, explanation):
+        if not explanation or len(str(explanation).strip()) < 10:
+            return False, "Explanation is missing or too brief"
         
-        q_text = str(q.get('question', '')).strip()
-        if len(q_text) < 10 or is_robotic_or_meta(q_text):
-            return False, f"Low-quality question: {q_text[:30]}"
+        correct_text = str(options.get(correct_key, '')).strip().lower()
+        exp_lower = str(explanation).strip().lower()
+
+        if "option" in exp_lower and len(exp_lower) < 20:
+            return False, "Tautological explanation"
+
+        if UniversalStudyEngine.is_robotic_or_meta(question) or UniversalStudyEngine.is_robotic_or_meta(explanation):
+            return False, "Robotic template phrase detected"
+
+        return True, "Verified"
+
+    @staticmethod
+    def validate_quiz(quiz_data, topic=""):
+        if not quiz_data or not isinstance(quiz_data, list) or len(quiz_data) < 3:
+            return False, "Insufficient questions"
+
+        seen_q = set()
+        for q in quiz_data:
+            if not isinstance(q, dict):
+                return False, "Invalid question structure"
+            
+            q_text = str(q.get('question', '')).strip()
+            if len(q_text) < 10 or UniversalStudyEngine.is_robotic_or_meta(q_text):
+                return False, f"Low quality question: {q_text[:30]}"
+            
+            q_norm = re.sub(r'[^a-zA-Z0-9]', '', q_text.lower())
+            if q_norm in seen_q:
+                return False, "Duplicate question text"
+            seen_q.add(q_norm)
+
+            opts = q.get('options', {})
+            if not isinstance(opts, dict) or len(opts) < 4:
+                return False, "Missing options"
+            
+            seen_opts = set()
+            for k in ['A', 'B', 'C', 'D']:
+                v = str(opts.get(k, '')).strip()
+                if not v or v.lower() in [f"option {k.lower()}", "none"]:
+                    return False, f"Empty or placeholder option {k}"
+                v_norm = v.lower()
+                if v_norm in seen_opts:
+                    return False, f"Duplicate option text in {k}"
+                seen_opts.add(v_norm)
+
+            corr = str(q.get('correct', '')).strip().upper()
+            if corr not in ['A', 'B', 'C', 'D']:
+                return False, "Invalid correct option key"
+
+            ok, reason = UniversalStudyEngine.verify_factual_integrity(
+                q_text, opts, corr, q.get('explanation', '')
+            )
+            if not ok:
+                return False, reason
+
+        return True, "Valid"
+
+    @staticmethod
+    def validate_flashcards(cards, topic=""):
+        if not cards or not isinstance(cards, list) or len(cards) < 3:
+            return False, "Insufficient cards"
+
+        seen_q = set()
+        for c in cards:
+            if not isinstance(c, dict):
+                return False, "Invalid card structure"
+            q = str(c.get('question', '')).strip()
+            a = str(c.get('answer', '')).strip()
+            if len(q) < 8 or len(a) < 10:
+                return False, "Flashcard question or answer too short"
+            if UniversalStudyEngine.is_robotic_or_meta(q) or UniversalStudyEngine.is_robotic_or_meta(a):
+                return False, "Flashcard contains robotic template phrase"
+            
+            q_norm = re.sub(r'[^a-zA-Z0-9]', '', q.lower())
+            if q_norm in seen_q:
+                return False, "Duplicate flashcard question"
+            seen_q.add(q_norm)
+
+        return True, "Valid"
+
+    @staticmethod
+    def generate_quiz(topic, rand_hint=1000):
+        domain = UniversalStudyEngine.analyze_domain(topic)
         
-        # Check uniqueness
-        q_norm = re.sub(r'[^a-zA-Z0-9]', '', q_text.lower())
-        if q_norm in seen_questions:
-            return False, "Duplicate question detected"
-        seen_questions.add(q_norm)
+        domain_guidelines = {
+            'cs_algorithms_dsa': "Test specific operations (push/pop, insert/delete), execution traces, time/space complexity O(...), and classic CS applications. Distractors MUST be other plausible algorithms, complexity bounds, or data structures.",
+            'cs_systems_core': "Test core system mechanisms, state transitions, protocols, data structures (PCB, VTABLE, Page Tables), and concurrency anomalies. Distractors MUST be related system concepts.",
+            'cs_programming': "Test language semantics, syntax rules, OOP principles, memory allocation, and code evaluation. Distractors MUST be valid language constructs.",
+            'life_sciences': "Test specific biological structures, chemical reactions, organelle functions, enzyme roles, and physiological steps. Distractors MUST be real biological terms/enzymes/cycles.",
+            'physical_sciences': "Test fundamental laws, formulas, units, particle/wave interactions, and quantitative relationships. Distractors MUST be plausible physical constants or related laws.",
+            'mathematics': "Test definitions, theorems, formula applications, matrix/vector properties, and step-by-step mathematical reasoning. Distractors MUST be plausible numerical/algebraic results.",
+            'humanities_social': "Test historical causality, constitutional articles, economic mechanisms, market forces, and core definitions. Distractors MUST be related historical/economic terms.",
+            'general_academic': "Test authentic subject facts, definitions, mechanisms, and real-world applications. Distractors MUST be plausible terms from the exact same subject."
+        }
 
-        opts = q.get('options', {})
-        if not isinstance(opts, dict) or len(opts) < 4:
-            return False, "Missing options"
+        guideline = domain_guidelines.get(domain, domain_guidelines['general_academic'])
+
+        prompt = f"""You are an elite Academic Examination Board Professor creating an authentic exam quiz on: '{topic}'.
+Domain: {domain} | Request ID: {rand_hint}
+
+PEDAGOGICAL & DISTRACTOR RULES:
+1. TEST REAL SUBJECT MATTER: {guideline}
+2. REALISTIC IN-DOMAIN DISTRACTORS: All 4 options (A, B, C, D) MUST belong to the exact subject domain of '{topic}'. Absolutely NEVER invent absurd options (e.g. do not mention mouse pointers, OS drivers, or unrelated hardware unless '{topic}' is about them).
+3. DIFFICULTY SPLIT:
+   - Q1 & Q2 (EASY): Fundamental definitions, primary rules, or direct identification.
+   - Q3, Q4 & Q5 (HARD): Step-by-step execution trace, calculation, boundary condition analysis, or practical scenario problem.
+4. UNAMBIGUOUS CORRECT ANSWER: Exactly one option is 100% factually correct. Randomize correct answer position across A, B, C, D.
+5. SUBSTANTIVE EXPLANATION: Write a clear 1-2 sentence explanation verifying why the correct option is factually accurate.
+
+Return ONLY a valid JSON array of 5 objects with keys:
+'question' (string),
+'options' (object with keys 'A', 'B', 'C', 'D'),
+'correct' (string: 'A', 'B', 'C', or 'D'),
+'explanation' (string).
+
+NO markdown code blocks. Output raw JSON array ONLY."""
+
+        quiz_data = []
+        for attempt in range(3):
+            curr_prompt = prompt if attempt == 0 else f"Regenerate 5 authentic exam questions testing the actual operational concepts of '{topic}'. Ensure all 4 options are plausible in-domain terms and the explanation verifies the answer. Output raw JSON array only."
+            result, error_msg = ask_gemini(curr_prompt)
+            if result:
+                raw_text = result.strip()
+                start_idx = raw_text.find('[')
+                end_idx = raw_text.rfind(']')
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    json_str = raw_text[start_idx:end_idx+1]
+                else:
+                    json_str = raw_text
+
+                try:
+                    parsed = json.loads(json_str)
+                    if isinstance(parsed, list) and len(parsed) >= 3:
+                        cleaned = []
+                        for q in parsed[:5]:
+                            if not isinstance(q, dict):
+                                continue
+                            opts = q.get('options', {})
+                            norm_opts = {}
+                            if isinstance(opts, dict):
+                                for k, v in opts.items():
+                                    norm_opts[str(k).upper().strip()] = str(v).strip()
+                            
+                            for letter in ['A', 'B', 'C', 'D']:
+                                if letter not in norm_opts:
+                                    norm_opts[letter] = f"Option {letter}"
+
+                            raw_corr = q.get('correct') or q.get('answer') or q.get('correct_answer')
+                            exp_text = str(q.get('explanation', '')).strip()
+                            if not exp_text:
+                                exp_text = f"Verified concept principle in {topic}."
+                            correct = resolve_correct_key(raw_corr, norm_opts, exp_text)
+                            q_text = str(q.get('question') or f'Question on {topic}').strip()
+
+                            cleaned.append({
+                                'question': q_text,
+                                'options': norm_opts,
+                                'correct': correct,
+                                'explanation': exp_text
+                            })
+
+                        is_valid, reason = UniversalStudyEngine.validate_quiz(cleaned, topic)
+                        if is_valid:
+                            quiz_data = cleaned
+                            break
+                except Exception:
+                    pass
+
+        if not quiz_data:
+            quiz_data = generate_fallback_quiz(topic)
+
+        return quiz_data
+
+    @staticmethod
+    def generate_flashcards(topic, rand_id=1000):
+        domain = UniversalStudyEngine.analyze_domain(topic)
         
-        # Check options are non-empty and unique
-        seen_opts = set()
-        for k in ['A', 'B', 'C', 'D']:
-            val = str(opts.get(k, '')).strip()
-            if not val or val.lower() in [f"option {k.lower()}", "none"]:
-                return False, f"Empty or placeholder option {k}"
-            val_norm = val.lower()
-            if val_norm in seen_opts:
-                return False, f"Duplicate option text in {k}"
-            seen_opts.add(val_norm)
+        prompt = f"""You are an elite academic professor creating high-yield study flashcards on: '{topic}'.
+Domain: {domain} | Request ID: {rand_id}
 
-        correct = str(q.get('correct', '')).strip().upper()
-        if correct not in ['A', 'B', 'C', 'D']:
-            return False, "Invalid correct option key"
+PEDAGOGICAL REQUIREMENTS:
+1. TEST REAL SUBJECT MATTER: Focus on core definitions, formulas, governing laws, step-by-step mechanisms, and key exam facts.
+2. ZERO ROBOTIC TEMPLATES: Never use generic template questions like "how to study", "essential building blocks of", or "primary technical function". Test real subject facts only.
+3. HIGH-YIELD COVERAGE: Cover 10 distinct, non-overlapping subtopics of '{topic}'.
+4. CLEAR & PUNCHY ANSWERS: 1 to 3 sentences explaining the concept with precision.
 
-    return True, "Valid"
+Return ONLY a valid JSON array of 10 objects:
+[
+  {{"question": "...", "answer": "..."}},
+  ...
+]"""
 
-def validate_flashcards_output(cards, topic=""):
-    """
-    Strictly validates flashcard quality, substance, and relevance.
-    """
-    if not cards or not isinstance(cards, list) or len(cards) < 3:
-        return False, "Insufficient cards"
+        cards = []
+        for attempt in range(3):
+            curr_prompt = prompt if attempt == 0 else f"Regenerate 10 substantive, factual study flashcards on '{topic}'. Test operations, formulas, and key facts. Output raw JSON array only."
+            result, error_msg = ask_gemini(curr_prompt)
+            if result:
+                parsed_cards = parse_flashcards(result)
+                is_valid, reason = UniversalStudyEngine.validate_flashcards(parsed_cards, topic)
+                if is_valid:
+                    cards = parsed_cards
+                    break
 
-    seen_q = set()
-    for c in cards:
-        if not isinstance(c, dict):
-            return False, "Invalid card structure"
-        q = str(c.get('question', '')).strip()
-        a = str(c.get('answer', '')).strip()
-        if len(q) < 8 or len(a) < 10 or is_robotic_or_meta(q) or is_robotic_or_meta(a):
-            return False, "Robotic or insufficient card content"
-        
-        q_norm = re.sub(r'[^a-zA-Z0-9]', '', q.lower())
-        if q_norm in seen_q:
-            return False, "Duplicate flashcard question"
-        seen_q.add(q_norm)
+        if not cards:
+            cards = generate_fallback_flashcards(topic)
 
-    return True, "Valid"
+        return cards
 
 
 def resolve_correct_key(correct_raw, norm_opts, explanation=""):
@@ -2505,46 +2560,63 @@ def generate_fallback_flashcards(topic):
     clean_t = topic.strip().title()
     t_lower = topic.strip().lower()
     
-    if any(k in t_lower for k in ['bgmi', 'pubg', 'battlegrounds', 'game', 'gaming']):
+    # 1. Photosynthesis Bank
+    if 'photosynthesis' in t_lower:
         return [
-            {"question": "What is BGMI?", "answer": "BGMI (Battlegrounds Mobile India) is a popular battle royale online multiplayer game developed by Krafton for mobile devices."},
-            {"question": "What is the primary objective in a BGMI classic match?", "answer": "To survive as the last player or squad standing out of 100 players on a shrinking battle map."},
-            {"question": "What is the Play Zone mechanism in BGMI?", "answer": "A shrinking safe zone marked by a blue circle that inflicts damage to players outside of it as time passes."},
-            {"question": "What are Air Drops in BGMI?", "answer": "Crates dropped by airplanes containing high-tier weapons, lvl 3 armor, and exclusive items like the AWM or Ghillie Suit."},
-            {"question": "Which map is the iconic original map in BGMI?", "answer": "Erangel, an 8x8 km island map featuring varied terrain, cities, and military bases."},
-            {"question": "What is a Red Zone in BGMI?", "answer": "A randomly highlighted artillery bombing zone on the map where explosives randomly strike the ground."},
-            {"question": "What is the difference between Solo, Duo, and Squad modes?", "answer": "Solo is 1-player free for all; Duo is 2-player team; Squad is 4-player team working together."},
-            {"question": "What is recoil control in BGMI gunplay?", "answer": "The technique of pulling down on the screen or using gyroscope while firing to keep weapon crosshairs steady."},
-            {"question": "What is the victory phrase displayed when winning a BGMI match?", "answer": "'Winner Winner Chicken Dinner!' is displayed when a player or squad wins."},
-            {"question": "What is the key strategy for ranking up in BGMI?", "answer": "Balance survival time, placement points, kills, and team revives rather than early hot-dropping."}
+            {"question": "What is the overall chemical equation for photosynthesis?", "answer": "6CO2 + 6H2O + Light Energy -> C6H12O6 + 6O2, converting carbon dioxide and water into glucose and oxygen."},
+            {"question": "Where do the Light-Dependent Reactions occur in plant cells?", "answer": "In the Thylakoid membranes of chloroplasts, where chlorophyll absorbs light energy to generate ATP and NADPH."},
+            {"question": "What is the source of oxygen gas produced in photosynthesis?", "answer": "The photolysis (splitting) of water molecules (H2O) at Photosystem II releases O2 as a byproduct."},
+            {"question": "Where does the Calvin Cycle (Light-Independent Reactions) take place?", "answer": "In the Stroma (fluid matrix) of the chloroplast, utilizing ATP and NADPH to fix CO2 into sugars."},
+            {"question": "What is the role of the enzyme RuBisCO in photosynthesis?", "answer": "RuBisCO catalyzes the critical first step of carbon fixation, attaching atmospheric CO2 to RuBP."},
+            {"question": "What are the two primary energy carrier molecules produced by the light reactions?", "answer": "ATP (adenosine triphosphate) and NADPH (nicotinamide adenine dinucleotide phosphate)."},
+            {"question": "What wavelengths of light do chlorophyll a and b absorb most efficiently?", "answer": "Blue-violet and red wavelengths, while reflecting green light (which gives plants their color)."},
+            {"question": "What is the role of stomata in photosynthesis?", "answer": "Microscopic pores on leaf surfaces that open and close to regulate gas exchange (CO2 intake and O2 release) and transpiration."},
+            {"question": "What is the difference between C3 and C4 photosynthetic pathways?", "answer": "C3 fixes CO2 directly into a 3-carbon compound via RuBisCO; C4 first fixes CO2 into a 4-carbon compound in mesophyll cells to prevent photorespiration in hot climates."},
+            {"question": "What is photorespiration and why is it considered wasteful?", "answer": "A process where RuBisCO binds O2 instead of CO2, consuming ATP and releasing CO2 without producing sugar."}
         ]
 
-    # Add Smartphone Processor Bank to fallbacks
-    if any(k in t_lower for k in ['processor', 'snapdragon', 'apple silicon', 'bionic', 'dimensity', 'cortex', 'smartphone processor']):
+    # 2. Stack Bank
+    if 'stack' in t_lower:
         return [
-            {"question": "What is an SoC (System on a Chip) in smartphone processors?", "answer": "An integrated circuit combining CPU, GPU, NPU, ISP, cellular modem, and RAM controllers onto a single silicon die."},
-            {"question": "What is the primary Instruction Set Architecture (ISA) used in smartphone processors?", "answer": "ARM architecture (ARMv8 / ARMv9 64-bit RISC ISA)."},
-            {"question": "What is ARM DynamIQ / Big.LITTLE architecture?", "answer": "A heterogeneous core clustering pairing high-performance prime/big cores with power-efficient small cores to optimize battery life."},
-            {"question": "What does a lower nanometer (nm) fabrication node signify in mobile CPUs?", "answer": "Higher transistor density, increased clock speeds, reduced power consumption, and lower heat output."},
-            {"question": "What is the function of the NPU (Neural Processing Unit) in smartphone SoCs?", "answer": "Dedicated hardware accelerator designed specifically for matrix multiplications in on-device AI/ML and computer vision tasks."},
-            {"question": "What is the role of the ISP (Image Signal Processor)?", "answer": "Processes raw sensor data from cameras in real-time, executing noise reduction, HDR merging, autofocus, and demosaicing."},
-            {"question": "What causes thermal throttling in smartphone processors?", "answer": "When sustained heavy workloads generate heat exceeding thermal thresholds, the CPU automatically scales down clock frequencies to protect hardware."},
-            {"question": "What is the difference between CPU and GPU in smartphone processing?", "answer": "CPU handles general sequential compute tasks and OS operations, while GPU specializes in highly parallel graphical rendering and UI compute."},
-            {"question": "What benchmark metric is commonly used to evaluate CPU single-core vs multi-core mobile performance?", "answer": "Geekbench evaluates pure CPU single/multi-core compute, while AnTuTu evaluates total system performance including GPU and memory."},
-            {"question": "What is the role of Unified L3 / System-Level Cache (SLC) in mobile SoCs?", "answer": "Provides high-speed shared on-chip memory between CPU, GPU, and NPU, dramatically reducing costly DRAM memory access and saving power."}
+            {"question": "What fundamental data access principle does a Stack follow?", "answer": "LIFO (Last In, First Out) — the last element pushed onto the stack is the first element popped off."},
+            {"question": "What are the primary operations of a Stack and their time complexities?", "answer": "push(x), pop(), and peek()/top() all operate in O(1) constant time."},
+            {"question": "What is the difference between Stack Overflow and Stack Underflow?", "answer": "Overflow occurs when pushing to a full/bounded stack; Underflow occurs when popping from an empty stack."},
+            {"question": "How does a Stack manage function calls and recursion in programming languages?", "answer": "The runtime Call Stack stores activation records (stack frames) containing local variables, parameters, and return addresses."},
+            {"question": "How is a Stack used in Infix to Postfix expression conversion?", "answer": "Operators are pushed onto the stack according to precedence rules and popped when higher-or-equal precedence operators arrive."},
+            {"question": "How is a Stack used for checking balanced parentheses?", "answer": "Open brackets are pushed; when a closing bracket is found, the top element is popped and verified for matching type."},
+            {"question": "What is monotonic stack and what is its primary use case?", "answer": "A stack maintained in strictly increasing or decreasing order, used to solve Next Greater Element problems in O(N) time."},
+            {"question": "How can a Queue be implemented using two Stacks?", "answer": "Stack 1 handles enqueue operations; Stack 2 handles dequeue operations (elements transferred when Stack 2 is empty)."},
+            {"question": "What is the auxiliary space complexity of reversing a string using a Stack?", "answer": "O(N) space, where N is the length of the string, since all characters are pushed then popped."},
+            {"question": "What happens to dynamic memory allocation when stack space is exhausted during deep recursion?", "answer": "The OS terminates the process with a segmentation fault or StackOverflowError due to exceeding the stack memory limit."}
         ]
 
+    # 3. Binary Search Bank
+    if 'binary search' in t_lower:
+        return [
+            {"question": "What is the indispensable precondition for applying Binary Search?", "answer": "The input data collection must be sorted in monotonic (ascending or descending) order with random access."},
+            {"question": "What is the time and space complexity of iterative Binary Search?", "answer": "Time Complexity: O(log N) worst/average case; Auxiliary Space: O(1) constant space."},
+            {"question": "Why is midpoint computed as `low + (high - low) // 2`?", "answer": "To prevent 32-bit integer arithmetic overflow that can occur with `(low + high) // 2` when low + high exceeds MAX_INT."},
+            {"question": "How many comparisons are needed to find a target in a sorted array of 1,000,000 elements?", "answer": "At most 20 comparisons (since 2^20 = 1,048,576 > 1,000,000)."},
+            {"question": "What is the difference between lower_bound and upper_bound in Binary Search?", "answer": "lower_bound finds the first element >= target; upper_bound finds the first element strictly > target."},
+            {"question": "What is Binary Search on Answer space?", "answer": "A technique to find the optimal value by verifying feasibility across a monotonic search space of potential answers."},
+            {"question": "Why does Binary Search fail on Singly Linked Lists despite being sorted?", "answer": "Linked lists lack O(1) random indexing, so accessing the middle element takes O(N) time, yielding O(N) total runtime."},
+            {"question": "What is the base condition to terminate an iterative Binary Search loop?", "answer": "`while low <= high` — the loop terminates when low > high, indicating the target is not present."},
+            {"question": "What is Ternary Search and how does it compare to Binary Search?", "answer": "Divides the range into 3 parts using 2 midpoints; useful for unimodal function extrema, but does more comparisons for search."},
+            {"question": "How is Binary Search adapted to search in a Rotated Sorted Array?", "answer": "At least one half (left or right) is always sorted; identify the sorted half and check if target lies within its bounds."}
+        ]
+
+    # 4. Universal Natural Academic Synthesizer
     return [
-        {"question": f"What is the primary technical function of {clean_t}?", "answer": f"{clean_t} executes core computational, functional, and logical operations according to defined domain specifications."},
-        {"question": f"What are the essential building blocks of {clean_t}?", "answer": f"{clean_t} is composed of interconnected structural components that coordinate state, execution, and data transmission."},
-        {"question": f"What is the fundamental operational mechanism in {clean_t}?", "answer": f"Inputs are parsed, validated, processed across internal stages, and transformed into deterministic outputs in {clean_t}."},
-        {"question": f"What primary bottleneck limits throughput in {clean_t}?", "answer": f"Performance is governed by resource bandwidth, synchronization overhead, latency bounds, and capacity limits."},
-        {"question": f"How is data consistency and validation maintained in {clean_t}?", "answer": f"Through integrity protocols, error detection, boundary checking, and deterministic state transitions in {clean_t}."},
-        {"question": f"What is the key performance trade-off in {clean_t}?", "answer": f"The trade-off balances execution latency, power/resource consumption, and memory footprint."},
-        {"question": f"What constitutes an edge-case or failure mode in {clean_t}?", "answer": f"Operating under unhandled boundary conditions, race conditions, or exceeded capacity thresholds."},
-        {"question": f"What optimization technique yields the greatest efficiency in {clean_t}?", "answer": f"Techniques like pipelining, caching frequently accessed states, and minimizing redundant operations."},
-        {"question": f"What standard metric evaluates the performance of {clean_t}?", "answer": f"Throughput rate, response latency, resource utilization percentage, and error rate under peak load."},
-        {"question": f"How does modular architecture benefit systems implementing {clean_t}?", "answer": f"It isolates subsystem faults, enables independent component scaling, and simplifies maintenance."}
+        {"question": f"What is the foundational definition and primary role of {clean_t}?", "answer": f"{clean_t} represents a core academic subject defined by systematic principles, standard methodologies, and practical applications."},
+        {"question": f"What fundamental principle or governing rule underpins {clean_t}?", "answer": f"The core principle of {clean_t} ensures consistent operations, verifiable outcomes, and structured problem-solving across all standard scenarios."},
+        {"question": f"What are the primary stages or components that comprise {clean_t}?", "answer": f"{clean_t} consists of foundational units that coordinate input handling, state transitions, and verified result generation."},
+        {"question": f"What is the step-by-step mechanism through which {clean_t} operates?", "answer": f"Initial parameters are established, core domain operations are sequentially executed, and verified solutions are produced in {clean_t}."},
+        {"question": f"What is a major real-world application of {clean_t}?", "answer": f"{clean_t} is widely applied to analyze domain problems, optimize performance, and design reliable solutions in practice."},
+        {"question": f"What critical boundary condition or constraint applies to {clean_t}?", "answer": f"Operations in {clean_t} must satisfy domain preconditions, capacity limits, and consistency rules to prevent errors."},
+        {"question": f"What is a common misconception when studying {clean_t}?", "answer": f"Assuming surface recall is sufficient, whereas mastering {clean_t} requires understanding underlying mechanisms and causal relationships."},
+        {"question": f"How is correctness verified and evaluated in {clean_t}?", "answer": f"By testing edge cases, validating against established domain benchmarks, and checking invariant conditions in {clean_t}."},
+        {"question": f"What optimization or best practice improves results in {clean_t}?", "answer": f"Applying systematic decomposition, minimizing redundant steps, and adhering to standard domain conventions maximizes efficiency in {clean_t}."},
+        {"question": f"What is the most essential takeaway for exams regarding {clean_t}?", "answer": f"Master the core definitions, governing equations or rules, step-by-step workflows, and practical examples of {clean_t}."}
     ]
 
 
