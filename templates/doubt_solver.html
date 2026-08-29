@@ -53,13 +53,22 @@
 
   <form method="POST" action="{{ url_for('doubt_solver') }}" id="doubtForm">
     <div class="search-bar">
-      <input type="text" name="question" id="questionInput" value="{{ question }}" placeholder="e.g. Explain Banker's Algorithm with example..." autofocus required />
+      <input type="text" name="question" id="questionInput" value="{{ question }}" placeholder="e.g. Explain Banker's Algorithm with example or ask a follow-up..." autofocus required />
       <button type="submit" class="btn-ask" onclick="showLoading()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Ask AI
       </button>
     </div>
   </form>
+
+  {% if chat_history and chat_history|length > 1 %}
+  <div style="margin-top:14px; display:flex; align-items:center; justify-content:center; gap:12px; font-size:12px; color:rgba(255,255,255,0.5);">
+    <span>💬 Active Conversation ({{ chat_history|length }} messages)</span>
+    <a href="{{ url_for('doubt_clear') }}" style="color:#f87171; text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(248,113,113,0.1); padding:4px 10px; border-radius:6px; border:1px solid rgba(248,113,113,0.2);">
+      🗑️ Clear Thread
+    </a>
+  </div>
+  {% endif %}
 
   <div class="quick-chips">
     <span class="chip" onclick="setQ('What is virtual function and VTABLE in C++?')">VTABLE in C++</span>
@@ -92,6 +101,16 @@
   <div class="answer-body" id="answerBody">
     <!-- Markdown rendered here by JS -->
   </div>
+
+  <!-- Smart Follow-up Chips -->
+  <div style="padding:12px 24px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.05); display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+    <span style="font-size:12px; color:rgba(255,255,255,0.4); font-weight:600;">Follow-up:</span>
+    <span class="chip" style="font-size:11px; padding:4px 10px;" onclick="askFollowup('Can you explain this with a simple real-world analogy?')">💡 Real-world Analogy</span>
+    <span class="chip" style="font-size:11px; padding:4px 10px;" onclick="askFollowup('Show me the complete code implementation with comments')">💻 Code Implementation</span>
+    <span class="chip" style="font-size:11px; padding:4px 10px;" onclick="askFollowup('Give a step-by-step worked numerical calculation on this')">🔢 Worked Numerical</span>
+    <span class="chip" style="font-size:11px; padding:4px 10px;" onclick="askFollowup('What are common exam traps and mistakes students make here?')">⚠️ Common Exam Traps</span>
+  </div>
+
   <div class="answer-footer">
     <button class="btn-action" onclick="speakAnswer()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
@@ -124,6 +143,11 @@
 <!-- Marked.js for markdown rendering -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
+function askFollowup(txt){
+  document.getElementById('questionInput').value = txt;
+  showLoading();
+  document.getElementById('doubtForm').submit();
+}
 function setQ(q){ document.getElementById('questionInput').value = q; }
 function showLoading(){
   document.getElementById('loadingState').style.display='block';

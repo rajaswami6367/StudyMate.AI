@@ -1095,40 +1095,88 @@ def dashboard():
 @app.route('/ask_doubt', methods=['GET', 'POST'])
 @app.route('/ask-doubt', methods=['GET', 'POST'])
 def doubt_solver():
-    """Accepts a question and returns an AI-generated answer."""
+    """Accepts a question and returns an AI-generated answer with multi-turn conversational context."""
     if not is_logged_in():
         return redirect(url_for('login'))
 
+    if 'doubt_history' not in session:
+        session['doubt_history'] = []
+
     if request.method == 'POST' and not check_ai_rate_limit():
-        return render_template('doubt_solver.html', error='Rate limit exceeded. Please wait a moment before trying again.')
+        return render_template('doubt_solver.html', error='Rate limit exceeded. Please wait a moment before trying again.', chat_history=session.get('doubt_history', []))
 
     answer = ""
     question = ""
 
     if request.method == 'POST':
-        question = request.form.get('question', '').strip()[:500]
+        question = request.form.get('question', '').strip()[:1000]
 
         if not question:
-            return render_template('doubt_solver.html', error='Please enter a question!')
+            return render_template('doubt_solver.html', error='Please enter a question!', chat_history=session.get('doubt_history', []))
 
-        prompt = f"""You are an elite 24/7 AI Academic Tutor and Subject Matter Expert.
-Provide a crystal-clear, comprehensive, and engaging academic explanation for the following student doubt.
+        greetings = ['hi', 'hello', 'hey', 'good morning', 'good evening', 'who are you', 'help']
+        if question.lower().strip() in greetings:
+            answer = """## 👋 Hello! I'm your AI Academic Doubt Solver
 
-Student Question: "{question}"
+I am here to help you master any concept, solve complex numericals, debug code, or prepare for your exams.
 
-STRUCTURE YOUR ANSWER STRICTLY AS FOLLOWS:
-1. 💡 **Direct Answer (TL;DR):** A concise 1-2 sentence core answer.
-2. 📚 **Detailed Conceptual Breakdown:** Explain the underlying principles step-by-step with clear logic.
-3. 🔍 **Example / Blueprint (Formulas, Code, or Real-World Scenario):**
-   - If mathematical/scientific: include LaTeX formulas like $$...$$.
-   - If programming/CS: include clean, commented code snippet.
-   - If conceptual/general: provide a clear real-world analogy or comparative breakdown.
-4. 🎓 **Exam Tip & Key Takeaway:** Crucial points for exams, common misconceptions to avoid, and essential keywords."""
+### 🚀 What would you like to explore today?
+- **Data Structures & Algorithms** (Trees, Dynamic Programming, Graphs)
+- **Core Engineering** (OS, DBMS, Networks, Digital Electronics, Thermodynamics)
+- **Mathematics & Sciences** (Calculus, Linear Algebra, Physics, Chemistry)
+- **University PYQs & Numerical Calculations**
 
-        result, error = ask_gemini(prompt)
-        answer = result if result else generate_fallback_doubt(question)
+Feel free to ask any question, code snippet, or theoretical concept above!"""
+        else:
+            # Build conversation context from previous turns
+            history = session.get('doubt_history', [])
+            history_context = ""
+            if history:
+                history_context = "PREVIOUS CONVERSATION CONTEXT:\n"
+                for turn in history[-3:]:
+                    history_context += f"Student: {turn.get('q')}\nTutor: {turn.get('a')[:250]}...\n\n"
 
-    return render_template('doubt_solver.html', answer=answer, question=question)
+            prompt = f"""You are an elite, patient, and highly intelligent AI Academic Tutor & Professor.
+Answer the student's question accurately, with deep concept clarity, clean structure, and practical student-friendly examples.
+
+{history_context}
+CURRENT STUDENT QUESTION:
+"{question}"
+
+STRUCTURE YOUR ANSWER BEAUTIFULLY:
+1. 💡 **Direct Answer (TL;DR)**: Concise, crystal-clear 1-2 sentence core concept explanation.
+2. 🔍 **Detailed Conceptual Breakdown**: Explain the 'why', the mechanism, and step-by-step logic in simple terms.
+3. 📐 **Concrete Example / Blueprint / Code / Formula**:
+   - If Math/Science: Show the governing formula and a worked numerical calculation.
+   - If Programming/CS: Provide clean, commented code snippet (C++/Java/Python) and state Time/Space complexity.
+   - If Theory/Concepts: Give a relatable real-world analogy and step-by-step workflow.
+4. ⚠️ **Exam Revision Tip & Common Mistakes**: Highlight the key points examiners look for and common student traps to avoid.
+
+Use clean Markdown with bolding, bullet points, and code blocks."""
+
+            result, error = ask_gemini(prompt)
+            answer = result if result else generate_fallback_doubt(question)
+
+        # Update session doubt history
+        if answer:
+            history = session.get('doubt_history', [])
+            history.append({'q': question, 'a': answer})
+            if len(history) > 10:
+                history = history[-10:]
+            session['doubt_history'] = history
+            session.modified = True
+
+    return render_template('doubt_solver.html', answer=answer, question=question, chat_history=session.get('doubt_history', []))
+
+
+@app.route('/doubt-clear', methods=['POST', 'GET'])
+def doubt_clear():
+    """Clears the multi-turn doubt solver history."""
+    if 'doubt_history' in session:
+        session.pop('doubt_history', None)
+        session.modified = True
+    flash("Conversation thread cleared!", "info")
+    return redirect(url_for('doubt_solver'))
 
 
 #  QUIZ GENERATOR 
@@ -1997,6 +2045,110 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 
+
+# ============================================================
+#  🛡️ ADVANCED QUALITY VALIDATION & CONCEPT-AWARE ENGINE
+# ============================================================
+
+ROBOTIC_PHRASES = [
+    "primary architectural purpose",
+    "primary technical function of",
+    "essential building blocks of",
+    "primary bottleneck limits throughput",
+    "execution latency and throughput efficiency",
+    "governing the architecture",
+    "standard failure mode or edge-case",
+    "how to study",
+    "how do you approach learning",
+    "what are common misconceptions when studying",
+    "what is the recommended revision strategy",
+    "how can structured notes improve",
+    "why is studying",
+    "how do you master"
+]
+
+def is_robotic_or_meta(text):
+    """Detects if text contains generic template strings or study-advice meta questions."""
+    if not text or not isinstance(text, str):
+        return True
+    t_low = text.lower()
+    for phrase in ROBOTIC_PHRASES:
+        if phrase in t_low:
+            return True
+    return False
+
+def validate_quiz_output(quiz_data, topic=""):
+    """
+    Strictly validates quiz questions for:
+    - Minimum count (>= 3)
+    - Anti-robotic & anti-meta quality
+    - 4 distinct, non-empty options (A, B, C, D)
+    - Valid correct answer key
+    - No duplicate questions
+    """
+    if not quiz_data or not isinstance(quiz_data, list) or len(quiz_data) < 3:
+        return False, "Insufficient questions"
+
+    seen_questions = set()
+    for q in quiz_data:
+        if not isinstance(q, dict):
+            return False, "Invalid question structure"
+        
+        q_text = str(q.get('question', '')).strip()
+        if len(q_text) < 10 or is_robotic_or_meta(q_text):
+            return False, f"Low-quality question: {q_text[:30]}"
+        
+        # Check uniqueness
+        q_norm = re.sub(r'[^a-zA-Z0-9]', '', q_text.lower())
+        if q_norm in seen_questions:
+            return False, "Duplicate question detected"
+        seen_questions.add(q_norm)
+
+        opts = q.get('options', {})
+        if not isinstance(opts, dict) or len(opts) < 4:
+            return False, "Missing options"
+        
+        # Check options are non-empty and unique
+        seen_opts = set()
+        for k in ['A', 'B', 'C', 'D']:
+            val = str(opts.get(k, '')).strip()
+            if not val or val.lower() in [f"option {k.lower()}", "none"]:
+                return False, f"Empty or placeholder option {k}"
+            val_norm = val.lower()
+            if val_norm in seen_opts:
+                return False, f"Duplicate option text in {k}"
+            seen_opts.add(val_norm)
+
+        correct = str(q.get('correct', '')).strip().upper()
+        if correct not in ['A', 'B', 'C', 'D']:
+            return False, "Invalid correct option key"
+
+    return True, "Valid"
+
+def validate_flashcards_output(cards, topic=""):
+    """
+    Strictly validates flashcard quality, substance, and relevance.
+    """
+    if not cards or not isinstance(cards, list) or len(cards) < 3:
+        return False, "Insufficient cards"
+
+    seen_q = set()
+    for c in cards:
+        if not isinstance(c, dict):
+            return False, "Invalid card structure"
+        q = str(c.get('question', '')).strip()
+        a = str(c.get('answer', '')).strip()
+        if len(q) < 8 or len(a) < 10 or is_robotic_or_meta(q) or is_robotic_or_meta(a):
+            return False, "Robotic or insufficient card content"
+        
+        q_norm = re.sub(r'[^a-zA-Z0-9]', '', q.lower())
+        if q_norm in seen_q:
+            return False, "Duplicate flashcard question"
+        seen_q.add(q_norm)
+
+    return True, "Valid"
+
+
 def resolve_correct_key(correct_raw, norm_opts, explanation=""):
     """
     Intelligently resolves the true correct option key ('A', 'B', 'C', or 'D')
@@ -2142,6 +2294,41 @@ def generate_fallback_quiz(topic):
 
     # ── Subject-specific question banks ──────────────────────────────────
     BANKS = {
+        'stack': [
+            {"question": "Which principle governs the insertion and deletion of elements in a Stack?", "options": {"A": "First In First Out (FIFO)", "B": "Last In First Out (LIFO)", "C": "Random Access", "D": "Priority Ordering"}, "correct": "B", "explanation": "A Stack operates strictly on LIFO (Last In First Out), where the last element inserted is the first one removed."},
+            {"question": "What is the time complexity of the push(), pop(), and peek() operations in an array or linked list Stack?", "options": {"A": "O(1) constant time", "B": "O(N) linear time", "C": "O(log N)", "D": "O(N^2)"}, "correct": "A", "explanation": "Push, pop, and peek all operate exclusively at the top of the stack, taking O(1) constant time."},
+            {"question": "What runtime condition occurs when attempting to pop an element from an empty Stack?", "options": {"A": "Stack Overflow", "B": "Stack Underflow", "C": "Memory Segmentation Fault", "D": "Null Reference Exception"}, "correct": "B", "explanation": "Attempting to remove or pop an element from a stack with zero elements triggers Stack Underflow."},
+            {"question": "Which of the following classic computer science applications relies directly on a Stack?", "options": {"A": "Infix to Postfix expression conversion and syntax parsing", "B": "Breadth First Search (BFS) graph traversal", "C": "CPU Round Robin scheduling queue", "D": "Dijkstra Shortest Path min-priority lookup"}, "correct": "A", "explanation": "Expression parsing, parentheses balancing, function call management, and undo operations all rely on Stacks."},
+            {"question": "Given an empty stack, the following operations are executed: push(10), push(20), pop(), push(30), push(40), pop(), peek(). What value is returned by peek()?", "options": {"A": "10", "B": "20", "C": "30", "D": "40"}, "correct": "C", "explanation": "Trace: [10] -> [10, 20] -> pop returns 20, stack=[10] -> [10, 30] -> [10, 30, 40] -> pop returns 40, stack=[10, 30] -> peek() returns top element 30."}
+        ],
+        'binary search': [
+            {"question": "What is the fundamental precondition required to apply Binary Search on an array?", "options": {"A": "The array elements must be sorted in monotonic order", "B": "The array must contain only positive integers", "C": "The array size must be a power of 2", "D": "The array must be dynamically allocated"}, "correct": "A", "explanation": "Binary Search requires the collection to be sorted so that half of the search space can be eliminated at each comparison."},
+            {"question": "What is the worst-case and average-case time complexity of Binary Search on an array of size N?", "options": {"A": "O(N)", "B": "O(log N)", "C": "O(1)", "D": "O(N log N)"}, "correct": "B", "explanation": "Because Binary Search divides the remaining search interval in half on every step, its time complexity is O(log N)."},
+            {"question": "In standard implementations, why is mid calculated as `low + (high - low) // 2` instead of `(low + high) // 2`?", "options": {"A": "To prevent integer arithmetic overflow when low and high are very large", "B": "To ensure floating point precision", "C": "To handle negative numbers only", "D": "To speed up CPU clock cycles"}, "correct": "A", "explanation": "In languages with fixed integer sizes (like C/C++/Java), (low + high) can exceed MAX_INT, causing overflow."},
+            {"question": "How many comparisons does Binary Search take in the worst case to search in a sorted array of 1,024 elements?", "options": {"A": "1,024 comparisons", "B": "10 comparisons (log2 1024)", "C": "512 comparisons", "D": "32 comparisons"}, "correct": "B", "explanation": "log2(1024) = 10, so at most 10 iterations/comparisons are needed."},
+            {"question": "Which algorithmic paradigm does Binary Search exemplify?", "options": {"A": "Dynamic Programming", "B": "Divide and Conquer / Decrease and Conquer", "C": "Greedy Choice", "D": "Backtracking"}, "correct": "B", "explanation": "Binary Search repeatedly divides the problem space in half, fitting the Divide and Conquer framework."}
+        ],
+        'normalization': [
+            {"question": "What condition must a relation satisfy to be in First Normal Form (1NF)?", "options": {"A": "All attribute values in every tuple must be atomic and indivisible", "B": "Every determinant must be a candidate key", "C": "No partial dependencies on composite keys", "D": "No multi-valued dependencies"}, "correct": "A", "explanation": "1NF requires that all column domains contain atomic (single, indivisible) values and no repeating groups."},
+            {"question": "A table is in Second Normal Form (2NF) if it is in 1NF and contains NO:", "options": {"A": "Transitive dependencies", "B": "Partial dependencies (non-prime attribute dependent on part of a composite primary key)", "C": "Foreign keys", "D": "Multi-valued dependencies"}, "correct": "B", "explanation": "2NF eliminates partial functional dependency where a non-prime attribute depends on a proper subset of a composite candidate key."},
+            {"question": "Which normal form specifically eliminates transitive functional dependencies (X -> Y and Y -> Z)?", "options": {"A": "1NF", "B": "2NF", "C": "3NF", "D": "5NF"}, "correct": "C", "explanation": "3NF requires a relation to be in 2NF and have no transitive dependencies of non-prime attributes on candidate keys."},
+            {"question": "What makes Boyce-Codd Normal Form (BCNF) strictly stronger than 3NF?", "options": {"A": "In BCNF, for every non-trivial functional dependency X -> Y, X MUST be a Super Key", "B": "BCNF allows partial dependencies", "C": "BCNF permits composite foreign keys only", "D": "BCNF requires all attributes to be numeric"}, "correct": "A", "explanation": "In BCNF, every determinant X in X->Y must be a super key. In 3NF, Y could be a prime attribute even if X was not a super key."},
+            {"question": "What two essential properties should a database decomposition ideally preserve during normalization?", "options": {"A": "Lossless Join and Dependency Preservation", "B": "Fast Disk Writes and Data Duplication", "C": "Index Fragmentation and Single Table Scan", "D": "Nullability and Static Constraints"}, "correct": "A", "explanation": "A high-quality decomposition ensures Lossless Join (no spurious tuples on join) and Dependency Preservation (all FDs testable locally)."}
+        ],
+        'process': [
+            {"question": "What data structure does the Operating System maintain to store all execution state, registers, and memory bounds of a Process?", "options": {"A": "Process Control Block (PCB)", "B": "Virtual Memory Table", "C": "File Descriptor Table", "D": "Interrupt Vector Table"}, "correct": "A", "explanation": "The PCB (Process Control Block) stores the PID, Program Counter, CPU registers, scheduling state, and memory pointers for a process."},
+            {"question": "When a CPU switches execution from one running process to another, this operation is known as:", "options": {"A": "Paging", "B": "Context Switching", "C": "Spooling", "D": "Thrashing"}, "correct": "B", "explanation": "Context switching saves the state of the active process into its PCB and restores the state of the scheduled process."},
+            {"question": "What is the primary difference between a Process and a Thread?", "options": {"A": "A process has its own private virtual address space; threads of the same process share memory", "B": "Processes run in hardware; threads run in firmware", "C": "Threads cannot be scheduled by the OS", "D": "Processes share stack memory, threads do not"}, "correct": "A", "explanation": "Processes are isolated with independent memory maps, whereas threads within the same process share code, data, and heap segments."},
+            {"question": "Which Unix/Linux system call creates an exact duplicate child process of the caller?", "options": {"A": "fork()", "B": "exec()", "C": "spawn()", "D": "clone_vm()"}, "correct": "A", "explanation": "fork() creates a new child process with a duplicate address space. exec() replaces the current process image with a new executable."},
+            {"question": "What is a Zombie Process in Operating Systems?", "options": {"A": "A process that has finished execution but whose exit status has not yet been read by its parent via wait()", "B": "A process consuming 100% CPU in an infinite loop", "C": "A process waiting indefinitely for I/O", "D": "A process whose parent was terminated"}, "correct": "A", "explanation": "A Zombie process is terminated but retains an entry in the process table until the parent calls wait() to reap its exit code."}
+        ],
+        'photosynthesis': [
+            {"question": "In plant cells, in which specific part of the chloroplast do the Light-Dependent Reactions occur?", "options": {"A": "Thylakoid Membrane", "B": "Stroma", "C": "Outer Mitochondrial Membrane", "D": "Cytoplasm"}, "correct": "A", "explanation": "Light-dependent reactions occur across the Thylakoid membrane where chlorophyll pigments and photosystems I & II reside."},
+            {"question": "What is the primary source of the Oxygen (O2) gas released into the atmosphere during photosynthesis?", "options": {"A": "Photolysis (splitting) of Water (H2O) molecules", "B": "Breakdown of Carbon Dioxide (CO2)", "C": "Decomposition of Glucose", "D": "Hydrolysis of ATP"}, "correct": "A", "explanation": "In Photosystem II, water molecules are split (photolysis) to provide replacement electrons, releasing O2 as a byproduct."},
+            {"question": "Where does the Calvin Cycle (Light-Independent Reaction) take place within the chloroplast?", "options": {"A": "Stroma", "B": "Thylakoid Lumen", "C": "Granum", "D": "Ribosome"}, "correct": "A", "explanation": "The Calvin Cycle occurs in the Stroma (fluid matrix) of the chloroplast, utilizing ATP and NADPH to fix CO2 into sugars."},
+            {"question": "Which key enzyme catalyzes the first step of carbon fixation in the Calvin Cycle by attaching CO2 to RuBP?", "options": {"A": "RuBisCO", "B": "ATP Synthase", "C": "DNA Polymerase", "D": "Catalase"}, "correct": "A", "explanation": "RuBisCO (Ribulose-1,5-bisphosphate carboxylase-oxygenase) is the crucial enzyme responsible for fixing atmospheric CO2."},
+            {"question": "What are the two high-energy chemical products generated by the Light Reactions that fuel the Calvin Cycle?", "options": {"A": "ATP and NADPH", "B": "Glucose and Pyruvate", "C": "NADH and FADH2", "D": "ADP and Water"}, "correct": "A", "explanation": "Light reactions convert solar energy into chemical energy stored in ATP and NADPH, which are then consumed by the Calvin Cycle."}
+        ],
         'bgmi': [
             {"question": "What does BGMI stand for?", "options": {"A": "Battlegrounds Mobile India", "B": "Battle Gaming Mobile India", "C": "Basic Ground Multi Player", "D": "Best Game Match India"}, "correct": "A", "explanation": "BGMI stands for Battlegrounds Mobile India, published by Krafton."},
             {"question": "Which company developed and published BGMI?", "options": {"A": "Tencent Games", "B": "Krafton", "C": "Epic Games", "D": "EA Sports"}, "correct": "B", "explanation": "Krafton is the South Korean video game publisher of BGMI."},
@@ -2265,11 +2452,11 @@ def generate_fallback_quiz(topic):
     if matched_bank is None:
         clean_t = topic.strip().title()
         matched_bank = [
-            {"question": f"What is the primary architectural purpose of {clean_t}?", "options": {"A": "System power off sequence", "B": f"Execute core logical, computational, or domain operations for {clean_t}", "C": "Clear display buffer", "D": "Reboot network interface"}, "correct": "B", "explanation": f"{clean_t} is engineered to perform foundational domain computation and manage core functional states."},
-            {"question": f"Which performance metric is MOST crucial when evaluating {clean_t}?", "options": {"A": "Execution latency and throughput efficiency", "B": "Desktop wallpaper resolution", "C": "Mouse pointer color", "D": "Speaker volume level"}, "correct": "A", "explanation": f"Operational efficiency, response latency, and throughput capacity are the fundamental performance metrics in {clean_t}."},
-            {"question": f"What constraint most directly influences the design of {clean_t}?", "options": {"A": "Operating resource limits, concurrency, and boundary safety", "B": "Keyboard keycap shape", "C": "Monitor casing color", "D": "Browser tab order"}, "correct": "A", "explanation": f"System constraints such as memory bounds, latency ceilings, and state synchronization govern the architecture of {clean_t}."},
-            {"question": f"In {clean_t}, what optimization strategy yields the highest performance gain?", "options": {"A": "Increasing redundant calculations", "B": "Pipelining, caching frequently used states, and eliminating overhead", "C": "Disabling hardware acceleration", "D": "Delaying execution indefinitely"}, "correct": "B", "explanation": f"Caching, pipelining, and minimizing redundant operations maximize computational throughput in {clean_t}."},
-            {"question": f"What is the standard failure mode or edge-case behavior in {clean_t}?", "options": {"A": "Exceeding boundary constraints or resource exhaustion", "B": "Changing screen font size", "C": "Plugging in headphones", "D": "Minimizing a window"}, "correct": "A", "explanation": f"Systems fail gracefully or enter fault states when input boundary constraints are violated in {clean_t}."}
+            {"question": f"What is the foundational definition and primary role of {clean_t}?", "options": {"A": "A system power state", "B": f"The core concepts, mechanisms, and rules defining {clean_t}", "C": "An unindexed disk partition", "D": "A network broadcast packet"}, "correct": "B", "explanation": f"{clean_t} is defined by its foundational principles, operational mechanisms, and governing rules."},
+            {"question": f"Which of the following is a primary characteristic or invariant of {clean_t}?", "options": {"A": "Consistent execution according to core principles of {clean_t}", "B": "Random non-deterministic memory corruption", "C": "Ignoring boundary conditions", "D": "Zero error checking"}, "correct": "A", "explanation": f"Understanding {clean_t} requires verifying that its primary invariants and boundary rules are maintained."},
+            {"question": f"In practical problem solving involving {clean_t}, what is the first step to evaluate?", "options": {"A": "Identify input preconditions, base cases, and boundary constraints", "B": "Skip initial parameters", "C": "Delete the input data", "D": "Reboot the host system"}, "correct": "A", "explanation": f"Rigorous analysis of {clean_t} begins with checking inputs, initial states, and constraint limits."},
+            {"question": f"Which scenario represents a standard application or implementation of {clean_t}?", "options": {"A": "Executing direct operations using established rules of {clean_t}", "B": "Corrupting file metadata", "C": "Unplugging power cables", "D": "Halting CPU timers"}, "correct": "A", "explanation": f"Applications of {clean_t} apply its formal rules to solve concrete domain problems."},
+            {"question": f"When evaluating edge cases in {clean_t}, what condition must be carefully handled?", "options": {"A": "Empty inputs, boundary limits, or extreme scale conditions", "B": "Screen backlight brightness", "C": "Audio output levels", "D": "Mouse scroll speed"}, "correct": "A", "explanation": f"Robust systems handle boundary extremes, empty collections, and limit cases in {clean_t}."}
         ]
 
     # Shuffle and pick 5 random questions so each refresh gives different set
