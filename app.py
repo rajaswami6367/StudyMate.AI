@@ -420,7 +420,7 @@ def _gemini_worker(prompt):
 
 
 #  STEP 6: Helper Function for Gemini API calls 
-def ask_gemini(prompt, timeout_seconds=20):
+def ask_gemini(prompt, timeout_seconds=30):
     """
     Sends a prompt to Gemini AI and returns the response text.
     Fast, non-blocking execution with global executor and strict 12s timeout guard.
@@ -1111,14 +1111,19 @@ def doubt_solver():
         if not question:
             return render_template('doubt_solver.html', error='Please enter a question!')
 
-        prompt = f"""You are an engaging, expert study assistant for students.
-Answer the following question clearly, simply, and engagingly.
-- Use relevant emojis to make the content lively and interesting.
-- Use bold text (**keyword**) to highlight important concepts, terms, formulas, and definitions.
-- Use bullet points, subheadings, or tables to structure the explanation cleanly.
-- Use code blocks or code highlights if the question is related to programming or technical concepts.
+        prompt = f"""You are an elite 24/7 AI Academic Tutor and Subject Matter Expert.
+Provide a crystal-clear, comprehensive, and engaging academic explanation for the following student doubt.
 
-Question: {question}"""
+Student Question: "{question}"
+
+STRUCTURE YOUR ANSWER STRICTLY AS FOLLOWS:
+1. 💡 **Direct Answer (TL;DR):** A concise 1-2 sentence core answer.
+2. 📚 **Detailed Conceptual Breakdown:** Explain the underlying principles step-by-step with clear logic.
+3. 🔍 **Example / Blueprint (Formulas, Code, or Real-World Scenario):**
+   - If mathematical/scientific: include LaTeX formulas like $$...$$.
+   - If programming/CS: include clean, commented code snippet.
+   - If conceptual/general: provide a clear real-world analogy or comparative breakdown.
+4. 🎓 **Exam Tip & Key Takeaway:** Crucial points for exams, common misconceptions to avoid, and essential keywords."""
 
         result, error = ask_gemini(prompt)
         answer = result if result else generate_fallback_doubt(question)
@@ -1147,23 +1152,30 @@ def quiz():
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
 
-        # Use random seed hint so Gemini gives different questions each time
-        rand_hint = random.randint(1000, 9999)
+        # Dynamic focus seed ensures non-duplicate, highly varied questions on every regeneration
+        focus_angles = [
+            "Core architectural foundations, specifications, primary definitions, and direct identification.",
+            "Performance metrics, system trade-offs, operational mechanisms, and diagnostic problem solving.",
+            "Advanced comparative analysis, edge cases, formulas/calculations, and real-world implementations.",
+            "High-yield University Exam PYQs, numerical calculations, and conceptual application scenarios."
+        ]
+        chosen_angle = random.choice(focus_angles)
+        rand_hint = random.randint(10000, 99999)
 
         prompt = f"""You are an elite Quiz Master and Subject Matter Expert.
-First, analyze and understand the topic '{topic}' deeply.
-Generate EXACTLY 5 HIGH-QUALITY, UNIQUE multiple-choice questions on '{topic}'. Request ID: {rand_hint}.
+Analyze the topic '{topic}' deeply and generate EXACTLY 5 HIGH-QUALITY, EXTREMELY RELEVANT multiple-choice questions.
+Generation Request ID: {rand_hint} | Focus Angle: {chosen_angle}
 
 STRICT DIFFICULTY STRUCTURE (MUST FOLLOW EXACTLY):
-- Questions 1 & 2 MUST be EASY level: test core definitions, foundational concepts, or direct identification.
-- Questions 3, 4, & 5 MUST be HARD level: test deep conceptual understanding, practical application, real-world scenario analysis, code snippets/mathematical problems, or complex architectural trade-offs — NOT simple memorization.
+- Questions 1 & 2 MUST be EASY level: Test core definitions, essential specifications, primary architecture, or direct identification of '{topic}'.
+- Questions 3, 4, & 5 MUST be HARD level: Test deep conceptual understanding, mathematical/code calculations, practical application, architectural trade-offs, or real-world troubleshooting scenarios — NOT mere trivia or rote memorization.
 
-STRICT FORMAT & QUALITY RULES:
-1. EXACTLY 5 questions covering 5 DIFFERENT, non-overlapping subtopics of '{topic}'. Zero repetition or superficial fluff.
-2. Every question MUST have EXACTLY 4 distinct, plausible options labeled 'A', 'B', 'C', 'D'.
-3. EXACTLY ONE option is correct.
-4. RANDOMIZE the correct option position across A, B, C, and D across the 5 questions (ensure correct answer keys are varied across letters A, B, C, D).
-5. Explanations must be punchy, clear, and explain the exact logic/reason why the correct option is right.
+STRICT RELEVANCE & QUALITY RULES:
+1. 100% SPECIFIC TO '{topic}': Every question and option must directly test authentic knowledge of '{topic}'. Prohibit generic placeholders or unrelated filler.
+2. 5 DISTINCT SUBTOPICS: Each of the 5 questions must cover a different sub-aspect of '{topic}' with zero repetition.
+3. 4 PLAUSIBLE OPTIONS: Each question MUST have exactly 4 distinct, plausible options labeled 'A', 'B', 'C', 'D'.
+4. EXACTLY ONE CORRECT OPTION: Randomize correct option position across A, B, C, and D.
+5. PUNCHY EXPLANATIONS: Explain clearly why the correct answer is right and why the key principle applies.
 
 Return ONLY a valid JSON array of 5 objects with keys:
 'question' (string),
@@ -1251,34 +1263,34 @@ def ai_notes():
         if not topic:
             return render_template('ai_notes.html', error='Please enter a topic!')
 
-        prompt = f"""Generate comprehensive, well-structured, and highly visual study notes on the topic: '{topic}'
-        
-        To make these notes extremely engaging and colorful for B.Tech CSE students, structure them strictly with:
-        
-        #  Introduction
-        [Detailed overview of the topic. Highlight key terms in bold]
-        
-        #  Key Concepts & Callouts
-        Use markdown blockquotes starting with emojis to create colored highlight cards:
-        - For a key definition/term, use:
-        >  **Definition:** [Definition text here]
-        - For an important concept/tip, use:
-        >  **Concept:** [Tip/Concept detail here]
-        - For warnings or critical exam points, use:
-        >  **Warning:** [Common mistakes or critical exam questions here]
-        
-        #  Structured Breakdown & Comparison
-        - Draw a markdown comparison table comparing different aspects, types, or architectures of the topic.
-        - Add a clean bulleted list where each bullet starts with a relevant emoji.
-        
-        #  Technical Blueprint (Formulas, Equations or Code)
-        - If math-related: use LaTeX block formulas like $$...$$.
-        - If CS/coding-related: provide a clean, commented code snippet in a fenced code block with language specifier (e.g. ```python).
-        
-        #  Summary Cheat Sheet
-        [Bullet-points summarizing the core takeaways]
-        
-        Use emojis, clear spacing, bold styling for important terms, and visual formatting. Make it detailed, highly structured, and suitable for exam revision."""
+        rand_hint = random.randint(10000, 99999)
+        prompt = f"""You are a distinguished University Professor and Author.
+Generate comprehensive, highly structured, and visually engaging study notes on the topic: '{topic}'.
+Generation Request ID: {rand_hint}.
+
+STRUCTURE GUIDELINES:
+# 📌 Introduction & Core Overview
+[Detailed, clear introduction to '{topic}'. Highlight essential keywords and primary objectives in bold.]
+
+# 💡 Key Concepts & Core Principles
+Use markdown blockquotes with emoji badges for high-yield callouts:
+> 📌 **Definition:** [Precise definition of '{topic}']
+> 🎯 **Core Objective / Function:** [What problem '{topic}' solves and why it matters]
+> ⚠️ **Common Pitfall / Exam Trap:** [Frequent mistakes students make or tricky exam points]
+
+# 📊 Structured Breakdown & Comparison
+- Provide a clean Markdown comparison table comparing key types, architectures, components, or trade-offs in '{topic}'.
+- Include a structured bulleted list explaining operational workflows.
+
+# ⚡ Technical Blueprint (Formulas, Code, or Step-by-Step Mechanisms)
+- If Math/Physics/Engineering: Provide key LaTeX formulas ($$...$$) with clear variable definitions.
+- If CS/Programming: Provide a clean, well-commented code snippet with proper language tags.
+- If Science/Business/General: Provide a step-by-step operational diagram or execution flow.
+
+# 🚀 Summary Cheat Sheet & Exam Revision
+- High-yield bullet points summarizing the most critical takeaways for exams and interviews.
+
+Make the notes authoritative, rich in depth, and crystal clear."""
 
         result, error = ask_gemini(prompt)
         notes_result = result if result else generate_fallback_notes(topic)
@@ -1305,14 +1317,33 @@ def flashcards():
         if not topic:
             return render_template('flashcards.html', error='Please enter a topic!')
 
-        prompt = f"""Create exactly 10 study flashcards on the topic: {topic}
+        # Dynamic focus seed ensures non-duplicate, high-yield cards on every refresh/regeneration
+        focus_angles = [
+            "Core definitions, essential terminology, primary architecture, and fundamental formulas/rules.",
+            "Deep operational mechanisms, step-by-step processes, real-world behavior, and technical execution.",
+            "Crucial trade-offs, performance benchmarks, comparisons with alternatives, and industry standards.",
+            "High-probability exam PYQs, common misconceptions, edge cases, and critical analytical questions."
+        ]
+        chosen_angle = random.choice(focus_angles)
+        rand_id = random.randint(10000, 99999)
 
-Use EXACTLY this format for each card (no deviation):
-Q: [Question here]
-A: [Short, clear answer here]
+        prompt = f"""You are an elite Academic Professor and Exam Subject Matter Expert.
+Generate EXACTLY 10 HIGH-YIELD, IN-DEPTH, HIGHLY SPECIFIC study flashcards on the topic: '{topic}'.
+Generation Request ID: {rand_id} | Specific Focus Dimension: {chosen_angle}
 
-Keep answers concise  maximum 2 sentences each.
-Make questions test real understanding, not just memorization."""
+CRITICAL RELEVANCE & QUALITY DIRECTIVES:
+1. STRICT TOPIC RELEVANCE: Every single question and answer MUST be 100% directly relevant and specific to '{topic}'. Strictly avoid generic boilerplate, superficial definitions, or unrelated concepts.
+2. HIGH-YIELD CONTENT: Prioritize the most important definitions, formulas, micro-architectures, key specifications, algorithms/theorems, practical use cases, and likely University/Competitive Exam questions on '{topic}'.
+3. NO DUPLICATION / FRESH PERSPECTIVES: Explore distinct sub-aspects of '{topic}' across the 10 cards with zero internal repetition.
+4. CONCISE & PUNCHY ANSWERS: The answer on each card must be direct, clear, and comprehensive (1 to 3 sentences) explaining the 'why' and 'how'.
+
+OUTPUT FORMAT REQUIREMENT:
+Return ONLY a valid JSON array of 10 objects with NO markdown formatting, code blocks, or preamble text.
+JSON Structure:
+[
+  {{"question": "What is ...?", "answer": "..."}},
+  ...
+]"""
 
         result, error = ask_gemini(prompt)
 
@@ -1968,23 +1999,63 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 def parse_flashcards(text):
+    if not text or not isinstance(text, str):
+        return []
+    
+    text_clean = text.strip().replace('\\r\\n', '\n').replace('\\n', '\n')
+
+    # 1. Try parsing as JSON array
+    start_idx = text_clean.find('[')
+    end_idx = text_clean.rfind(']')
+    if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+        json_candidate = text_clean[start_idx:end_idx+1]
+        try:
+            parsed = json.loads(json_candidate)
+            if isinstance(parsed, list) and len(parsed) >= 1:
+                cards = []
+                for item in parsed:
+                    if isinstance(item, dict):
+                        q = item.get('question') or item.get('q') or item.get('front') or ""
+                        a = item.get('answer') or item.get('a') or item.get('back') or ""
+                        if q and a:
+                            cards.append({'question': str(q).strip(), 'answer': str(a).strip()})
+                if len(cards) >= 1:
+                    return cards
+        except Exception:
+            pass
+
+    # 2. Robust regex parser for Q: ... A: ... in various markdown formats
     cards = []
-    lines = text.strip().split('\n')
+    pattern = re.compile(
+        r'(?:^|\n)(?:[\*\#\-\d\.\s]*?(?:Q|Question|Front)(?:[\s\*\#\-\d\.]*?)[\*\:]*\s*[:\-])\s*(.*?)\n\s*(?:[\*\#\-\d\.\s]*?(?:A|Answer|Back)(?:[\s\*\#\-\d\.]*?)[\*\:]*\s*[:\-])\s*(.*?)(?=(?:\n[\*\#\-\d\.\s]*?(?:Q|Question|Front)(?:[\s\*\#\-\d\.]*?)[\*\:]*\s*[:\-])|$)',
+        re.DOTALL | re.IGNORECASE
+    )
+    
+    matches = pattern.findall(text_clean)
+    for q, a in matches:
+        q_clean = q.strip().strip('*').strip()
+        a_clean = a.strip().strip('*').strip()
+        if q_clean and a_clean and len(q_clean) >= 3 and len(a_clean) >= 2:
+            cards.append({'question': q_clean, 'answer': a_clean})
+    
+    if len(cards) >= 1:
+        return cards
+
+    # 3. Fallback manual line scanner
+    lines = text_clean.split('\n')
     current_q = None
     current_a = None
-
     for line in lines:
-        line = line.strip()
-        if line.startswith('Q:'):
-            # Save previous card if exists
+        l = line.strip()
+        l_upper = l.upper()
+        if (l_upper.startswith('Q:') or l_upper.startswith('**Q:') or l_upper.startswith('**Q1') or l_upper.startswith('Q1:') or l_upper.startswith('QUESTION:')) and len(l) > 3:
             if current_q and current_a:
                 cards.append({'question': current_q, 'answer': current_a})
-            current_q = line[2:].strip()
+            current_q = re.sub(r'^(?:\*\*)?(?:Q\d*|Question\s*\d*|\d+\.\s*Q)[\*:]*\s*[:\-]?\s*', '', l, flags=re.IGNORECASE).strip()
             current_a = None
-        elif line.startswith('A:') and current_q:
-            current_a = line[2:].strip()
+        elif (l_upper.startswith('A:') or l_upper.startswith('**A:') or l_upper.startswith('**A1') or l_upper.startswith('A1:') or l_upper.startswith('ANSWER:')) and current_q:
+            current_a = re.sub(r'^(?:\*\*)?(?:A\d*|Answer\s*\d*|\d+\.\s*A)[\*:]*\s*[:\-]?\s*', '', l, flags=re.IGNORECASE).strip()
 
-    # Don't forget the last card
     if current_q and current_a:
         cards.append({'question': current_q, 'answer': current_a})
 
