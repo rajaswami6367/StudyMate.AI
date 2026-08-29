@@ -1163,19 +1163,17 @@ def quiz():
         rand_hint = random.randint(10000, 99999)
 
         prompt = f"""You are an elite Quiz Master and Subject Matter Expert.
-Analyze the topic '{topic}' deeply and generate EXACTLY 5 HIGH-QUALITY, EXTREMELY RELEVANT multiple-choice questions.
-Generation Request ID: {rand_hint} | Focus Angle: {chosen_angle}
+Generate EXACTLY 5 HIGH-QUALITY multiple-choice questions testing the ACTUAL SUBJECT MATTER of: '{topic}'.
+Request ID: {rand_hint} | Perspective: {chosen_angle}
 
-STRICT DIFFICULTY STRUCTURE (MUST FOLLOW EXACTLY):
-- Questions 1 & 2 MUST be EASY level: Test core definitions, essential specifications, primary architecture, or direct identification of '{topic}'.
-- Questions 3, 4, & 5 MUST be HARD level: Test deep conceptual understanding, mathematical/code calculations, practical application, architectural trade-offs, or real-world troubleshooting scenarios — NOT mere trivia or rote memorization.
-
-STRICT RELEVANCE & QUALITY RULES:
-1. 100% SPECIFIC TO '{topic}': Every question and option must directly test authentic knowledge of '{topic}'. Prohibit generic placeholders or unrelated filler.
-2. 5 DISTINCT SUBTOPICS: Each of the 5 questions must cover a different sub-aspect of '{topic}' with zero repetition.
-3. 4 PLAUSIBLE OPTIONS: Each question MUST have exactly 4 distinct, plausible options labeled 'A', 'B', 'C', 'D'.
-4. EXACTLY ONE CORRECT OPTION: Randomize correct option position across A, B, C, and D.
-5. PUNCHY EXPLANATIONS: Explain clearly why the correct answer is right and why the key principle applies.
+STRICT CONTENT & ANTI-META DIRECTIVES (DO NOT VIOLATE):
+1. TEST THE ACTUAL SUBJECT MATTER: Questions must test real components, specifications, formulas, code, rules, architectures, mechanisms, or theorems of '{topic}'.
+2. NEVER GENERATE STUDY-ADVICE QUESTIONS: Absolutely NEVER ask meta questions like "How do you study {topic}?", "Why is studying {topic} important?", "What is the best way to master {topic}?", or "Which approach is best for exam revision?". Every question must test real subject facts!
+3. DIFFICULTY SPLIT:
+   - Q1 & Q2 (EASY): Fundamental definitions, primary specifications, or direct core concepts of '{topic}'.
+   - Q3, Q4 & Q5 (HARD): In-depth technical mechanisms, code/math calculations, architectural trade-offs, or complex scenario analysis of '{topic}'.
+4. 4 ACCURATE OPTIONS (A-D): Exactly one unambiguously correct answer. Randomize correct answer position across A, B, C, D. Ensure 'correct' key exactly matches the option letter.
+5. CLEAR EXPLANATIONS: Explain why the correct option is factually accurate.
 
 Return ONLY a valid JSON array of 5 objects with keys:
 'question' (string),
@@ -1216,15 +1214,17 @@ NO markdown code block wrappers. Output raw JSON array ONLY."""
                             if letter not in norm_opts:
                                 norm_opts[letter] = f"Option {letter}"
 
-                        correct = str(q.get('correct', 'A')).upper().strip()
-                        if correct not in ['A', 'B', 'C', 'D']:
-                            correct = 'A'
+                        raw_corr = q.get('correct') or q.get('answer') or q.get('correct_answer')
+                        exp_text = q.get('explanation', 'Correct answer based on subject principles.')
+                        correct = resolve_correct_key(raw_corr, norm_opts, exp_text)
+
+                        q_text = str(q.get('question') or f'Question on {topic}').strip()
 
                         cleaned_quiz.append({
-                            'question': q.get('question', f'Question on {topic}'),
+                            'question': q_text,
                             'options': norm_opts,
                             'correct': correct,
-                            'explanation': q.get('explanation', 'No detailed explanation provided.')
+                            'explanation': exp_text
                         })
 
                     if len(cleaned_quiz) >= 3:
@@ -1327,21 +1327,20 @@ def flashcards():
         chosen_angle = random.choice(focus_angles)
         rand_id = random.randint(10000, 99999)
 
-        prompt = f"""You are an elite Academic Professor and Exam Subject Matter Expert.
-Generate EXACTLY 10 HIGH-YIELD, IN-DEPTH, HIGHLY SPECIFIC study flashcards on the topic: '{topic}'.
-Generation Request ID: {rand_id} | Specific Focus Dimension: {chosen_angle}
+        prompt = f"""You are an elite Academic Professor and Subject Matter Expert.
+Generate EXACTLY 10 HIGH-YIELD study flashcards testing the ACTUAL SUBJECT MATTER of: '{topic}'.
+Request ID: {rand_id} | Perspective: {chosen_angle}
 
-CRITICAL RELEVANCE & QUALITY DIRECTIVES:
-1. STRICT TOPIC RELEVANCE: Every single question and answer MUST be 100% directly relevant and specific to '{topic}'. Strictly avoid generic boilerplate, superficial definitions, or unrelated concepts.
-2. HIGH-YIELD CONTENT: Prioritize the most important definitions, formulas, micro-architectures, key specifications, algorithms/theorems, practical use cases, and likely University/Competitive Exam questions on '{topic}'.
-3. NO DUPLICATION / FRESH PERSPECTIVES: Explore distinct sub-aspects of '{topic}' across the 10 cards with zero internal repetition.
-4. CONCISE & PUNCHY ANSWERS: The answer on each card must be direct, clear, and comprehensive (1 to 3 sentences) explaining the 'why' and 'how'.
+CRITICAL CONTENT & ANTI-META DIRECTIVES:
+1. TEST ACTUAL SUBJECT CONTENT: Every card must test real technical concepts, specifications, formulas, architectures, algorithms, or definitions of '{topic}'.
+2. NEVER ASK STUDY-ADVICE QUESTIONS: Absolutely NEVER ask "How to study/master {topic}?", "Why is continuous practice important?", "What are study tips for {topic}?", or "How do structured notes help?". Test real facts only!
+3. HIGH-YIELD TOPICS: Cover 10 distinct subtopics of '{topic}' (core definitions, working mechanisms, bottlenecks, formulas/equations, trade-offs, and exam-favorite points).
+4. CONCISE & PRECISE ANSWERS: 1 to 3 sentences explaining the factual principle clearly.
 
 OUTPUT FORMAT REQUIREMENT:
-Return ONLY a valid JSON array of 10 objects with NO markdown formatting, code blocks, or preamble text.
-JSON Structure:
+Return ONLY a valid JSON array of 10 objects:
 [
-  {{"question": "What is ...?", "answer": "..."}},
+  {{"question": "...", "answer": "..."}},
   ...
 ]"""
 
@@ -1998,6 +1997,49 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 
+def resolve_correct_key(correct_raw, norm_opts, explanation=""):
+    """
+    Intelligently resolves the true correct option key ('A', 'B', 'C', or 'D')
+    from any AI format (single letter, 'Option B', '(B)', or option text itself).
+    """
+    if not norm_opts:
+        return 'A'
+
+    c_str = str(correct_raw or '').strip()
+    c_upper = c_str.upper()
+
+    # 1. Direct single-letter match
+    if c_upper in ['A', 'B', 'C', 'D'] and c_upper in norm_opts:
+        return c_upper
+
+    # 2. Extract leading or bracketed letter: 'Option B', '(B)', 'B.', 'Answer: C'
+    match = re.search(r'\b([A-D])\b', c_upper)
+    if match and match.group(1) in norm_opts:
+        return match.group(1)
+
+    # 3. Match against option text contents
+    c_lower = c_str.lower().strip()
+    if c_lower:
+        for letter in ['A', 'B', 'C', 'D']:
+            if letter in norm_opts:
+                opt_val = str(norm_opts[letter]).lower().strip()
+                if opt_val == c_lower or (len(c_lower) > 3 and c_lower in opt_val) or (len(opt_val) > 3 and opt_val in c_lower):
+                    return letter
+
+    # 4. Check explanation for mentions of 'Option A/B/C/D' or '(A)/(B)/(C)/(D)'
+    if explanation:
+        exp_upper = str(explanation).upper()
+        exp_match = re.search(r'(?:OPTION|CHOICE|CORRECT IS|ANSWER IS)\s*[:\(]?\s*([A-D])\b', exp_upper)
+        if exp_match and exp_match.group(1) in norm_opts:
+            return exp_match.group(1)
+
+    # Default to first available option
+    for letter in ['A', 'B', 'C', 'D']:
+        if letter in norm_opts:
+            return letter
+    return 'A'
+
+
 def parse_flashcards(text):
     if not text or not isinstance(text, str):
         return []
@@ -2211,15 +2253,23 @@ def generate_fallback_quiz(topic):
             break
 
 
+    # Add Smartphone Processor Bank to fallback quiz
+    BANKS['processor'] = [
+        {"question": "Which architecture is the foundation for almost all modern smartphone CPUs?", "options": {"A": "x86-64", "B": "ARM", "C": "RISC-V", "D": "MIPS"}, "correct": "B", "explanation": "ARM (Advanced RISC Machines) architecture powers virtually all modern smartphone SoCs."},
+        {"question": "What is the primary function of an NPU in a smartphone processor?", "options": {"A": "Display graphical pixels", "B": "Accelerate AI and neural network operations", "C": "Store operating system files", "D": "Modulate cellular 5G radio frequencies"}, "correct": "B", "explanation": "NPUs (Neural Processing Units) accelerate matrix math for on-device machine learning and AI."},
+        {"question": "What happens when a smartphone processor encounters thermal throttling?", "options": {"A": "Device automatically reboots", "B": "Clock speeds are reduced to prevent overheating", "C": "Display brightness is permanently lowered", "D": "RAM storage is cleared"}, "correct": "B", "explanation": "Thermal throttling dynamically lowers CPU/GPU clock frequencies to manage internal heat."},
+        {"question": "Which component in a mobile SoC handles camera RAW image processing and noise reduction?", "options": {"A": "GPU", "B": "Modem", "C": "ISP (Image Signal Processor)", "D": "Audio DAC"}, "correct": "C", "explanation": "The ISP processes raw sensor signals from cameras into high-quality JPEG/video frames in real time."},
+        {"question": "What does a 4nm manufacturing process indicate compared to a 7nm process?", "options": {"A": "Larger physical chip size", "B": "Higher transistor density and better energy efficiency", "C": "Requires higher supply voltage", "D": "Produces more heat"}, "correct": "B", "explanation": "Smaller nanometer nodes allow more transistors per mm², boosting efficiency and compute throughput."}
+    ]
+
     if matched_bank is None:
-        # Generic fallback — still topic-named with varied correct keys (2 Easy + 3 Hard)
         clean_t = topic.strip().title()
         matched_bank = [
-            {"question": f"What is the foundational definition of {clean_t}?", "options": {"A": "A system setting in OS", "B": f"A structured domain for analyzing and solving technical problems in {clean_t}", "C": "A hardware driver file", "D": "A database query syntax"}, "correct": "B", "explanation": f"{clean_t} provides first-principles frameworks to systematically analyze and solve domain problems."},
-            {"question": f"Which core principle is MOST fundamental when studying {clean_t}?", "options": {"A": "First principles and foundational definitions", "B": "Monitor refresh rate", "C": "Memory fragmentation", "D": "Browser cache clearing"}, "correct": "A", "explanation": f"Foundational concepts and core principles form the baseline of {clean_t}."},
-            {"question": f"When applying {clean_t} to real-world engineering problems, what is the primary constraint to optimize?", "options": {"A": "Keyboard shortcut speed", "B": "Random background colors", "C": "System trade-offs between efficiency, scalability, and correctness", "D": "Audio sample rates"}, "correct": "C", "explanation": f"Real-world application of {clean_t} requires balancing performance, resource constraints, and structural correctness."},
-            {"question": f"Which scenario demonstrates an ADVANCED application of {clean_t}?", "options": {"A": "Executing a simple print statement", "B": "Renaming a file", "C": "Designing a resilient, fault-tolerant architecture handling edge-case workloads", "D": "Opening a web browser tab"}, "correct": "C", "explanation": f"Advanced {clean_t} involves solving complex edge cases, handling concurrency/throughput, and designing robust systems."},
-            {"question": f"What is the most effective approach for mastering complex topics in {clean_t}?", "options": {"A": "Rote memorization without understanding", "B": "Analyzing previous year exam problems, proving core theorems, and building practical projects", "C": "Ignoring core documentation", "D": "Skimming headings only"}, "correct": "B", "explanation": f"Deep understanding in {clean_t} comes from active problem solving, PYQ analysis, and hands-on application."},
+            {"question": f"What is the primary architectural purpose of {clean_t}?", "options": {"A": "System power off sequence", "B": f"Execute core logical, computational, or domain operations for {clean_t}", "C": "Clear display buffer", "D": "Reboot network interface"}, "correct": "B", "explanation": f"{clean_t} is engineered to perform foundational domain computation and manage core functional states."},
+            {"question": f"Which performance metric is MOST crucial when evaluating {clean_t}?", "options": {"A": "Execution latency and throughput efficiency", "B": "Desktop wallpaper resolution", "C": "Mouse pointer color", "D": "Speaker volume level"}, "correct": "A", "explanation": f"Operational efficiency, response latency, and throughput capacity are the fundamental performance metrics in {clean_t}."},
+            {"question": f"What constraint most directly influences the design of {clean_t}?", "options": {"A": "Operating resource limits, concurrency, and boundary safety", "B": "Keyboard keycap shape", "C": "Monitor casing color", "D": "Browser tab order"}, "correct": "A", "explanation": f"System constraints such as memory bounds, latency ceilings, and state synchronization govern the architecture of {clean_t}."},
+            {"question": f"In {clean_t}, what optimization strategy yields the highest performance gain?", "options": {"A": "Increasing redundant calculations", "B": "Pipelining, caching frequently used states, and eliminating overhead", "C": "Disabling hardware acceleration", "D": "Delaying execution indefinitely"}, "correct": "B", "explanation": f"Caching, pipelining, and minimizing redundant operations maximize computational throughput in {clean_t}."},
+            {"question": f"What is the standard failure mode or edge-case behavior in {clean_t}?", "options": {"A": "Exceeding boundary constraints or resource exhaustion", "B": "Changing screen font size", "C": "Plugging in headphones", "D": "Minimizing a window"}, "correct": "A", "explanation": f"Systems fail gracefully or enter fault states when input boundary constraints are violated in {clean_t}."}
         ]
 
     # Shuffle and pick 5 random questions so each refresh gives different set
@@ -2282,17 +2332,32 @@ def generate_fallback_flashcards(topic):
             {"question": "What is the key strategy for ranking up in BGMI?", "answer": "Balance survival time, placement points, kills, and team revives rather than early hot-dropping."}
         ]
 
+    # Add Smartphone Processor Bank to fallbacks
+    if any(k in t_lower for k in ['processor', 'snapdragon', 'apple silicon', 'bionic', 'dimensity', 'cortex', 'smartphone processor']):
+        return [
+            {"question": "What is an SoC (System on a Chip) in smartphone processors?", "answer": "An integrated circuit combining CPU, GPU, NPU, ISP, cellular modem, and RAM controllers onto a single silicon die."},
+            {"question": "What is the primary Instruction Set Architecture (ISA) used in smartphone processors?", "answer": "ARM architecture (ARMv8 / ARMv9 64-bit RISC ISA)."},
+            {"question": "What is ARM DynamIQ / Big.LITTLE architecture?", "answer": "A heterogeneous core clustering pairing high-performance prime/big cores with power-efficient small cores to optimize battery life."},
+            {"question": "What does a lower nanometer (nm) fabrication node signify in mobile CPUs?", "answer": "Higher transistor density, increased clock speeds, reduced power consumption, and lower heat output."},
+            {"question": "What is the function of the NPU (Neural Processing Unit) in smartphone SoCs?", "answer": "Dedicated hardware accelerator designed specifically for matrix multiplications in on-device AI/ML and computer vision tasks."},
+            {"question": "What is the role of the ISP (Image Signal Processor)?", "answer": "Processes raw sensor data from cameras in real-time, executing noise reduction, HDR merging, autofocus, and demosaicing."},
+            {"question": "What causes thermal throttling in smartphone processors?", "answer": "When sustained heavy workloads generate heat exceeding thermal thresholds, the CPU automatically scales down clock frequencies to protect hardware."},
+            {"question": "What is the difference between CPU and GPU in smartphone processing?", "answer": "CPU handles general sequential compute tasks and OS operations, while GPU specializes in highly parallel graphical rendering and UI compute."},
+            {"question": "What benchmark metric is commonly used to evaluate CPU single-core vs multi-core mobile performance?", "answer": "Geekbench evaluates pure CPU single/multi-core compute, while AnTuTu evaluates total system performance including GPU and memory."},
+            {"question": "What is the role of Unified L3 / System-Level Cache (SLC) in mobile SoCs?", "answer": "Provides high-speed shared on-chip memory between CPU, GPU, and NPU, dramatically reducing costly DRAM memory access and saving power."}
+        ]
+
     return [
-        {"question": f"What is the core definition of {clean_t}?", "answer": f"{clean_t} represents a specialized field or topic requiring structured study, clear principles, and practical understanding."},
-        {"question": f"What is the primary objective of studying {clean_t}?", "answer": f"To gain comprehensive domain knowledge, master key concepts, and solve real-world problems effectively."},
-        {"question": f"What are the foundational principles of {clean_t}?", "answer": f"First-principles thinking, systematic analysis, and understanding core relationships within {clean_t}."},
-        {"question": f"How do you approach learning {clean_t} step-by-step?", "answer": f"Start with core definitions, study key examples, practice problem solving, and review summary notes."},
-        {"question": f"What is a key advantage of mastering {clean_t}?", "answer": f"Enhances analytical reasoning, subject confidence, and practical application skills."},
-        {"question": f"How do theoretical concepts translate to practical application?", "answer": f"By analyzing real-world case studies, solving exam-style questions, and applying core formulas in {clean_t}."},
-        {"question": f"What are common misconceptions when studying {clean_t}?", "answer": f"Relying purely on memorization instead of building fundamental concept clarity in {clean_t}."},
-        {"question": f"What is the role of continuous practice in {clean_t}?", "answer": f"Reinforces active recall, improves speed, and helps identify weak areas before exams."},
-        {"question": f"How can structured notes improve performance in {clean_t}?", "answer": f"They condense complex ideas into clear bullet points, key terms, and visual summaries for {clean_t}."},
-        {"question": f"What is the recommended revision strategy for {clean_t}?", "answer": f"Perform active recall using flashcards, solve PYQs, and explain key concepts in {clean_t} in your own words."}
+        {"question": f"What is the primary technical function of {clean_t}?", "answer": f"{clean_t} executes core computational, functional, and logical operations according to defined domain specifications."},
+        {"question": f"What are the essential building blocks of {clean_t}?", "answer": f"{clean_t} is composed of interconnected structural components that coordinate state, execution, and data transmission."},
+        {"question": f"What is the fundamental operational mechanism in {clean_t}?", "answer": f"Inputs are parsed, validated, processed across internal stages, and transformed into deterministic outputs in {clean_t}."},
+        {"question": f"What primary bottleneck limits throughput in {clean_t}?", "answer": f"Performance is governed by resource bandwidth, synchronization overhead, latency bounds, and capacity limits."},
+        {"question": f"How is data consistency and validation maintained in {clean_t}?", "answer": f"Through integrity protocols, error detection, boundary checking, and deterministic state transitions in {clean_t}."},
+        {"question": f"What is the key performance trade-off in {clean_t}?", "answer": f"The trade-off balances execution latency, power/resource consumption, and memory footprint."},
+        {"question": f"What constitutes an edge-case or failure mode in {clean_t}?", "answer": f"Operating under unhandled boundary conditions, race conditions, or exceeded capacity thresholds."},
+        {"question": f"What optimization technique yields the greatest efficiency in {clean_t}?", "answer": f"Techniques like pipelining, caching frequently accessed states, and minimizing redundant operations."},
+        {"question": f"What standard metric evaluates the performance of {clean_t}?", "answer": f"Throughput rate, response latency, resource utilization percentage, and error rate under peak load."},
+        {"question": f"How does modular architecture benefit systems implementing {clean_t}?", "answer": f"It isolates subsystem faults, enables independent component scaling, and simplifies maintenance."}
     ]
 
 
