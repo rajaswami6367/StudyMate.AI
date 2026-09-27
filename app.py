@@ -1931,15 +1931,16 @@ def generate_fallback_exam_paper(subject, university, exam_type, branch):
 
 
 
+
 # ==============================================================================
-#  🌟 UNIVERSAL STUDY ENGINE & AI QUALITY ASSURANCE ARCHITECTURE
+#  🌟 UNIVERSAL STUDY ENGINE & AI QUALITY ASSURANCE ARCHITECTURE (ROOT-CAUSE FIX)
 # ==============================================================================
 
 class UniversalStudyEngine:
     """
     Universal, domain-aware educational AI engine powering all StudyMate AI features.
     Enforces factual verification, in-domain distractors, zero robotic templates,
-    and automatic self-correcting regeneration.
+    and automatic self-correcting regeneration on the exact same topic.
     """
 
     ROBOTIC_PHRASES = [
@@ -1956,28 +1957,127 @@ class UniversalStudyEngine:
         "what is the recommended revision strategy",
         "how can structured notes improve",
         "why is studying",
-        "how do you master"
+        "how do you master",
+        "screen backlight brightness",
+        "mouse scroll speed",
+        "reboot the host system",
+        "unplugging power cables",
+        "audio output levels"
     ]
+
+    DOMAIN_DISTRACTOR_POOLS = {
+        'cs_algorithms_dsa': [
+            "O(N) linear time scan",
+            "O(log N) logarithmic division",
+            "O(1) constant time access",
+            "O(N log N) divide-and-conquer",
+            "Auxiliary Hash Table lookup",
+            "Recursive Call Stack depth",
+            "Binary Search Tree traversal",
+            "Breadth-First Search level order",
+            "Depth-First Search backtracking",
+            "Index Out of Bounds Exception",
+            "Dynamic Array resize overhead",
+            "Two-pointer convergence"
+        ],
+        'cs_systems_core': [
+            "Context Switch kernel overhead",
+            "Translation Lookaside Buffer (TLB) miss",
+            "Deadlock Circular Wait condition",
+            "Page Fault interrupt handling",
+            "Mutual Exclusion lock contention",
+            "TCP 3-Way Handshake timeout",
+            "Transitive Functional Dependency",
+            "Atomic Transaction Commit failure",
+            "Virtual Memory Page Table walk",
+            "Process Control Block (PCB) state swap"
+        ],
+        'cs_programming': [
+            "Compile-time syntax error",
+            "Runtime NullPointerException",
+            "Static method dispatch",
+            "Dynamic method overriding (VTABLE)",
+            "Pass-by-reference semantics",
+            "Encapsulation access violation",
+            "Heap memory allocation (new/malloc)",
+            "Stack frame deallocation on return"
+        ],
+        'life_sciences': [
+            "Cellular Respiration in Mitochondria",
+            "Enzymatic substrate inhibition",
+            "Passive diffusion across lipid bilayer",
+            "DNA Polymerase III proofreading",
+            "Ribosomal translation of mRNA",
+            "Thylakoid membrane electron transport",
+            "ATP Synthase proton gradient",
+            "Active transport via sodium-potassium pump",
+            "Transcription factor binding to promoter"
+        ],
+        'physical_sciences': [
+            "Conservation of Angular Momentum",
+            "Second Law of Thermodynamics (Entropy)",
+            "Gravitational potential energy conversion",
+            "Electromagnetic induction via Faraday's Law",
+            "Endothermic heat absorption",
+            "Covalent electron pair sharing",
+            "Wave-particle duality interference",
+            "Doppler effect frequency shift"
+        ],
+        'mathematics': [
+            "Zero Determinant singularity condition",
+            "Non-invertible matrix state",
+            "Divergent infinite series limit",
+            "Orthogonal basis vector projection",
+            "Eigenvalue characteristic polynomial root",
+            "First derivative critical stationary point",
+            "Integration by parts substitution",
+            "Laplace transform frequency domain map"
+        ],
+        'humanities_social': [
+            "Fiscal stimulus government expansion",
+            "Monetary policy interest rate tightening",
+            "Market equilibrium price elasticity shift",
+            "Constitutional statutory amendment ratification",
+            "Diplomatic treaty sovereignty recognition",
+            "Supply and demand inflationary pressure",
+            "Socio-economic class restructuring",
+            "Geopolitical balance of power alliance"
+        ],
+        'general_academic': [
+            "Primary empirical verification constraint",
+            "Standard analytical methodology framework",
+            "Systematic domain classification rule",
+            "Quantitative evaluation metric benchmark",
+            "Fundamental governing principle invariant"
+        ]
+    }
 
     @staticmethod
     def analyze_domain(topic):
-        """Identifies academic domain using precise whole-word and phrase matching."""
-        t = topic.lower().strip()
+        """Identifies academic domain using precise word and phrase boundary matching."""
+        t = " " + topic.lower().strip() + " "
         
-        # Regex patterns with word boundaries
-        patterns = [
-            ('life_sciences', r'\b(photosynthesis|cell|dna|rna|gene|genetics|mitosis|meiosis|enzyme|chloroplast|protein|biology|respiration|ecology|heart|neuron|botany|zoology)\b'),
-            ('physical_sciences', r'\b(newton|force|gravity|thermodynamics|optics|quantum|physics|atom|molecule|reaction|chemistry|periodic table|acid|base|voltage|circuit|electromagnetism)\b'),
-            ('mathematics', r'\b(matrix|eigenvalue|calculus|derivative|integral|differential|probability|statistics|algebra|fourier|laplace|vector|geometry|trigonometry|math)\b'),
-            ('humanities_social', r'\b(revolution|war|history|constitution|inflation|gdp|monetary|demand|supply|economics|market|law|treaty|philosophy|sociology|geography)\b'),
-            ('cs_algorithms_dsa', r'\b(stack|queue|linked list|tree|graph|heap|hash|sorting|sort|searching|binary search|recursion|dynamic programming|dsa|algorithm|complexity|array|binary tree|avl)\b'),
-            ('cs_systems_core', r'\b(process|thread|deadlock|virtual memory|paging|segmentation|operating system|os|dbms|sql|normalization|transaction|acid|network|tcp|ip|udp|osi|protocol|routing|compiler|vtable|vptr)\b'),
-            ('cs_programming', r'\b(python|java|c\+\+|javascript|oops|oop|class|inheritance|polymorphism|encapsulation|pointer|variable|function|syntax)\b')
-        ]
+        domain_keywords = {
+            'life_sciences': ['photosynthesis', 'cell', 'dna', 'rna', 'gene', 'genetics', 'mitosis', 'meiosis', 'enzyme', 'chloroplast', 'protein', 'biology', 'respiration', 'ecology', 'heart', 'neuron', 'botany', 'zoology'],
+            'physical_sciences': ['newton', 'force', 'gravity', 'thermodynamics', 'optics', 'quantum', 'physics', 'atom', 'molecule', 'reaction', 'chemistry', 'periodic table', 'acid', 'base', 'voltage', 'circuit', 'electromagnetism'],
+            'mathematics': ['matrix', 'eigenvalue', 'calculus', 'derivative', 'integral', 'differential', 'probability', 'statistics', 'algebra', 'fourier', 'laplace', 'vector', 'geometry', 'trigonometry', 'math'],
+            'humanities_social': ['revolution', 'war', 'history', 'constitution', 'inflation', 'gdp', 'monetary', 'demand', 'supply', 'economics', 'market', 'law', 'treaty', 'philosophy', 'sociology', 'geography'],
+            'cs_algorithms_dsa': ['stack', 'queue', 'linked list', 'tree', 'graph', 'heap', 'hash', 'sorting', 'sort', 'searching', 'binary search', 'recursion', 'dynamic programming', 'dsa', 'algorithm', 'complexity', 'array', 'binary tree', 'avl'],
+            'cs_systems_core': ['process', 'thread', 'deadlock', 'virtual memory', 'paging', 'segmentation', 'operating system', 'os', 'dbms', 'sql', 'normalization', 'transaction', 'acid', 'network', 'tcp', 'ip', 'udp', 'osi', 'protocol', 'routing', 'compiler', 'vtable', 'vptr'],
+            'cs_programming': ['python', 'java', 'c++', 'javascript', 'oops', 'oop', 'class', 'inheritance', 'polymorphism', 'encapsulation', 'pointer', 'variable', 'function', 'syntax']
+        }
 
-        for domain, pat in patterns:
-            if re.search(pat, t):
-                return domain
+        # Tokenized words in topic
+        words = set(re.findall(r'[a-zA-Z0-9_+]+', t))
+        
+        for domain, kw_list in domain_keywords.items():
+            for kw in kw_list:
+                if ' ' in kw:
+                    if kw in t:
+                        return domain
+                else:
+                    if kw in words:
+                        return domain
 
         return 'general_academic'
 
@@ -2004,6 +2104,10 @@ class UniversalStudyEngine:
 
         if UniversalStudyEngine.is_robotic_or_meta(question) or UniversalStudyEngine.is_robotic_or_meta(explanation):
             return False, "Robotic template phrase detected"
+
+        for k, v in options.items():
+            if UniversalStudyEngine.is_robotic_or_meta(str(v)):
+                return False, f"Robotic distractor in option {k}"
 
         return True, "Verified"
 
@@ -2346,36 +2450,38 @@ def generate_fallback_doubt(question):
 
 def generate_fallback_quiz(topic):
     t = topic.strip().lower()
+    clean_t = topic.strip().title()
+    domain = UniversalStudyEngine.analyze_domain(topic)
 
     # ── Subject-specific question banks ──────────────────────────────────
     BANKS = {
         'stack': [
             {"question": "Which principle governs the insertion and deletion of elements in a Stack?", "options": {"A": "First In First Out (FIFO)", "B": "Last In First Out (LIFO)", "C": "Random Access", "D": "Priority Ordering"}, "correct": "B", "explanation": "A Stack operates strictly on LIFO (Last In First Out), where the last element inserted is the first one removed."},
-            {"question": "What is the time complexity of the push(), pop(), and peek() operations in an array or linked list Stack?", "options": {"A": "O(1) constant time", "B": "O(N) linear time", "C": "O(log N)", "D": "O(N^2)"}, "correct": "A", "explanation": "Push, pop, and peek all operate exclusively at the top of the stack, taking O(1) constant time."},
-            {"question": "What runtime condition occurs when attempting to pop an element from an empty Stack?", "options": {"A": "Stack Overflow", "B": "Stack Underflow", "C": "Memory Segmentation Fault", "D": "Null Reference Exception"}, "correct": "B", "explanation": "Attempting to remove or pop an element from a stack with zero elements triggers Stack Underflow."},
-            {"question": "Which of the following classic computer science applications relies directly on a Stack?", "options": {"A": "Infix to Postfix expression conversion and syntax parsing", "B": "Breadth First Search (BFS) graph traversal", "C": "CPU Round Robin scheduling queue", "D": "Dijkstra Shortest Path min-priority lookup"}, "correct": "A", "explanation": "Expression parsing, parentheses balancing, function call management, and undo operations all rely on Stacks."},
-            {"question": "Given an empty stack, the following operations are executed: push(10), push(20), pop(), push(30), push(40), pop(), peek(). What value is returned by peek()?", "options": {"A": "10", "B": "20", "C": "30", "D": "40"}, "correct": "C", "explanation": "Trace: [10] -> [10, 20] -> pop returns 20, stack=[10] -> [10, 30] -> [10, 30, 40] -> pop returns 40, stack=[10, 30] -> peek() returns top element 30."}
+            {"question": "What is the time complexity of the push(), pop(), and peek() operations in an array-based stack?", "options": {"A": "O(1) constant time", "B": "O(N) linear time", "C": "O(log N)", "D": "O(N^2)"}, "correct": "A", "explanation": "Push, pop, and peek all operate exclusively at the top of the stack, taking O(1) constant time."},
+            {"question": "Given an empty stack, the following operations are executed: push(10), push(20), pop(), push(30), push(40), pop(). What is the element at the top of the stack?", "options": {"A": "10", "B": "20", "C": "30", "D": "40"}, "correct": "C", "explanation": "Trace: [10] -> [10, 20] -> pop() removes 20 -> [10] -> push(30) -> [10, 30] -> push(40) -> [10, 30, 40] -> pop() removes 40 -> top is 30."},
+            {"question": "Which of the following classic computer science applications relies directly on a Stack?", "options": {"A": "Function Call Execution & Recursion Management", "B": "CPU Round Robin Scheduling", "C": "Breadth-First Search (BFS) Traversal", "D": "Shortest Path in Dijkstra Algorithm"}, "correct": "A", "explanation": "The call stack manages function activation records, local variables, return addresses, and recursive calls."},
+            {"question": "What runtime condition occurs when attempting to pop an element from an empty stack?", "options": {"A": "Stack Overflow", "B": "Stack Underflow", "C": "Segmentation Fault", "D": "Memory Leak"}, "correct": "B", "explanation": "Stack Underflow happens when a pop or peek operation is performed on an empty stack (top == -1)."}
         ],
         'binary search': [
-            {"question": "What is the fundamental precondition required to apply Binary Search on an array?", "options": {"A": "The array elements must be sorted in monotonic order", "B": "The array must contain only positive integers", "C": "The array size must be a power of 2", "D": "The array must be dynamically allocated"}, "correct": "A", "explanation": "Binary Search requires the collection to be sorted so that half of the search space can be eliminated at each comparison."},
-            {"question": "What is the worst-case and average-case time complexity of Binary Search on an array of size N?", "options": {"A": "O(N)", "B": "O(log N)", "C": "O(1)", "D": "O(N log N)"}, "correct": "B", "explanation": "Because Binary Search divides the remaining search interval in half on every step, its time complexity is O(log N)."},
-            {"question": "In standard implementations, why is mid calculated as `low + (high - low) // 2` instead of `(low + high) // 2`?", "options": {"A": "To prevent integer arithmetic overflow when low and high are very large", "B": "To ensure floating point precision", "C": "To handle negative numbers only", "D": "To speed up CPU clock cycles"}, "correct": "A", "explanation": "In languages with fixed integer sizes (like C/C++/Java), (low + high) can exceed MAX_INT, causing overflow."},
-            {"question": "How many comparisons does Binary Search take in the worst case to search in a sorted array of 1,024 elements?", "options": {"A": "1,024 comparisons", "B": "10 comparisons (log2 1024)", "C": "512 comparisons", "D": "32 comparisons"}, "correct": "B", "explanation": "log2(1024) = 10, so at most 10 iterations/comparisons are needed."},
-            {"question": "Which algorithmic paradigm does Binary Search exemplify?", "options": {"A": "Dynamic Programming", "B": "Divide and Conquer / Decrease and Conquer", "C": "Greedy Choice", "D": "Backtracking"}, "correct": "B", "explanation": "Binary Search repeatedly divides the problem space in half, fitting the Divide and Conquer framework."}
+            {"question": "What is the fundamental precondition required to apply Binary Search on a dataset?", "options": {"A": "The array elements must be sorted in monotonic order", "B": "The array must contain only positive integers", "C": "The array size must be a power of 2", "D": "The array must be dynamically allocated"}, "correct": "A", "explanation": "Binary Search requires the collection to be sorted so that half of the search space can be eliminated in each comparison."},
+            {"question": "What is the worst-case time complexity of Binary Search on a sorted array of N elements?", "options": {"A": "O(1)", "B": "O(log N)", "C": "O(N)", "D": "O(N log N)"}, "correct": "B", "explanation": "At each step, Binary Search divides the search space in half, resulting in O(log2 N) comparisons in the worst case."},
+            {"question": "In standard implementations, why is mid calculated as `low + (high - low) // 2` instead of `(low + high) // 2`?", "options": {"A": "To prevent integer arithmetic overflow when low and high are very large", "B": "To ensure floating point precision", "C": "To handle negative numbers only", "D": "To speed up CPU clock cycles"}, "correct": "A", "explanation": "In languages with fixed integer sizes (like C/C++/Java), (low + high) can exceed MAX_INT and overflow into negative numbers."},
+            {"question": "How many comparisons at most are needed to find an element in a sorted array of 1024 elements using Binary Search?", "options": {"A": "10", "B": "11", "C": "512", "D": "1024"}, "correct": "B", "explanation": "log2(1024) = 10, so at most 11 comparisons are needed to find or confirm the absence of an element."},
+            {"question": "Why does standard Binary Search NOT run in O(log N) on a Singly Linked List?", "options": {"A": "Linked lists cannot store sorted data", "B": "Finding the middle element takes O(N) time due to lack of random access", "C": "Pointers require O(N) space", "D": "Linked list nodes are stored contiguously"}, "correct": "B", "explanation": "Without O(1) random indexing, finding the middle node requires traversing the list in O(N), destroying the O(log N) advantage."}
         ],
         'normalization': [
             {"question": "What condition must a relation satisfy to be in First Normal Form (1NF)?", "options": {"A": "All attribute values in every tuple must be atomic and indivisible", "B": "Every determinant must be a candidate key", "C": "No partial dependencies on composite keys", "D": "No multi-valued dependencies"}, "correct": "A", "explanation": "1NF requires that all column domains contain atomic (single, indivisible) values and no repeating groups."},
-            {"question": "A table is in Second Normal Form (2NF) if it is in 1NF and contains NO:", "options": {"A": "Transitive dependencies", "B": "Partial dependencies (non-prime attribute dependent on part of a composite primary key)", "C": "Foreign keys", "D": "Multi-valued dependencies"}, "correct": "B", "explanation": "2NF eliminates partial functional dependency where a non-prime attribute depends on a proper subset of a composite candidate key."},
+            {"question": "Which type of dependency is specifically removed when converting a table from 1NF to 2NF?", "options": {"A": "Partial Functional Dependency (non-prime attribute dependent on part of candidate key)", "B": "Transitive Dependency", "C": "Join Dependency", "D": "Trivial Dependency"}, "correct": "A", "explanation": "2NF requires that the table is in 1NF and every non-prime attribute is fully functionally dependent on the entire primary key."},
             {"question": "Which normal form specifically eliminates transitive functional dependencies (X -> Y and Y -> Z)?", "options": {"A": "1NF", "B": "2NF", "C": "3NF", "D": "5NF"}, "correct": "C", "explanation": "3NF requires a relation to be in 2NF and have no transitive dependencies of non-prime attributes on candidate keys."},
-            {"question": "What makes Boyce-Codd Normal Form (BCNF) strictly stronger than 3NF?", "options": {"A": "In BCNF, for every non-trivial functional dependency X -> Y, X MUST be a Super Key", "B": "BCNF allows partial dependencies", "C": "BCNF permits composite foreign keys only", "D": "BCNF requires all attributes to be numeric"}, "correct": "A", "explanation": "In BCNF, every determinant X in X->Y must be a super key. In 3NF, Y could be a prime attribute even if X was not a super key."},
-            {"question": "What two essential properties should a database decomposition ideally preserve during normalization?", "options": {"A": "Lossless Join and Dependency Preservation", "B": "Fast Disk Writes and Data Duplication", "C": "Index Fragmentation and Single Table Scan", "D": "Nullability and Static Constraints"}, "correct": "A", "explanation": "A high-quality decomposition ensures Lossless Join (no spurious tuples on join) and Dependency Preservation (all FDs testable locally)."}
+            {"question": "How is Boyce-Codd Normal Form (BCNF) strictly defined compared to 3NF?", "options": {"A": "For every functional dependency X -> Y, X must be a Super Key", "B": "Every attribute must be a primary key", "C": "Tables cannot contain foreign keys", "D": "All tables must have at most 3 columns"}, "correct": "A", "explanation": "BCNF requires that for every non-trivial functional dependency X -> Y, the left side X must strictly be a Super Key."},
+            {"question": "What is the primary objective of normalizing a relational database schema?", "options": {"A": "Minimize data redundancy and prevent insertion, update, and deletion anomalies", "B": "Increase query execution time", "C": "Combine all tables into a single large flat file", "D": "Eliminate primary keys to save disk storage"}, "correct": "A", "explanation": "Normalization minimizes duplication and ensures database integrity by preventing update, delete, and insert anomalies."}
         ],
         'process': [
-            {"question": "What data structure does the Operating System maintain to store all execution state, registers, and memory bounds of a Process?", "options": {"A": "Process Control Block (PCB)", "B": "Virtual Memory Table", "C": "File Descriptor Table", "D": "Interrupt Vector Table"}, "correct": "A", "explanation": "The PCB (Process Control Block) stores the PID, Program Counter, CPU registers, scheduling state, and memory pointers for a process."},
-            {"question": "When a CPU switches execution from one running process to another, this operation is known as:", "options": {"A": "Paging", "B": "Context Switching", "C": "Spooling", "D": "Thrashing"}, "correct": "B", "explanation": "Context switching saves the state of the active process into its PCB and restores the state of the scheduled process."},
-            {"question": "What is the primary difference between a Process and a Thread?", "options": {"A": "A process has its own private virtual address space; threads of the same process share memory", "B": "Processes run in hardware; threads run in firmware", "C": "Threads cannot be scheduled by the OS", "D": "Processes share stack memory, threads do not"}, "correct": "A", "explanation": "Processes are isolated with independent memory maps, whereas threads within the same process share code, data, and heap segments."},
-            {"question": "Which Unix/Linux system call creates an exact duplicate child process of the caller?", "options": {"A": "fork()", "B": "exec()", "C": "spawn()", "D": "clone_vm()"}, "correct": "A", "explanation": "fork() creates a new child process with a duplicate address space. exec() replaces the current process image with a new executable."},
-            {"question": "What is a Zombie Process in Operating Systems?", "options": {"A": "A process that has finished execution but whose exit status has not yet been read by its parent via wait()", "B": "A process consuming 100% CPU in an infinite loop", "C": "A process waiting indefinitely for I/O", "D": "A process whose parent was terminated"}, "correct": "A", "explanation": "A Zombie process is terminated but retains an entry in the process table until the parent calls wait() to reap its exit code."}
+            {"question": "Which operating system data structure contains the process state, program counter, CPU registers, and scheduling information?", "options": {"A": "Process Control Block (PCB)", "B": "Translation Lookaside Buffer (TLB)", "C": "File Allocation Table (FAT)", "D": "Virtual Method Table (VTABLE)"}, "correct": "A", "explanation": "The Process Control Block (PCB) is the kernel data structure storing all information about a specific process."},
+            {"question": "What happens during a CPU context switch between two processes?", "options": {"A": "The state of the running process is saved in its PCB, and the state of the next ready process is loaded", "B": "The CPU shuts down and restarts", "C": "All memory pages are erased from RAM", "D": "Disk drives are defragmented"}, "correct": "A", "explanation": "Context switching saves the current CPU registers/state to the active PCB and restores the next scheduled process's PCB state."},
+            {"question": "What is the fundamental difference between a Process and a Thread?", "options": {"A": "Processes have isolated address spaces; threads share the address space of their parent process", "B": "Threads cannot execute concurrently", "C": "Processes run in user mode only; threads run in kernel mode", "D": "Threads cannot have their own stack"}, "correct": "A", "explanation": "A process is an isolated executing program with its own memory space; threads are lightweight units sharing the same process memory."},
+            {"question": "Which Unix/Linux system call creates a duplicate child process?", "options": {"A": "fork()", "B": "exec()", "C": "pthread_create()", "D": "kill()"}, "correct": "A", "explanation": "fork() creates an exact duplicate child process with a separate memory space, returning child PID to parent and 0 to child."},
+            {"question": "What is a Zombie Process in Operating Systems?", "options": {"A": "A terminated process whose PCB entry remains in the process table because the parent has not read its exit status", "B": "A process using 100% CPU cycles", "C": "A process waiting for I/O completion", "D": "A process without a thread"}, "correct": "A", "explanation": "A Zombie process has finished execution via exit(), but its entry remains in the process table until the parent calls wait()."}
         ],
         'photosynthesis': [
             {"question": "In plant cells, in which specific part of the chloroplast do the Light-Dependent Reactions occur?", "options": {"A": "Thylakoid Membrane", "B": "Stroma", "C": "Outer Mitochondrial Membrane", "D": "Cytoplasm"}, "correct": "A", "explanation": "Light-dependent reactions occur across the Thylakoid membrane where chlorophyll pigments and photosystems I & II reside."},
@@ -2383,142 +2489,83 @@ def generate_fallback_quiz(topic):
             {"question": "Where does the Calvin Cycle (Light-Independent Reaction) take place within the chloroplast?", "options": {"A": "Stroma", "B": "Thylakoid Lumen", "C": "Granum", "D": "Ribosome"}, "correct": "A", "explanation": "The Calvin Cycle occurs in the Stroma (fluid matrix) of the chloroplast, utilizing ATP and NADPH to fix CO2 into sugars."},
             {"question": "Which key enzyme catalyzes the first step of carbon fixation in the Calvin Cycle by attaching CO2 to RuBP?", "options": {"A": "RuBisCO", "B": "ATP Synthase", "C": "DNA Polymerase", "D": "Catalase"}, "correct": "A", "explanation": "RuBisCO (Ribulose-1,5-bisphosphate carboxylase-oxygenase) is the crucial enzyme responsible for fixing atmospheric CO2."},
             {"question": "What are the two high-energy chemical products generated by the Light Reactions that fuel the Calvin Cycle?", "options": {"A": "ATP and NADPH", "B": "Glucose and Pyruvate", "C": "NADH and FADH2", "D": "ADP and Water"}, "correct": "A", "explanation": "Light reactions convert solar energy into chemical energy stored in ATP and NADPH, which are then consumed by the Calvin Cycle."}
-        ],
-        'bgmi': [
-            {"question": "What does BGMI stand for?", "options": {"A": "Battlegrounds Mobile India", "B": "Battle Gaming Mobile India", "C": "Basic Ground Multi Player", "D": "Best Game Match India"}, "correct": "A", "explanation": "BGMI stands for Battlegrounds Mobile India, published by Krafton."},
-            {"question": "Which company developed and published BGMI?", "options": {"A": "Tencent Games", "B": "Krafton", "C": "Epic Games", "D": "EA Sports"}, "correct": "B", "explanation": "Krafton is the South Korean video game publisher of BGMI."},
-            {"question": "What is the maximum number of players in a standard BGMI classic match?", "options": {"A": "50", "B": "64", "C": "100", "D": "120"}, "correct": "C", "explanation": "Standard classic matches drop up to 100 players onto the battle map."},
-            {"question": "Which iconic 8x8 km island map was the original map in BGMI?", "options": {"A": "Miramar", "B": "Sanhok", "C": "Erangel", "D": "Vikendi"}, "correct": "C", "explanation": "Erangel is the iconic original 8x8 km island map in BGMI."},
-            {"question": "What victory phrase is displayed on winning a BGMI match?", "options": {"A": "Victory Royale!", "B": "Winner Winner Chicken Dinner!", "C": "Champion!", "D": "Mission Accomplished!"}, "correct": "B", "explanation": "'Winner Winner Chicken Dinner!' is the classic victory message displayed upon winning."}
-        ],
-        'pubg': [
-            {"question": "What type of game genre is PUBG / BGMI?", "options": {"A": "Battle Royale", "B": "Turn-based Strategy", "C": "Racing Simulation", "D": "Platformer"}, "correct": "A", "explanation": "PUBG / BGMI is a battle royale multiplayer shooter game."},
-            {"question": "What is the shrinking safe area in PUBG called?", "options": {"A": "Red Zone", "B": "Play Zone", "C": "Danger Zone", "D": "Drop Zone"}, "correct": "B", "explanation": "The safe area is called the Play Zone, bounded by the blue circle."},
-            {"question": "Which air drop sniper rifle in PUBG uses 7.62mm ammo?", "options": {"A": "Kar98k", "B": "M24", "C": "AWM", "D": "SKS"}, "correct": "B", "explanation": "M24 is a bolt-action sniper rifle found in air drops and world spawns."},
-            {"question": "What does a Level 3 Helmet protect against in PUBG?", "options": {"A": "One-shot headshot from Kar98k/M24", "B": "Explosion from Red Zone", "C": "Vehicle collision damage", "D": "Drowning damage"}, "correct": "A", "explanation": "Level 3 Helmet prevents instant knock/kill from a single Kar98k or M24 headshot."},
-            {"question": "Which 4-seater military 4x4 vehicle is famous in PUBG?", "options": {"A": "Buggy", "B": "UAZ", "C": "Dacia", "D": "Motorcycle"}, "correct": "B", "explanation": "The UAZ is the classic 4-seater military 4x4 vehicle."}
-        ],
-        'oops': [
-            {"question": "Which OOPS concept allows a subclass to provide its own implementation of a method defined in the parent class?", "options": {"A": "Encapsulation", "B": "Abstraction", "C": "Method Overriding", "D": "Data Hiding"}, "correct": "C", "explanation": "Method Overriding (Runtime Polymorphism) allows a child class to redefine a parent class method."},
-            {"question": "What is a Virtual Function Table (VTABLE) in C++?", "options": {"A": "A table storing global variable addresses", "B": "A lookup table of function pointers for virtual methods", "C": "A hardware cache for CPU instructions", "D": "A database index structure"}, "correct": "B", "explanation": "VTABLE is a compile-time mechanism to achieve runtime polymorphism via function pointers."},
-            {"question": "Which principle of OOPS hides internal implementation details from the user?", "options": {"A": "Inheritance", "B": "Polymorphism", "C": "Encapsulation", "D": "Compilation"}, "correct": "C", "explanation": "Encapsulation wraps data and methods into a single unit (class) and restricts direct access."},
-            {"question": "What is the difference between Method Overloading and Method Overriding?", "options": {"A": "Overloading is compile-time, Overriding is runtime polymorphism", "B": "Both are runtime polymorphism", "C": "Overriding is compile-time, Overloading is runtime", "D": "Both occur only in interfaces"}, "correct": "A", "explanation": "Overloading = same name, different parameters (compile-time). Overriding = redefine parent method (runtime)."},
-            {"question": "Which type of inheritance causes the Diamond Problem in C++?", "options": {"A": "Single Inheritance", "B": "Multilevel Inheritance", "C": "Multiple Inheritance", "D": "Hierarchical Inheritance"}, "correct": "C", "explanation": "Diamond Problem arises in Multiple Inheritance when two parent classes share a common grandparent."},
-            {"question": "What does the 'abstract' keyword enforce in Java OOPS?", "options": {"A": "Class can be instantiated directly", "B": "Class cannot be instantiated; must be subclassed", "C": "Method is final and cannot be overridden", "D": "Variable is constant"}, "correct": "B", "explanation": "Abstract class provides a blueprint; only its concrete subclasses can be instantiated."},
-            {"question": "What is a Copy Constructor in C++?", "options": {"A": "Constructor that creates object from scratch", "B": "Constructor that initializes object using another object of same class", "C": "Destructor for heap memory", "D": "Function to clone databases"}, "correct": "B", "explanation": "Copy Constructor: ClassName(const ClassName& obj) — creates a deep copy of another object."},
-            {"question": "Which access specifier makes class members accessible only within the same class?", "options": {"A": "public", "B": "protected", "C": "private", "D": "static"}, "correct": "C", "explanation": "private members are accessible only within the class itself, not even by derived classes."},
-            {"question": "What is the output of calling a pure virtual function in C++?", "options": {"A": "Returns 0", "B": "Compilation error", "C": "Runtime error/undefined behavior if called on base class", "D": "Returns NULL pointer"}, "correct": "C", "explanation": "Pure virtual function (= 0) makes class abstract. Calling it directly causes undefined behavior."},
-            {"question": "Which OOPS concept models 'IS-A' relationship?", "options": {"A": "Encapsulation", "B": "Inheritance", "C": "Composition", "D": "Aggregation"}, "correct": "B", "explanation": "Inheritance models IS-A: Dog IS-A Animal. Composition models HAS-A: Car HAS-A Engine."},
-        ],
-        'operating system': [
-            {"question": "In Round Robin scheduling, what happens when a process's time quantum expires?", "options": {"A": "Process is terminated", "B": "Process is placed at the end of the ready queue", "C": "Process gets higher priority", "D": "CPU goes idle"}, "correct": "B", "explanation": "On quantum expiry, the running process is preempted and added to the back of the ready queue."},
-            {"question": "Which page replacement algorithm suffers from Belady's Anomaly?", "options": {"A": "LRU", "B": "Optimal", "C": "FIFO", "D": "LFU"}, "correct": "C", "explanation": "Belady's Anomaly: with FIFO, increasing page frames can actually increase page faults."},
-            {"question": "What are the four necessary conditions for Deadlock?", "options": {"A": "Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait", "B": "Starvation, Aging, Preemption, Mutex", "C": "Thrashing, Paging, Segmentation, Swapping", "D": "Ready, Running, Waiting, Terminated"}, "correct": "A", "explanation": "Coffman conditions: all four must hold simultaneously for deadlock."},
-            {"question": "What is the purpose of the Translation Lookaside Buffer (TLB)?", "options": {"A": "Store process stack data", "B": "Cache recent virtual-to-physical address translations", "C": "Store CPU register values", "D": "Buffer disk I/O operations"}, "correct": "B", "explanation": "TLB is a fast cache that speeds up virtual memory address translation without accessing page table every time."},
-            {"question": "Which scheduling algorithm is optimal in minimizing average waiting time?", "options": {"A": "FCFS", "B": "Round Robin", "C": "SJF (Shortest Job First)", "D": "Priority Scheduling"}, "correct": "C", "explanation": "SJF gives minimum average waiting time but requires knowing burst times in advance."},
-            {"question": "What is the difference between a Process and a Thread?", "options": {"A": "Thread has its own memory space; process shares memory", "B": "Process is heavyweight with own memory; thread is lightweight sharing process memory", "C": "Both are identical in resource usage", "D": "Process runs in user mode; thread runs in kernel mode only"}, "correct": "B", "explanation": "Process: independent memory/resources. Thread: shares memory of parent process — lightweight."},
-            {"question": "What does Banker's Algorithm prevent?", "options": {"A": "Starvation", "B": "Deadlock", "C": "Thrashing", "D": "Context switching"}, "correct": "B", "explanation": "Banker's Algorithm is a deadlock avoidance algorithm that simulates safe state before granting resources."},
-            {"question": "In segmentation, which fault occurs when a segment is not in memory?", "options": {"A": "Page Fault", "B": "Segmentation Fault", "C": "Bus Error", "D": "TLB Miss"}, "correct": "B", "explanation": "Segmentation Fault (Segment Missing) causes the OS to load the segment from secondary storage."},
-            {"question": "What is Thrashing in OS?", "options": {"A": "CPU executing too many threads", "B": "Excessive paging causing CPU to spend more time on page faults than execution", "C": "Disk fragmentation issue", "D": "Overflow of CPU registers"}, "correct": "B", "explanation": "Thrashing: process spends more time swapping pages in/out than doing useful work — caused by insufficient frames."},
-            {"question": "Which system call creates a new process in Unix/Linux?", "options": {"A": "exec()", "B": "create()", "C": "fork()", "D": "spawn()"}, "correct": "C", "explanation": "fork() creates a child process that is a duplicate of the parent. exec() replaces process image."},
-        ],
-        'data structures': [
-            {"question": "What is the time complexity of searching an element in a Balanced BST?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n log n)"}, "correct": "B", "explanation": "Balanced BST (AVL/Red-Black) ensures O(log n) search by maintaining height balance."},
-            {"question": "Which data structure uses LIFO (Last In First Out) principle?", "options": {"A": "Queue", "B": "Linked List", "C": "Stack", "D": "Heap"}, "correct": "C", "explanation": "Stack follows LIFO — last element pushed is the first to be popped. Used in recursion, undo operations."},
-            {"question": "What is the worst-case time complexity of QuickSort?", "options": {"A": "O(n log n)", "B": "O(n)", "C": "O(n²)", "D": "O(log n)"}, "correct": "C", "explanation": "QuickSort worst case O(n²) when pivot is always smallest/largest element (sorted array). Average: O(n log n)."},
-            {"question": "In a Min-Heap, the root node always contains?", "options": {"A": "Maximum element", "B": "Minimum element", "C": "Middle element", "D": "Random element"}, "correct": "B", "explanation": "Min-Heap property: parent ≤ children. So root = minimum. Max-Heap: parent ≥ children, root = maximum."},
-            {"question": "What is the time complexity of inserting into a Hash Table (average case)?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n²)"}, "correct": "C", "explanation": "Hash Table average case: O(1) insert, delete, search. Worst case O(n) with all collisions."},
-            {"question": "Which traversal of BST gives elements in sorted order?", "options": {"A": "Preorder", "B": "Postorder", "C": "Inorder", "D": "Level-order"}, "correct": "C", "explanation": "Inorder traversal (Left→Root→Right) of BST always gives elements in ascending sorted order."},
-            {"question": "What is the advantage of Doubly Linked List over Singly Linked List?", "options": {"A": "Uses less memory", "B": "Allows traversal in both directions", "C": "Faster search O(1)", "D": "No null pointer required"}, "correct": "B", "explanation": "Doubly LL has prev and next pointers enabling bidirectional traversal. Extra memory cost: one pointer per node."},
-            {"question": "Which algorithm finds shortest path in unweighted graph?", "options": {"A": "Dijkstra", "B": "DFS", "C": "BFS", "D": "Bellman-Ford"}, "correct": "C", "explanation": "BFS explores level by level — shortest path in unweighted graph. Dijkstra handles weighted graphs."},
-            {"question": "What is amortized time complexity of Dynamic Array (ArrayList) insertion?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1) amortized", "D": "O(n²)"}, "correct": "C", "explanation": "Dynamic array doubles size when full. Occasional O(n) resize but amortized over n insertions = O(1)."},
-            {"question": "AVL Tree maintains balance by ensuring height difference between subtrees is at most?", "options": {"A": "0", "B": "1", "C": "2", "D": "log n"}, "correct": "B", "explanation": "AVL Tree Balance Factor = |height(left) - height(right)| ≤ 1. Rotations restore balance when violated."},
-        ],
-        'dbms': [
-            {"question": "What is the difference between Primary Key and Candidate Key?", "options": {"A": "No difference, they are same", "B": "Candidate Key can be NULL; Primary Key cannot", "C": "Primary Key is selected from Candidate Keys; all candidate keys can uniquely identify rows", "D": "Primary Key allows duplicates; Candidate Key does not"}, "correct": "C", "explanation": "Candidate Keys are all minimal unique identifiers. Primary Key = chosen candidate key (NOT NULL, unique)."},
-            {"question": "What does ACID stand for in database transactions?", "options": {"A": "Atomicity, Consistency, Isolation, Durability", "B": "Access, Control, Index, Data", "C": "Automatic, Consistent, Indexed, Durable", "D": "Aggregation, Compression, Integrity, Distribution"}, "correct": "A", "explanation": "ACID: Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent txns), Durability (persisted)."},
-            {"question": "In 3NF, a table must be in 2NF and?", "options": {"A": "No partial dependencies", "B": "No transitive dependencies on primary key", "C": "All attributes are multi-valued", "D": "No foreign keys allowed"}, "correct": "B", "explanation": "3NF: 2NF + no transitive dependency (non-prime attribute depending on another non-prime attribute)."},
-            {"question": "What is a Deadlock in DBMS?", "options": {"A": "Table with too many rows", "B": "Two transactions waiting for each other's locked resources indefinitely", "C": "Query executing for more than 10 seconds", "D": "Index corruption on primary key"}, "correct": "B", "explanation": "DBMS Deadlock: T1 holds R1 waiting for R2; T2 holds R2 waiting for R1 — circular wait."},
-            {"question": "Which SQL command permanently saves transaction changes?", "options": {"A": "ROLLBACK", "B": "SAVEPOINT", "C": "COMMIT", "D": "END"}, "correct": "C", "explanation": "COMMIT permanently writes transaction changes to database. ROLLBACK undoes all changes since last COMMIT."},
-            {"question": "What is the purpose of an Index in DBMS?", "options": {"A": "Store backup copies of tables", "B": "Speed up data retrieval by providing fast lookup", "C": "Enforce foreign key constraints", "D": "Compress table storage"}, "correct": "B", "explanation": "Index (B-Tree/Hash) allows O(log n) search instead of full table scan O(n). Tradeoff: slower writes."},
-            {"question": "E-R Diagram 'participation constraint' specifies?", "options": {"A": "Number of entity types", "B": "Whether all instances must participate in a relationship", "C": "Attribute data types", "D": "Primary key selection"}, "correct": "B", "explanation": "Total participation (double line): every entity must participate. Partial participation (single line): optional."},
-            {"question": "Which join returns all rows from both tables, with NULLs for non-matching rows?", "options": {"A": "INNER JOIN", "B": "LEFT JOIN", "C": "RIGHT JOIN", "D": "FULL OUTER JOIN"}, "correct": "D", "explanation": "FULL OUTER JOIN returns all rows from both tables — NULL where no match exists on either side."},
-            {"question": "What is a Trigger in DBMS?", "options": {"A": "A stored function called manually", "B": "Automatic procedure that executes on INSERT/UPDATE/DELETE events", "C": "Index rebuild operation", "D": "Database backup procedure"}, "correct": "B", "explanation": "Trigger: automatic stored procedure that fires on specified DML events (BEFORE/AFTER INSERT, UPDATE, DELETE)."},
-            {"question": "BCNF is stricter than 3NF because in BCNF?", "options": {"A": "No multi-valued dependencies", "B": "Every determinant must be a super key", "C": "Primary key can be NULL", "D": "All tables must be denormalized"}, "correct": "B", "explanation": "BCNF (Boyce-Codd NF): for every functional dependency X→Y, X must be a super key — stricter than 3NF."},
-        ],
-        'computer networks': [
-            {"question": "At which OSI layer does the IP protocol operate?", "options": {"A": "Layer 2 — Data Link", "B": "Layer 3 — Network", "C": "Layer 4 — Transport", "D": "Layer 5 — Session"}, "correct": "B", "explanation": "IP (Internet Protocol) operates at Layer 3 (Network). TCP/UDP at Layer 4. Ethernet at Layer 2."},
-            {"question": "What is the difference between TCP and UDP?", "options": {"A": "TCP is connectionless; UDP is connection-oriented", "B": "TCP is reliable, ordered, connection-oriented; UDP is unreliable, faster, connectionless", "C": "Both provide same reliability", "D": "UDP uses 3-way handshake; TCP does not"}, "correct": "B", "explanation": "TCP: reliable, ordered, flow control, 3-way handshake. UDP: fast, no guarantees — used for video/DNS."},
-            {"question": "What is the purpose of ARP (Address Resolution Protocol)?", "options": {"A": "Resolve domain names to IP addresses", "B": "Resolve IP addresses to MAC addresses", "C": "Assign dynamic IP addresses", "D": "Encrypt network traffic"}, "correct": "B", "explanation": "ARP maps IP address → MAC address for same-network communication. DNS maps domain name → IP."},
-            {"question": "Which routing algorithm uses Dijkstra's shortest path algorithm?", "options": {"A": "Distance Vector Routing", "B": "Link State Routing", "C": "RIP Protocol", "D": "BGP Protocol"}, "correct": "B", "explanation": "Link State Routing (OSPF): each router knows full topology, applies Dijkstra to find shortest paths."},
-            {"question": "What is the 3-Way Handshake sequence in TCP connection establishment?", "options": {"A": "SYN → ACK → SYN-ACK", "B": "SYN → SYN-ACK → ACK", "C": "ACK → SYN → FIN", "D": "HELLO → AUTH → CONNECT"}, "correct": "B", "explanation": "TCP 3-way handshake: Client sends SYN → Server replies SYN-ACK → Client sends ACK. Connection established."},
-            {"question": "What does CSMA/CD stand for and where is it used?", "options": {"A": "Carrier Sense Multiple Access/Collision Detection — Ethernet", "B": "Continuous Signal Monitoring — WiFi", "C": "Channel Switching — Token Ring", "D": "Circuit Synchronization — Fiber"}, "correct": "A", "explanation": "CSMA/CD: Listen before transmit; detect collision, back off. Used in wired Ethernet (IEEE 802.3)."},
-            {"question": "What is the range of port numbers for 'Well-Known Ports'?", "options": {"A": "0 – 1023", "B": "1024 – 49151", "C": "49152 – 65535", "D": "1000 – 9999"}, "correct": "A", "explanation": "Well-Known Ports: 0-1023. HTTP=80, HTTPS=443, FTP=21, SSH=22, DNS=53, SMTP=25."},
-            {"question": "CIDR notation '192.168.1.0/24' means how many host addresses are available?", "options": {"A": "24", "B": "256", "C": "254", "D": "512"}, "correct": "C", "explanation": "/24 = 32-24 = 8 host bits = 256 addresses. Subtract network (0) and broadcast (255) = 254 usable hosts."},
-            {"question": "Which protocol is used for secure remote login?", "options": {"A": "Telnet", "B": "FTP", "C": "SSH", "D": "SMTP"}, "correct": "C", "explanation": "SSH (Secure Shell) port 22 provides encrypted remote login. Telnet (port 23) is plaintext — insecure."},
-            {"question": "What is the main function of the DNS protocol?", "options": {"A": "Assign IP addresses dynamically", "B": "Translate domain names to IP addresses", "C": "Route packets between networks", "D": "Compress web traffic"}, "correct": "B", "explanation": "DNS (Domain Name System): translates human-readable domain names (google.com) → IP addresses (142.250.x.x)."},
-        ],
-        'software engineering': [
-            {"question": "What is the main advantage of Agile over Waterfall model?", "options": {"A": "No documentation required", "B": "Iterative delivery with customer feedback at each sprint", "C": "Fixed requirements from start", "D": "No testing phase needed"}, "correct": "B", "explanation": "Agile delivers working software in short sprints with continuous feedback. Waterfall is sequential/rigid."},
-            {"question": "What does Cyclomatic Complexity measure?", "options": {"A": "Lines of code", "B": "Number of independent paths through code", "C": "Memory usage", "D": "API response time"}, "correct": "B", "explanation": "Cyclomatic Complexity V(G) = E - N + 2P. Higher value = more complex/harder to test code."},
-            {"question": "What is the purpose of SRS (Software Requirements Specification)?", "options": {"A": "Source code documentation", "B": "Contract document describing functional and non-functional requirements", "C": "Test case repository", "D": "Project budget estimate"}, "correct": "B", "explanation": "SRS: formal document defining what the system must do (functional) and quality attributes (non-functional)."},
-            {"question": "Black-Box testing tests software from?", "options": {"A": "Internal code structure view", "B": "External interface/behavior without knowing internal code", "C": "Hardware component level", "D": "Database schema level"}, "correct": "B", "explanation": "Black-Box: tests input/output behavior without seeing source code. White-Box: tests internal logic paths."},
-            {"question": "Which SDLC model is best suited for projects with unclear initial requirements?", "options": {"A": "Waterfall", "B": "V-Model", "C": "Spiral", "D": "RAD"}, "correct": "C", "explanation": "Spiral Model handles risk through iterative prototyping — ideal for large, complex, uncertain projects."},
-        ],
-        'engineering mathematics': [
-            {"question": "What is the Laplace transform of a unit step function u(t)?", "options": {"A": "1/s²", "B": "1/s", "C": "s", "D": "1"}, "correct": "B", "explanation": "L{u(t)} = 1/s for s > 0. Laplace transform of unit step = 1/s."},
-            {"question": "The eigenvalues of a 2×2 matrix A are roots of which equation?", "options": {"A": "det(A) = 0", "B": "det(A - λI) = 0", "C": "trace(A) = 0", "D": "A² = I"}, "correct": "B", "explanation": "Characteristic equation: det(A - λI) = 0. Solving gives eigenvalues λ. Eigenvectors satisfy (A-λI)v = 0."},
-            {"question": "Fourier series represents a periodic function as a sum of?", "options": {"A": "Polynomials", "B": "Exponentials", "C": "Sines and Cosines", "D": "Logarithms"}, "correct": "C", "explanation": "Fourier Series: f(x) = a₀/2 + Σ(aₙcos(nx) + bₙsin(nx)). Decomposes any periodic function."},
-            {"question": "What is the order of the ODE: d²y/dx² + 3(dy/dx) + 2y = 0?", "options": {"A": "0", "B": "1", "C": "2", "D": "3"}, "correct": "C", "explanation": "Order = highest derivative. Highest here is d²y/dx² (2nd derivative), so order = 2."},
-            {"question": "If P(A) = 0.4 and P(B) = 0.3 and A, B are independent, what is P(A∩B)?", "options": {"A": "0.7", "B": "0.1", "C": "0.12", "D": "0.34"}, "correct": "C", "explanation": "For independent events: P(A∩B) = P(A) × P(B) = 0.4 × 0.3 = 0.12."},
-        ],
-        'c programming': [
-            {"question": "What does the 'static' keyword do when applied to a local variable in C?", "options": {"A": "Makes it global", "B": "Persists variable across function calls", "C": "Allocates on heap", "D": "Makes it constant"}, "correct": "B", "explanation": "Static local variable retains its value between function calls. Memory allocated in data segment, not stack."},
-            {"question": "What is the output of: int a = 5; printf('%d', a++);?", "options": {"A": "6", "B": "5", "C": "Compilation error", "D": "Undefined"}, "correct": "B", "explanation": "Post-increment (a++): uses current value (5) THEN increments. So printf prints 5, then a becomes 6."},
-            {"question": "What does malloc() return on failure?", "options": {"A": "0", "B": "-1", "C": "NULL", "D": "ENOMEM"}, "correct": "C", "explanation": "malloc() returns NULL if memory allocation fails. Always check: if(ptr == NULL) { handle error; }"},
-            {"question": "What is a dangling pointer in C?", "options": {"A": "Pointer to NULL", "B": "Pointer that points to already freed memory", "C": "Pointer to stack variable", "D": "Uninitialized integer variable"}, "correct": "B", "explanation": "Dangling pointer: pointer still holds address of memory that has been freed with free(). Accessing it = undefined behavior."},
-            {"question": "What is the size of int on a 64-bit system (typically)?", "options": {"A": "2 bytes", "B": "4 bytes", "C": "8 bytes", "D": "16 bytes"}, "correct": "B", "explanation": "int is typically 4 bytes (32 bits) on both 32 and 64-bit systems. long long int = 8 bytes."},
-        ],
+        ]
     }
 
-    # Find best matching bank — check longer keys first (more specific)
-    matched_bank = None
-    sorted_keys = sorted(BANKS.keys(), key=lambda k: -len(k))
-    for key in sorted_keys:
-        bank = BANKS[key]
-        if key in t or all(kw in t for kw in key.split()):
-            matched_bank = bank
-            break
-        # Also check if any word of key exists in topic
-        if any(kw in t for kw in key.split() if len(kw) > 4):
-            matched_bank = bank
-            break
+    # Match specific known bank
+    for key, bank in BANKS.items():
+        if key in t:
+            import random as _rnd
+            pool = list(bank)
+            _rnd.shuffle(pool)
+            return pool[:5]
 
+    # Universal Domain-Adaptive Synthesis with Realistic In-Domain Distractors
+    distractors = UniversalStudyEngine.DOMAIN_DISTRACTOR_POOLS.get(
+        domain, UniversalStudyEngine.DOMAIN_DISTRACTOR_POOLS['general_academic']
+    )
 
-    # Add Smartphone Processor Bank to fallback quiz
-    BANKS['processor'] = [
-        {"question": "Which architecture is the foundation for almost all modern smartphone CPUs?", "options": {"A": "x86-64", "B": "ARM", "C": "RISC-V", "D": "MIPS"}, "correct": "B", "explanation": "ARM (Advanced RISC Machines) architecture powers virtually all modern smartphone SoCs."},
-        {"question": "What is the primary function of an NPU in a smartphone processor?", "options": {"A": "Display graphical pixels", "B": "Accelerate AI and neural network operations", "C": "Store operating system files", "D": "Modulate cellular 5G radio frequencies"}, "correct": "B", "explanation": "NPUs (Neural Processing Units) accelerate matrix math for on-device machine learning and AI."},
-        {"question": "What happens when a smartphone processor encounters thermal throttling?", "options": {"A": "Device automatically reboots", "B": "Clock speeds are reduced to prevent overheating", "C": "Display brightness is permanently lowered", "D": "RAM storage is cleared"}, "correct": "B", "explanation": "Thermal throttling dynamically lowers CPU/GPU clock frequencies to manage internal heat."},
-        {"question": "Which component in a mobile SoC handles camera RAW image processing and noise reduction?", "options": {"A": "GPU", "B": "Modem", "C": "ISP (Image Signal Processor)", "D": "Audio DAC"}, "correct": "C", "explanation": "The ISP processes raw sensor signals from cameras into high-quality JPEG/video frames in real time."},
-        {"question": "What does a 4nm manufacturing process indicate compared to a 7nm process?", "options": {"A": "Larger physical chip size", "B": "Higher transistor density and better energy efficiency", "C": "Requires higher supply voltage", "D": "Produces more heat"}, "correct": "B", "explanation": "Smaller nanometer nodes allow more transistors per mm², boosting efficiency and compute throughput."}
+    import random as _rnd
+    d_pool = list(distractors)
+    _rnd.shuffle(d_pool)
+
+    return [
+        {
+            "question": f"What is the foundational definition and core principle of {clean_t}?",
+            "options": {
+                "A": f"The systematic principles, governing rules, and operational workflow defining {clean_t}",
+                "B": d_pool[0] if len(d_pool) > 0 else "An unrelated operational state",
+                "C": d_pool[1] if len(d_pool) > 1 else "A non-standard boundary condition",
+                "D": d_pool[2] if len(d_pool) > 2 else "An auxiliary invariant constraint"
+            },
+            "correct": "A",
+            "explanation": f"{clean_t} is defined by its core principles, standard operational mechanisms, and domain rules."
+        },
+        {
+            "question": f"Which of the following is a primary characteristic or governing invariant of {clean_t}?",
+            "options": {
+                "A": d_pool[3] if len(d_pool) > 3 else "Arbitrary execution without validation",
+                "B": f"Consistent execution adhering to the formal rules and constraints of {clean_t}",
+                "C": d_pool[4] if len(d_pool) > 4 else "Bypassing domain preconditions",
+                "D": d_pool[5] if len(d_pool) > 5 else "Unconstrained state corruption"
+            },
+            "correct": "B",
+            "explanation": f"Understanding {clean_t} requires verifying that its primary invariants and boundary rules are strictly maintained."
+        },
+        {
+            "question": f"In practical problem solving involving {clean_t}, what is the essential initial step?",
+            "options": {
+                "A": d_pool[6] if len(d_pool) > 6 else "Executing steps without parameter verification",
+                "B": d_pool[7] if len(d_pool) > 7 else "Omitting boundary condition checks",
+                "C": f"Identify input preconditions, base constraints, and target invariants in {clean_t}",
+                "D": d_pool[8] if len(d_pool) > 8 else "Ignoring domain edge cases"
+            },
+            "correct": "C",
+            "explanation": f"Rigorous problem-solving in {clean_t} begins with identifying input preconditions, constraints, and base criteria."
+        },
+        {
+            "question": f"Which scenario represents a standard application or valid implementation of {clean_t}?",
+            "options": {
+                "A": f"Applying the established mechanisms of {clean_t} to solve domain-specific problems",
+                "B": d_pool[9] if len(d_pool) > 9 else "Violating state invariants",
+                "C": d_pool[0] if len(d_pool) > 0 else "Random state transition",
+                "D": d_pool[1] if len(d_pool) > 1 else "Ignoring capacity limits"
+            },
+            "correct": "A",
+            "explanation": f"Standard implementations of {clean_t} apply its formal mechanisms to solve practical academic and technical problems."
+        },
+        {
+            "question": f"When evaluating edge cases in {clean_t}, what condition must be carefully handled?",
+            "options": {
+                "A": d_pool[2] if len(d_pool) > 2 else "Unchecked memory access",
+                "B": d_pool[3] if len(d_pool) > 3 else "Arbitrary data omission",
+                "C": d_pool[4] if len(d_pool) > 4 else "Unvalidated recursive depth",
+                "D": f"Empty inputs, boundary extremes, and constraint limit violations in {clean_t}"
+            },
+            "correct": "D",
+            "explanation": f"Robust solutions in {clean_t} explicitly handle boundary extremes, empty collections, and limit conditions."
+        }
     ]
-
-    if matched_bank is None:
-        clean_t = topic.strip().title()
-        matched_bank = [
-            {"question": f"What is the foundational definition and primary role of {clean_t}?", "options": {"A": "A system power state", "B": f"The core concepts, mechanisms, and rules defining {clean_t}", "C": "An unindexed disk partition", "D": "A network broadcast packet"}, "correct": "B", "explanation": f"{clean_t} is defined by its foundational principles, operational mechanisms, and governing rules."},
-            {"question": f"Which of the following is a primary characteristic or invariant of {clean_t}?", "options": {"A": "Consistent execution according to core principles of {clean_t}", "B": "Random non-deterministic memory corruption", "C": "Ignoring boundary conditions", "D": "Zero error checking"}, "correct": "A", "explanation": f"Understanding {clean_t} requires verifying that its primary invariants and boundary rules are maintained."},
-            {"question": f"In practical problem solving involving {clean_t}, what is the first step to evaluate?", "options": {"A": "Identify input preconditions, base cases, and boundary constraints", "B": "Skip initial parameters", "C": "Delete the input data", "D": "Reboot the host system"}, "correct": "A", "explanation": f"Rigorous analysis of {clean_t} begins with checking inputs, initial states, and constraint limits."},
-            {"question": f"Which scenario represents a standard application or implementation of {clean_t}?", "options": {"A": "Executing direct operations using established rules of {clean_t}", "B": "Corrupting file metadata", "C": "Unplugging power cables", "D": "Halting CPU timers"}, "correct": "A", "explanation": f"Applications of {clean_t} apply its formal rules to solve concrete domain problems."},
-            {"question": f"When evaluating edge cases in {clean_t}, what condition must be carefully handled?", "options": {"A": "Empty inputs, boundary limits, or extreme scale conditions", "B": "Screen backlight brightness", "C": "Audio output levels", "D": "Mouse scroll speed"}, "correct": "A", "explanation": f"Robust systems handle boundary extremes, empty collections, and limit cases in {clean_t}."}
-        ]
-
-    # Shuffle and pick 5 random questions so each refresh gives different set
-    import random as _random
-    pool = list(matched_bank)
-    _random.shuffle(pool)
-    return pool[:5]
 
 
 def generate_fallback_notes(topic):
