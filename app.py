@@ -380,6 +380,18 @@ def init_db():
         )
     ''')
     
+    # 3. Exam Feedback Table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS exam_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            subject TEXT,
+            rating TEXT,
+            actual_questions TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
     print("[OK] Database initialized successfully!")
@@ -2863,3 +2875,24 @@ def api_exam_feedback():
         print("[WARNING] Could not save exam feedback:", e)
         
     return json.dumps({"success": True, "message": "Thank you! Your feedback helps refine StudyMate AI predictions."}), 200, {'Content-Type': 'application/json'}
+
+
+# ==============================================================================
+#  🛡️ GLOBAL ERROR HANDLERS (GRACEFUL RECOVERY)
+# ==============================================================================
+@app.errorhandler(500)
+def internal_server_error(e):
+    print("[ERROR 500]", e)
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    return render_template(
+        'dashboard.html',
+        username=session.get('username', 'Student'),
+        stats={'notes': 0, 'doubt': 0, 'quiz': 0, 'flashcard': 0, 'total': 0},
+        recent_items=[],
+        error="A temporary server error occurred. Please try your request again."
+    ), 200
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect(url_for('dashboard') if is_logged_in() else url_for('index'))
