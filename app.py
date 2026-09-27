@@ -414,7 +414,7 @@ ai_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 def _gemini_worker(prompt):
     if not client:
         return None, "AI not configured. Please add your GEMINI_API_KEY."
-    models_to_try = ['gemini-3.6-flash', 'gemini-flash-latest']
+    models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest']
     last_error = ""
     for model_name in models_to_try:
         try:
@@ -2304,8 +2304,15 @@ Return ONLY a valid JSON array of 10 objects:
 ]"""
 
         cards = []
-        for attempt in range(3):
-            curr_prompt = prompt if attempt == 0 else f"Regenerate 10 substantive, factual study flashcards on '{topic}'. Test operations, formulas, and key facts. Output raw JSON array only."
+        retry_prompts = [
+            prompt,
+            f"Create 10 exam-ready flashcards on '{topic}'. Each card must test a real fact, definition, or formula. Return JSON array: [{{\"question\":\"...\",\"answer\":\"...\"}}]",
+            f"List 10 key Q&A facts about '{topic}' that a student must know. No generic advice. Pure subject content only. Return JSON array only.",
+            f"Generate 10 factual flashcards about '{topic}'. Cover definitions, examples, formulas. Output only JSON: [{{\"question\":\"...\",\"answer\":\"...\"}}]",
+            f"10 flashcard Q&As for '{topic}': real concepts, formulas, examples. JSON array format only. No explanations outside the JSON."
+        ]
+
+        for attempt, curr_prompt in enumerate(retry_prompts):
             result, error_msg = ask_gemini(curr_prompt)
             if result:
                 parsed_cards = parse_flashcards(result)
@@ -2315,7 +2322,10 @@ Return ONLY a valid JSON array of 10 objects:
                     break
 
         if not cards:
-            cards = generate_fallback_flashcards(topic)
+            # Gemini is the only valid source — return a proper error, never generic templates
+            cards = [
+                {"question": f"Could not generate flashcards for '{topic}' right now.", "answer": "Please try again in a moment. Gemini is the only trusted source for content — no generic fallback will be shown."}
+            ]
 
         return cards
 
@@ -2616,66 +2626,19 @@ def generate_fallback_notes(topic):
 
 
 def generate_fallback_flashcards(topic):
-    clean_t = topic.strip().title()
-    t_lower = topic.strip().lower()
-    
-    # 1. Photosynthesis Bank
-    if 'photosynthesis' in t_lower:
-        return [
-            {"question": "What is the overall chemical equation for photosynthesis?", "answer": "6CO2 + 6H2O + Light Energy -> C6H12O6 + 6O2, converting carbon dioxide and water into glucose and oxygen."},
-            {"question": "Where do the Light-Dependent Reactions occur in plant cells?", "answer": "In the Thylakoid membranes of chloroplasts, where chlorophyll absorbs light energy to generate ATP and NADPH."},
-            {"question": "What is the source of oxygen gas produced in photosynthesis?", "answer": "The photolysis (splitting) of water molecules (H2O) at Photosystem II releases O2 as a byproduct."},
-            {"question": "Where does the Calvin Cycle (Light-Independent Reactions) take place?", "answer": "In the Stroma (fluid matrix) of the chloroplast, utilizing ATP and NADPH to fix CO2 into sugars."},
-            {"question": "What is the role of the enzyme RuBisCO in photosynthesis?", "answer": "RuBisCO catalyzes the critical first step of carbon fixation, attaching atmospheric CO2 to RuBP."},
-            {"question": "What are the two primary energy carrier molecules produced by the light reactions?", "answer": "ATP (adenosine triphosphate) and NADPH (nicotinamide adenine dinucleotide phosphate)."},
-            {"question": "What wavelengths of light do chlorophyll a and b absorb most efficiently?", "answer": "Blue-violet and red wavelengths, while reflecting green light (which gives plants their color)."},
-            {"question": "What is the role of stomata in photosynthesis?", "answer": "Microscopic pores on leaf surfaces that open and close to regulate gas exchange (CO2 intake and O2 release) and transpiration."},
-            {"question": "What is the difference between C3 and C4 photosynthetic pathways?", "answer": "C3 fixes CO2 directly into a 3-carbon compound via RuBisCO; C4 first fixes CO2 into a 4-carbon compound in mesophyll cells to prevent photorespiration in hot climates."},
-            {"question": "What is photorespiration and why is it considered wasteful?", "answer": "A process where RuBisCO binds O2 instead of CO2, consuming ATP and releasing CO2 without producing sugar."}
-        ]
-
-    # 2. Stack Bank
-    if 'stack' in t_lower:
-        return [
-            {"question": "What fundamental data access principle does a Stack follow?", "answer": "LIFO (Last In, First Out) — the last element pushed onto the stack is the first element popped off."},
-            {"question": "What are the primary operations of a Stack and their time complexities?", "answer": "push(x), pop(), and peek()/top() all operate in O(1) constant time."},
-            {"question": "What is the difference between Stack Overflow and Stack Underflow?", "answer": "Overflow occurs when pushing to a full/bounded stack; Underflow occurs when popping from an empty stack."},
-            {"question": "How does a Stack manage function calls and recursion in programming languages?", "answer": "The runtime Call Stack stores activation records (stack frames) containing local variables, parameters, and return addresses."},
-            {"question": "How is a Stack used in Infix to Postfix expression conversion?", "answer": "Operators are pushed onto the stack according to precedence rules and popped when higher-or-equal precedence operators arrive."},
-            {"question": "How is a Stack used for checking balanced parentheses?", "answer": "Open brackets are pushed; when a closing bracket is found, the top element is popped and verified for matching type."},
-            {"question": "What is monotonic stack and what is its primary use case?", "answer": "A stack maintained in strictly increasing or decreasing order, used to solve Next Greater Element problems in O(N) time."},
-            {"question": "How can a Queue be implemented using two Stacks?", "answer": "Stack 1 handles enqueue operations; Stack 2 handles dequeue operations (elements transferred when Stack 2 is empty)."},
-            {"question": "What is the auxiliary space complexity of reversing a string using a Stack?", "answer": "O(N) space, where N is the length of the string, since all characters are pushed then popped."},
-            {"question": "What happens to dynamic memory allocation when stack space is exhausted during deep recursion?", "answer": "The OS terminates the process with a segmentation fault or StackOverflowError due to exceeding the stack memory limit."}
-        ]
-
-    # 3. Binary Search Bank
-    if 'binary search' in t_lower:
-        return [
-            {"question": "What is the indispensable precondition for applying Binary Search?", "answer": "The input data collection must be sorted in monotonic (ascending or descending) order with random access."},
-            {"question": "What is the time and space complexity of iterative Binary Search?", "answer": "Time Complexity: O(log N) worst/average case; Auxiliary Space: O(1) constant space."},
-            {"question": "Why is midpoint computed as `low + (high - low) // 2`?", "answer": "To prevent 32-bit integer arithmetic overflow that can occur with `(low + high) // 2` when low + high exceeds MAX_INT."},
-            {"question": "How many comparisons are needed to find a target in a sorted array of 1,000,000 elements?", "answer": "At most 20 comparisons (since 2^20 = 1,048,576 > 1,000,000)."},
-            {"question": "What is the difference between lower_bound and upper_bound in Binary Search?", "answer": "lower_bound finds the first element >= target; upper_bound finds the first element strictly > target."},
-            {"question": "What is Binary Search on Answer space?", "answer": "A technique to find the optimal value by verifying feasibility across a monotonic search space of potential answers."},
-            {"question": "Why does Binary Search fail on Singly Linked Lists despite being sorted?", "answer": "Linked lists lack O(1) random indexing, so accessing the middle element takes O(N) time, yielding O(N) total runtime."},
-            {"question": "What is the base condition to terminate an iterative Binary Search loop?", "answer": "`while low <= high` — the loop terminates when low > high, indicating the target is not present."},
-            {"question": "What is Ternary Search and how does it compare to Binary Search?", "answer": "Divides the range into 3 parts using 2 midpoints; useful for unimodal function extrema, but does more comparisons for search."},
-            {"question": "How is Binary Search adapted to search in a Rotated Sorted Array?", "answer": "At least one half (left or right) is always sorted; identify the sorted half and check if target lies within its bounds."}
-        ]
-
-    # 4. Universal Natural Academic Synthesizer
+    """
+    Last-resort flashcard generator. Uses Gemini directly with a simplified prompt.
+    NEVER returns generic template content — Gemini is the only source.
+    """
+    simple_prompt = f"Give me 10 flashcard Q&A pairs about '{topic}'. Focus on real definitions, facts, formulas and examples. Return a JSON array: [{{\"question\":\"...\",\"answer\":\"...\"}}]. No extra text."
+    result, _ = ask_gemini(simple_prompt)
+    if result:
+        parsed = parse_flashcards(result)
+        if parsed and len(parsed) >= 3:
+            return parsed
+    # Gemini failed entirely — return a single honest error card
     return [
-        {"question": f"What is the foundational definition and primary role of {clean_t}?", "answer": f"{clean_t} represents a core academic subject defined by systematic principles, standard methodologies, and practical applications."},
-        {"question": f"What fundamental principle or governing rule underpins {clean_t}?", "answer": f"The core principle of {clean_t} ensures consistent operations, verifiable outcomes, and structured problem-solving across all standard scenarios."},
-        {"question": f"What are the primary stages or components that comprise {clean_t}?", "answer": f"{clean_t} consists of foundational units that coordinate input handling, state transitions, and verified result generation."},
-        {"question": f"What is the step-by-step mechanism through which {clean_t} operates?", "answer": f"Initial parameters are established, core domain operations are sequentially executed, and verified solutions are produced in {clean_t}."},
-        {"question": f"What is a major real-world application of {clean_t}?", "answer": f"{clean_t} is widely applied to analyze domain problems, optimize performance, and design reliable solutions in practice."},
-        {"question": f"What critical boundary condition or constraint applies to {clean_t}?", "answer": f"Operations in {clean_t} must satisfy domain preconditions, capacity limits, and consistency rules to prevent errors."},
-        {"question": f"What is a common misconception when studying {clean_t}?", "answer": f"Assuming surface recall is sufficient, whereas mastering {clean_t} requires understanding underlying mechanisms and causal relationships."},
-        {"question": f"How is correctness verified and evaluated in {clean_t}?", "answer": f"By testing edge cases, validating against established domain benchmarks, and checking invariant conditions in {clean_t}."},
-        {"question": f"What optimization or best practice improves results in {clean_t}?", "answer": f"Applying systematic decomposition, minimizing redundant steps, and adhering to standard domain conventions maximizes efficiency in {clean_t}."},
-        {"question": f"What is the most essential takeaway for exams regarding {clean_t}?", "answer": f"Master the core definitions, governing equations or rules, step-by-step workflows, and practical examples of {clean_t}."}
+        {"question": f"Flashcards for '{topic}' could not be generated right now.", "answer": "Please try again in a moment. Gemini AI is the only trusted source and will give you accurate content on retry."}
     ]
 
 
