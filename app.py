@@ -845,8 +845,21 @@ def generate_intelligent_survival_plan(subject, available_hours=8, prep_level='a
 
 #  STEP 7: Helper  Check if user is logged in 
 def is_logged_in():
-    """Returns True if user has an active session."""
-    return 'user_id' in session
+    """Returns True if user has an active, valid session."""
+    if 'user_id' not in session:
+        return False
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT id, username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        conn.close()
+        if not user:
+            session.clear()
+            return False
+        if not session.get('username'):
+            session['username'] = user['username']
+        return True
+    except Exception:
+        return 'user_id' in session
 
 import time
 AI_RATE_LIMITS = {}
@@ -1166,8 +1179,12 @@ STRUCTURE YOUR ANSWER BEAUTIFULLY:
 
 Use clean Markdown with bolding, bullet points, and code blocks."""
 
-            result, error = ask_gemini(prompt)
-            answer = result if result else generate_fallback_doubt(question)
+            try:
+                result, error = ask_gemini(prompt)
+                answer = result if result else generate_fallback_doubt(question)
+            except Exception as e:
+                print(f"[ERROR] Doubt solver failed: {e}")
+                answer = generate_fallback_doubt(question)
 
         # Update session doubt history
         if answer:
@@ -1212,9 +1229,15 @@ def quiz():
         if not topic:
             return render_template('quiz_generator.html', error='Please enter a topic!')
 
-        rand_hint = random.randint(10000, 99999)
-        quiz_data = UniversalStudyEngine.generate_quiz(topic, rand_hint=rand_hint)
-        raw_quiz_json = json.dumps(quiz_data)
+        try:
+            rand_hint = random.randint(10000, 99999)
+            quiz_data = UniversalStudyEngine.generate_quiz(topic, rand_hint=rand_hint)
+            raw_quiz_json = json.dumps(quiz_data)
+        except Exception as e:
+            print(f"[ERROR] Quiz generation failed: {e}")
+            quiz_data = generate_fallback_quiz(topic)
+            raw_quiz_json = json.dumps(quiz_data)
+            error = "Gemini AI is busy. A retry quiz was loaded — please try generating again in a moment." 
 
     return render_template('quiz_generator.html', quiz_data=quiz_data, raw_quiz_json=raw_quiz_json, topic=topic, error=error)
 
@@ -1268,8 +1291,12 @@ Use markdown blockquotes with emoji badges for high-yield callouts:
 
 Make the notes authoritative, rich in depth, and crystal clear."""
 
-        result, error = ask_gemini(prompt)
-        notes_result = result if result else generate_fallback_notes(topic)
+        try:
+            result, error = ask_gemini(prompt)
+            notes_result = result if result else generate_fallback_notes(topic)
+        except Exception as e:
+            print(f"[ERROR] Notes generation failed: {e}")
+            notes_result = generate_fallback_notes(topic)
 
     return render_template('ai_notes.html', notes=notes_result, topic=topic)
 
@@ -1293,8 +1320,12 @@ def flashcards():
         if not topic:
             return render_template('flashcards.html', error='Please enter a topic!')
 
-        rand_id = random.randint(10000, 99999)
-        flashcards_data = UniversalStudyEngine.generate_flashcards(topic, rand_id=rand_id)
+        try:
+            rand_id = random.randint(10000, 99999)
+            flashcards_data = UniversalStudyEngine.generate_flashcards(topic, rand_id=rand_id)
+        except Exception as e:
+            print(f"[ERROR] Flashcard generation failed: {e}")
+            flashcards_data = generate_fallback_flashcards(topic)
 
     return render_template('flashcards.html', flashcards_data=flashcards_data, topic=topic)
 
@@ -1341,16 +1372,20 @@ def one_night_mode():
         if not subject:
             return render_template('one_night_mode.html', error='Please select or enter a subject!')
 
-        kit_data = generate_intelligent_survival_plan(
-            subject=subject,
-            available_hours=available_hours,
-            prep_level=prep_level,
-            target_mode=target_mode,
-            university=university,
-            branch=branch,
-            year=year,
-            sem=sem
-        )
+        try:
+            kit_data = generate_intelligent_survival_plan(
+                subject=subject,
+                available_hours=available_hours,
+                prep_level=prep_level,
+                target_mode=target_mode,
+                university=university,
+                branch=branch,
+                year=year,
+                sem=sem
+            )
+        except Exception as e:
+            print(f"[ERROR] 1-Night Mode generation failed: {e}")
+            kit_data = generate_fallback_one_night_kit(subject, target_mode=target_mode)
 
         if 'survival_kits' not in session or not isinstance(session['survival_kits'], dict):
             session['survival_kits'] = {}
@@ -2229,8 +2264,14 @@ Return ONLY a valid JSON array of 5 objects with keys:
 NO markdown code blocks. Output raw JSON array ONLY."""
 
         quiz_data = []
-        for attempt in range(3):
-            curr_prompt = prompt if attempt == 0 else f"Regenerate 5 authentic exam questions testing the actual operational concepts of '{topic}'. Ensure all 4 options are plausible in-domain terms and the explanation verifies the answer. Output raw JSON array only."
+        retry_prompts = [
+            prompt,
+            f"Generate 5 exam questions on '{topic}'. Return JSON array format only: [{{'question':'...', 'options':{{'A':'...','B':'...','C':'...','D':'...'}}, 'correct':'A', 'explanation':'...'}}]",
+            f"List 5 basic multiple choice questions about '{topic}'. Return ONLY a JSON array of 5 questions.",
+            f"Create 5 simple Q and A MCQs on '{topic}'. Output raw JSON array ONLY.",
+            f"5 MCQs for '{topic}'. JSON array format only."
+        ]
+        for attempt, curr_prompt in enumerate(retry_prompts):
             result, error_msg = ask_gemini(curr_prompt)
             if result:
                 raw_text = result.strip()
@@ -2306,12 +2347,11 @@ Return ONLY a valid JSON array of 10 objects:
         cards = []
         retry_prompts = [
             prompt,
-            f"Create 10 exam-ready flashcards on '{topic}'. Each card must test a real fact, definition, or formula. Return JSON array: [{{\"question\":\"...\",\"answer\":\"...\"}}]",
-            f"List 10 key Q&A facts about '{topic}' that a student must know. No generic advice. Pure subject content only. Return JSON array only.",
-            f"Generate 10 factual flashcards about '{topic}'. Cover definitions, examples, formulas. Output only JSON: [{{\"question\":\"...\",\"answer\":\"...\"}}]",
-            f"10 flashcard Q&As for '{topic}': real concepts, formulas, examples. JSON array format only. No explanations outside the JSON."
+            f"Generate 5 exam questions on '{topic}'. Return JSON array format only: [{{'question':'...', 'options':{{'A':'...','B':'...','C':'...','D':'...'}}, 'correct':'A', 'explanation':'...'}}]",
+            f"List 5 basic multiple choice questions about '{topic}'. Return ONLY a JSON array of 5 questions.",
+            f"Create 5 simple Q and A MCQs on '{topic}'. Output raw JSON array ONLY.",
+            f"5 MCQs for '{topic}'. JSON array format only."
         ]
-
         for attempt, curr_prompt in enumerate(retry_prompts):
             result, error_msg = ask_gemini(curr_prompt)
             if result:
@@ -2438,6 +2478,7 @@ def parse_flashcards(text):
 
 
 def generate_fallback_doubt(question):
+    """Last-resort doubt solver. Uses Gemini directly. No generic templates."""
     clean_q = question.strip()
     q_lower = clean_q.lower()
     
@@ -2449,180 +2490,96 @@ def generate_fallback_doubt(question):
 ### 📚 What would you like to learn today?
 - **Ask Any Doubt:** Enter any question, concept, theorem, or code snippet above.
 - **Generate Notes & Quizzes:** Try our **AI Notes**, **Quiz Generator**, or **Flashcards**.
-- **1-Night Mode:** Prepare for tomorrow's exam with our subject-aware survival command center.
+- **1-Night Mode:** Prepare for tomorrow's exam with our survival command center.
 
-*Type any subject topic or question above (e.g. "What is Dijkstra Algorithm?", "Explain KCL & KVL", "DBMS Normalization") to get an instant detailed explanation!*"""
+*Type any subject topic or question above to get an instant detailed explanation!*"""
 
-    return f"""# 📝 Explanation: {clean_q}
+    prompt = f"""You are an expert tutor. Answer the student's question clearly and accurately.
+Question: {clean_q}
 
-> **Core Summary:** Here is a clear, structured breakdown of **{clean_q}**.
+Give a well-structured markdown response with:
+- Concise core concept / definition
+- Step-by-step logic, mechanism or formula
+- Clear example or code snippet
+- Exam revision tip"""
 
-### 💡 Key Concepts & Principles
-- **Core Definition:** Understand the foundational principles and objectives of {clean_q}.
-- **Operational Workflow:** Concepts are broken down into logical steps, analyzed, and executed for optimal understanding.
-- **Key Takeaway:** Mastering {clean_q} requires building core concept clarity and practicing real-world application.
+    result, _ = ask_gemini(prompt)
+    if result and len(result.strip()) > 50:
+        return result.strip()
 
-> 🎓 **Exam Strategy:** When answering exam questions on this topic, state clear definitions first, provide bulleted key points, and include a labeled diagram or example!
+    return f"""# ⚠️ Gemini AI is currently busy
 
-### 🔍 Practical Application
-1. **Analyze:** Break down the core question into key components.
-2. **Apply:** Relate theoretical principles to practical problem-solving.
-3. **Review:** Verify your steps and ensure all constraints are satisfied."""
+Could not generate a verified answer for **{clean_q}** right now.
+
+Please click **Ask Question** again in a moment. StudyMate uses live Gemini AI exclusively."""
 
 
 def generate_fallback_quiz(topic):
-    t = topic.strip().lower()
-    clean_t = topic.strip().title()
-    domain = UniversalStudyEngine.analyze_domain(topic)
-
-    # ── Subject-specific question banks ──────────────────────────────────
-    BANKS = {
-        'stack': [
-            {"question": "Which principle governs the insertion and deletion of elements in a Stack?", "options": {"A": "First In First Out (FIFO)", "B": "Last In First Out (LIFO)", "C": "Random Access", "D": "Priority Ordering"}, "correct": "B", "explanation": "A Stack operates strictly on LIFO (Last In First Out), where the last element inserted is the first one removed."},
-            {"question": "What is the time complexity of the push(), pop(), and peek() operations in an array-based stack?", "options": {"A": "O(1) constant time", "B": "O(N) linear time", "C": "O(log N)", "D": "O(N^2)"}, "correct": "A", "explanation": "Push, pop, and peek all operate exclusively at the top of the stack, taking O(1) constant time."},
-            {"question": "Given an empty stack, the following operations are executed: push(10), push(20), pop(), push(30), push(40), pop(). What is the element at the top of the stack?", "options": {"A": "10", "B": "20", "C": "30", "D": "40"}, "correct": "C", "explanation": "Trace: [10] -> [10, 20] -> pop() removes 20 -> [10] -> push(30) -> [10, 30] -> push(40) -> [10, 30, 40] -> pop() removes 40 -> top is 30."},
-            {"question": "Which of the following classic computer science applications relies directly on a Stack?", "options": {"A": "Function Call Execution & Recursion Management", "B": "CPU Round Robin Scheduling", "C": "Breadth-First Search (BFS) Traversal", "D": "Shortest Path in Dijkstra Algorithm"}, "correct": "A", "explanation": "The call stack manages function activation records, local variables, return addresses, and recursive calls."},
-            {"question": "What runtime condition occurs when attempting to pop an element from an empty stack?", "options": {"A": "Stack Overflow", "B": "Stack Underflow", "C": "Segmentation Fault", "D": "Memory Leak"}, "correct": "B", "explanation": "Stack Underflow happens when a pop or peek operation is performed on an empty stack (top == -1)."}
-        ],
-        'binary search': [
-            {"question": "What is the fundamental precondition required to apply Binary Search on a dataset?", "options": {"A": "The array elements must be sorted in monotonic order", "B": "The array must contain only positive integers", "C": "The array size must be a power of 2", "D": "The array must be dynamically allocated"}, "correct": "A", "explanation": "Binary Search requires the collection to be sorted so that half of the search space can be eliminated in each comparison."},
-            {"question": "What is the worst-case time complexity of Binary Search on a sorted array of N elements?", "options": {"A": "O(1)", "B": "O(log N)", "C": "O(N)", "D": "O(N log N)"}, "correct": "B", "explanation": "At each step, Binary Search divides the search space in half, resulting in O(log2 N) comparisons in the worst case."},
-            {"question": "In standard implementations, why is mid calculated as `low + (high - low) // 2` instead of `(low + high) // 2`?", "options": {"A": "To prevent integer arithmetic overflow when low and high are very large", "B": "To ensure floating point precision", "C": "To handle negative numbers only", "D": "To speed up CPU clock cycles"}, "correct": "A", "explanation": "In languages with fixed integer sizes (like C/C++/Java), (low + high) can exceed MAX_INT and overflow into negative numbers."},
-            {"question": "How many comparisons at most are needed to find an element in a sorted array of 1024 elements using Binary Search?", "options": {"A": "10", "B": "11", "C": "512", "D": "1024"}, "correct": "B", "explanation": "log2(1024) = 10, so at most 11 comparisons are needed to find or confirm the absence of an element."},
-            {"question": "Why does standard Binary Search NOT run in O(log N) on a Singly Linked List?", "options": {"A": "Linked lists cannot store sorted data", "B": "Finding the middle element takes O(N) time due to lack of random access", "C": "Pointers require O(N) space", "D": "Linked list nodes are stored contiguously"}, "correct": "B", "explanation": "Without O(1) random indexing, finding the middle node requires traversing the list in O(N), destroying the O(log N) advantage."}
-        ],
-        'normalization': [
-            {"question": "What condition must a relation satisfy to be in First Normal Form (1NF)?", "options": {"A": "All attribute values in every tuple must be atomic and indivisible", "B": "Every determinant must be a candidate key", "C": "No partial dependencies on composite keys", "D": "No multi-valued dependencies"}, "correct": "A", "explanation": "1NF requires that all column domains contain atomic (single, indivisible) values and no repeating groups."},
-            {"question": "Which type of dependency is specifically removed when converting a table from 1NF to 2NF?", "options": {"A": "Partial Functional Dependency (non-prime attribute dependent on part of candidate key)", "B": "Transitive Dependency", "C": "Join Dependency", "D": "Trivial Dependency"}, "correct": "A", "explanation": "2NF requires that the table is in 1NF and every non-prime attribute is fully functionally dependent on the entire primary key."},
-            {"question": "Which normal form specifically eliminates transitive functional dependencies (X -> Y and Y -> Z)?", "options": {"A": "1NF", "B": "2NF", "C": "3NF", "D": "5NF"}, "correct": "C", "explanation": "3NF requires a relation to be in 2NF and have no transitive dependencies of non-prime attributes on candidate keys."},
-            {"question": "How is Boyce-Codd Normal Form (BCNF) strictly defined compared to 3NF?", "options": {"A": "For every functional dependency X -> Y, X must be a Super Key", "B": "Every attribute must be a primary key", "C": "Tables cannot contain foreign keys", "D": "All tables must have at most 3 columns"}, "correct": "A", "explanation": "BCNF requires that for every non-trivial functional dependency X -> Y, the left side X must strictly be a Super Key."},
-            {"question": "What is the primary objective of normalizing a relational database schema?", "options": {"A": "Minimize data redundancy and prevent insertion, update, and deletion anomalies", "B": "Increase query execution time", "C": "Combine all tables into a single large flat file", "D": "Eliminate primary keys to save disk storage"}, "correct": "A", "explanation": "Normalization minimizes duplication and ensures database integrity by preventing update, delete, and insert anomalies."}
-        ],
-        'process': [
-            {"question": "Which operating system data structure contains the process state, program counter, CPU registers, and scheduling information?", "options": {"A": "Process Control Block (PCB)", "B": "Translation Lookaside Buffer (TLB)", "C": "File Allocation Table (FAT)", "D": "Virtual Method Table (VTABLE)"}, "correct": "A", "explanation": "The Process Control Block (PCB) is the kernel data structure storing all information about a specific process."},
-            {"question": "What happens during a CPU context switch between two processes?", "options": {"A": "The state of the running process is saved in its PCB, and the state of the next ready process is loaded", "B": "The CPU shuts down and restarts", "C": "All memory pages are erased from RAM", "D": "Disk drives are defragmented"}, "correct": "A", "explanation": "Context switching saves the current CPU registers/state to the active PCB and restores the next scheduled process's PCB state."},
-            {"question": "What is the fundamental difference between a Process and a Thread?", "options": {"A": "Processes have isolated address spaces; threads share the address space of their parent process", "B": "Threads cannot execute concurrently", "C": "Processes run in user mode only; threads run in kernel mode", "D": "Threads cannot have their own stack"}, "correct": "A", "explanation": "A process is an isolated executing program with its own memory space; threads are lightweight units sharing the same process memory."},
-            {"question": "Which Unix/Linux system call creates a duplicate child process?", "options": {"A": "fork()", "B": "exec()", "C": "pthread_create()", "D": "kill()"}, "correct": "A", "explanation": "fork() creates an exact duplicate child process with a separate memory space, returning child PID to parent and 0 to child."},
-            {"question": "What is a Zombie Process in Operating Systems?", "options": {"A": "A terminated process whose PCB entry remains in the process table because the parent has not read its exit status", "B": "A process using 100% CPU cycles", "C": "A process waiting for I/O completion", "D": "A process without a thread"}, "correct": "A", "explanation": "A Zombie process has finished execution via exit(), but its entry remains in the process table until the parent calls wait()."}
-        ],
-        'photosynthesis': [
-            {"question": "In plant cells, in which specific part of the chloroplast do the Light-Dependent Reactions occur?", "options": {"A": "Thylakoid Membrane", "B": "Stroma", "C": "Outer Mitochondrial Membrane", "D": "Cytoplasm"}, "correct": "A", "explanation": "Light-dependent reactions occur across the Thylakoid membrane where chlorophyll pigments and photosystems I & II reside."},
-            {"question": "What is the primary source of the Oxygen (O2) gas released into the atmosphere during photosynthesis?", "options": {"A": "Photolysis (splitting) of Water (H2O) molecules", "B": "Breakdown of Carbon Dioxide (CO2)", "C": "Decomposition of Glucose", "D": "Hydrolysis of ATP"}, "correct": "A", "explanation": "In Photosystem II, water molecules are split (photolysis) to provide replacement electrons, releasing O2 as a byproduct."},
-            {"question": "Where does the Calvin Cycle (Light-Independent Reaction) take place within the chloroplast?", "options": {"A": "Stroma", "B": "Thylakoid Lumen", "C": "Granum", "D": "Ribosome"}, "correct": "A", "explanation": "The Calvin Cycle occurs in the Stroma (fluid matrix) of the chloroplast, utilizing ATP and NADPH to fix CO2 into sugars."},
-            {"question": "Which key enzyme catalyzes the first step of carbon fixation in the Calvin Cycle by attaching CO2 to RuBP?", "options": {"A": "RuBisCO", "B": "ATP Synthase", "C": "DNA Polymerase", "D": "Catalase"}, "correct": "A", "explanation": "RuBisCO (Ribulose-1,5-bisphosphate carboxylase-oxygenase) is the crucial enzyme responsible for fixing atmospheric CO2."},
-            {"question": "What are the two high-energy chemical products generated by the Light Reactions that fuel the Calvin Cycle?", "options": {"A": "ATP and NADPH", "B": "Glucose and Pyruvate", "C": "NADH and FADH2", "D": "ADP and Water"}, "correct": "A", "explanation": "Light reactions convert solar energy into chemical energy stored in ATP and NADPH, which are then consumed by the Calvin Cycle."}
-        ]
-    }
-
-    # Match specific known bank
-    for key, bank in BANKS.items():
-        if key in t:
-            import random as _rnd
-            pool = list(bank)
-            _rnd.shuffle(pool)
-            return pool[:5]
-
-    # Universal Domain-Adaptive Synthesis with Realistic In-Domain Distractors
-    distractors = UniversalStudyEngine.DOMAIN_DISTRACTOR_POOLS.get(
-        domain, UniversalStudyEngine.DOMAIN_DISTRACTOR_POOLS['general_academic']
+    """
+    Last-resort quiz generator. Uses Gemini directly with a simplified prompt.
+    NEVER returns generic template questions - Gemini is the only source.
+    """
+    simple_prompt = (
+        f"Generate 5 multiple choice questions about '{topic}'. "
+        f"Return ONLY a JSON array format: "
+        f"[{{\"question\": \"...\", \"options\": {{\"A\": \"...\", \"B\": \"...\", \"C\": \"...\", \"D\": \"...\"}}, "
+        f"\"correct\": \"A\", \"explanation\": \"...\"}}]. No extra markdown."
     )
-
-    import random as _rnd
-    d_pool = list(distractors)
-    _rnd.shuffle(d_pool)
+    result, _ = ask_gemini(simple_prompt)
+    if result:
+        try:
+            raw_text = result.strip()
+            start_idx = raw_text.find('[')
+            end_idx = raw_text.rfind(']')
+            if start_idx != -1 and end_idx != -1:
+                json_str = raw_text[start_idx:end_idx+1]
+                parsed = json.loads(json_str)
+                if isinstance(parsed, list) and len(parsed) >= 3:
+                    return parsed
+        except Exception:
+            pass
 
     return [
         {
-            "question": f"What is the foundational definition and core principle of {clean_t}?",
+            "question": f"Quiz generation for '{topic}' failed. Gemini AI is temporarily busy.",
             "options": {
-                "A": f"The systematic principles, governing rules, and operational workflow defining {clean_t}",
-                "B": d_pool[0] if len(d_pool) > 0 else "An unrelated operational state",
-                "C": d_pool[1] if len(d_pool) > 1 else "A non-standard boundary condition",
-                "D": d_pool[2] if len(d_pool) > 2 else "An auxiliary invariant constraint"
-            },
-            "correct": "A",
-            "explanation": f"{clean_t} is defined by its core principles, standard operational mechanisms, and domain rules."
-        },
-        {
-            "question": f"Which of the following is a primary characteristic or governing invariant of {clean_t}?",
-            "options": {
-                "A": d_pool[3] if len(d_pool) > 3 else "Arbitrary execution without validation",
-                "B": f"Consistent execution adhering to the formal rules and constraints of {clean_t}",
-                "C": d_pool[4] if len(d_pool) > 4 else "Bypassing domain preconditions",
-                "D": d_pool[5] if len(d_pool) > 5 else "Unconstrained state corruption"
-            },
-            "correct": "B",
-            "explanation": f"Understanding {clean_t} requires verifying that its primary invariants and boundary rules are strictly maintained."
-        },
-        {
-            "question": f"In practical problem solving involving {clean_t}, what is the essential initial step?",
-            "options": {
-                "A": d_pool[6] if len(d_pool) > 6 else "Executing steps without parameter verification",
-                "B": d_pool[7] if len(d_pool) > 7 else "Omitting boundary condition checks",
-                "C": f"Identify input preconditions, base constraints, and target invariants in {clean_t}",
-                "D": d_pool[8] if len(d_pool) > 8 else "Ignoring domain edge cases"
-            },
-            "correct": "C",
-            "explanation": f"Rigorous problem-solving in {clean_t} begins with identifying input preconditions, constraints, and base criteria."
-        },
-        {
-            "question": f"Which scenario represents a standard application or valid implementation of {clean_t}?",
-            "options": {
-                "A": f"Applying the established mechanisms of {clean_t} to solve domain-specific problems",
-                "B": d_pool[9] if len(d_pool) > 9 else "Violating state invariants",
-                "C": d_pool[0] if len(d_pool) > 0 else "Random state transition",
-                "D": d_pool[1] if len(d_pool) > 1 else "Ignoring capacity limits"
-            },
-            "correct": "A",
-            "explanation": f"Standard implementations of {clean_t} apply its formal mechanisms to solve practical academic and technical problems."
-        },
-        {
-            "question": f"When evaluating edge cases in {clean_t}, what condition must be carefully handled?",
-            "options": {
-                "A": d_pool[2] if len(d_pool) > 2 else "Unchecked memory access",
-                "B": d_pool[3] if len(d_pool) > 3 else "Arbitrary data omission",
-                "C": d_pool[4] if len(d_pool) > 4 else "Unvalidated recursive depth",
-                "D": f"Empty inputs, boundary extremes, and constraint limit violations in {clean_t}"
+                "A": "Please retry in a moment.",
+                "B": "Gemini AI is the only trusted source.",
+                "C": "We do not show fake template questions.",
+                "D": "All of the above."
             },
             "correct": "D",
-            "explanation": f"Robust solutions in {clean_t} explicitly handle boundary extremes, empty collections, and limit conditions."
+            "explanation": "To ensure quality, StudyMate relies exclusively on live Gemini AI generation."
         }
     ]
 
 
+
 def generate_fallback_notes(topic):
+    """Last-resort notes generator. Uses Gemini directly. No generic templates."""
     clean_t = topic.strip().title()
+    prompt = f"""You are an elite professor. Generate comprehensive, high-yield study revision notes on: '{clean_t}'.
+
+Structure:
+# 📌 Core Definition & Overview
+# 💡 Key Concepts & Principles
+# 📊 Comparison Table & Architecture
+# ⚡ Formulas / Code / Step-by-Step Working
+# 🚀 Exam Revision Tips
+
+Format as rich, beautiful markdown."""
+
+    result, _ = ask_gemini(prompt)
+    if result and len(result.strip()) > 100:
+        return result.strip()
+
     return f"""# 📚 Study Notes: {clean_t}
 
-**{clean_t}** is an essential topic requiring structured understanding, clear definitions, and practical problem-solving.
+> ⚠️ **Gemini AI is currently busy.**
 
----
+Could not complete high-yield note generation for **{clean_t}** right now.
 
-# 💡 Key Concepts & Core Principles
-
-> 📌 **Definition:** **{clean_t}** encompasses the principles, frameworks, and methodologies used to analyze and solve domain problems.
-
-> 🎯 **Core Objective:** Master foundational definitions, operational workflows, and key trade-offs in **{clean_t}**.
-
-> ⚠️ **Exam Tip:** Focus on active recall, clear diagrams, and solving previous year exam questions!
-
----
-
-# 📊 Structured Overview
-
-| Aspect / Dimension | Foundational Level | Advanced {clean_t} Level |
-| :--- | :--- | :--- |
-| **Understanding** | Basic definitions & terminology | Deep conceptual clarity & trade-offs |
-| **Application** | Standard textbook problems | Complex real-world case studies & edge cases |
-| **Exam Strategy** | Direct recall questions | Step-by-step derivations & architectural diagrams |
-
----
-
-# 🚀 Key Takeaways & Summary
-
-- **Concept Clarity:** Always start from first principles when analyzing **{clean_t}**.
-- **Practical Application:** Connect theoretical concepts to real-world scenarios.
-- **Revision:** Use active recall flashcards and PYQ practice for maximum retention."""
+Please click **Generate Notes** again in a few seconds to retry with live Gemini AI."""
 
 
 def generate_fallback_flashcards(topic):
@@ -2845,16 +2802,22 @@ def api_exam_feedback():
 # ==============================================================================
 @app.errorhandler(500)
 def internal_server_error(e):
-    print("[ERROR 500]", e)
+    print(f"[ERROR 500] Handled cleanly: {e}")
+    if request.is_json or request.path.startswith('/api/'):
+        return {"success": False, "error": "A temporary server error occurred. Please retry your request."}, 500
     if not is_logged_in():
+        flash("A temporary server error occurred. Please log in to continue.", "info")
         return redirect(url_for('login'))
-    return render_template(
-        'dashboard.html',
-        username=session.get('username', 'Student'),
-        stats={'notes': 0, 'doubt': 0, 'quiz': 0, 'flashcard': 0, 'total': 0},
-        recent_items=[],
-        error="A temporary server error occurred. Please try your request again."
-    ), 200
+    try:
+        return render_template(
+            'dashboard.html',
+            username=session.get('username', 'Student'),
+            stats={'notes': 0, 'doubt': 0, 'quiz': 0, 'flashcard': 0, 'total': 0},
+            recent_items=[],
+            error="A temporary server error occurred. Please retry your request in a moment."
+        ), 200
+    except Exception:
+        return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def page_not_found(e):
